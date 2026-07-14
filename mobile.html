@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>C1 생산 현황 (모바일)</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-base: #ffffff;
+    --bg-panel: #f0f2f5;
+    --bg-card: #ffffff;
+    --bg-card2: #f5f6f9;
+    --border: #b8c2d0;
+    --border-bright: #8a97aa;
+    --accent: #0099cc;
+    --accent2: #0077aa;
+    --accent-dim: rgba(0,153,204,0.13);
+    --green: #00aa55;
+    --green-dim: rgba(0,170,85,0.13);
+    --yellow: #cc8800;
+    --yellow-dim: rgba(204,136,0,0.10);
+    --red: #dd1133;
+    --red-dim: rgba(221,17,51,0.13);
+    --pink: #ff3d7a;
+    --text-primary: #0d1821;
+    --text-secondary: #1e2e45;
+    --text-dim: #5b6b7d;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-main: 'Noto Sans KR', sans-serif;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin:0; padding:0; background:var(--bg-panel); color:var(--text-primary); font-family:var(--font-main); }
+  body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+
+  /* ── 상단 고정바 */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--text-primary);
+    padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .topbar-left { display:flex; align-items:center; gap:8px; }
+  .topbar-title { font-family:var(--font-main); font-weight:900; font-size:16px; color:#fff; letter-spacing:.2px; }
+  .topbar-title .ver { font-family:var(--font-mono); font-size:10px; font-weight:700; color:var(--accent); border:1px solid var(--accent2); border-radius:3px; padding:1px 5px; margin-left:6px; vertical-align:middle; }
+  .topbar-logo { background:#fff; border-radius:6px; padding:4px 6px; display:flex; align-items:center; }
+  .topbar-logo img { height:16px; display:block; }
+  .topbar-sub { font-family:var(--font-mono); font-size:10px; color:#8fb8cc; margin-top:1px; }
+  .live-dot { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(0,170,85,.6); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(0,170,85,.5);} 70%{box-shadow:0 0 0 7px rgba(0,170,85,0);} 100%{box-shadow:0 0 0 0 rgba(0,170,85,0);} }
+  .refresh-btn { background:rgba(255,255,255,.1); border:none; color:#fff; font-size:15px; padding:7px 9px; border-radius:8px; }
+  .refresh-btn:active { background:rgba(255,255,255,.22); }
+  .refresh-btn.spin svg { animation: spin .7s linear; }
+  @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+
+  /* ── 세그먼트 필터 (현황 탭 전용) */
+  .segbar { display:flex; gap:6px; padding:10px 16px 4px; background:var(--bg-panel); position:sticky; top:calc(46px + env(safe-area-inset-top)); z-index:19; }
+  .seg-btn {
+    flex:1; text-align:center; padding:9px 0; border-radius:10px; border:1.5px solid var(--border);
+    background:var(--bg-card); color:var(--text-dim); font-family:var(--font-main); font-weight:700; font-size:13px;
+  }
+  .seg-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  /* ── 공지판 (접이식) */
+  .notice-wrap { margin:10px 16px 4px; }
+  .notice-toggle {
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+    padding:10px 14px; font-size:13px; font-weight:700; color:var(--text-secondary);
+  }
+  .notice-toggle .chev { transition: transform .2s; color:var(--text-dim); }
+  .notice-toggle.open .chev { transform: rotate(180deg); }
+  .notice-body { display:none; background:var(--bg-card); border:1px solid var(--border); border-top:none; border-radius:0 0 10px 10px; padding:12px 14px; margin-top:-1px; }
+  .notice-body.open { display:block; }
+  .notice-item { font-size:13px; color:var(--text-secondary); line-height:1.55; margin-bottom:10px; }
+  .notice-item:last-child { margin-bottom:0; }
+  .notice-item .lbl { font-size:11px; font-weight:700; color:var(--text-dim); display:block; margin-bottom:3px; }
+
+  /* ── 요약바 */
+  .summary-row { display:flex; gap:8px; margin:12px 16px; }
+  .summary-chip { flex:1; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:9px 4px; text-align:center; }
+  .summary-chip .n { font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--text-primary); white-space:nowrap; }
+  .summary-chip .n small { font-size:10px; font-weight:500; }
+  .summary-chip .l { font-size:10px; color:var(--text-dim); margin-top:1px; }
+  .summary-chip .pct { font-family:var(--font-mono); font-size:11px; font-weight:700; margin-top:2px; }
+
+  /* ── 모델 카드 */
+  .section-label { font-size:12px; font-weight:700; color:var(--text-dim); margin:16px 16px 6px; letter-spacing:.3px; }
+  .cards { padding: 0 16px; display:flex; flex-direction:column; gap:10px; }
+  .mcard { background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--border-bright); border-radius:12px; padding:14px 15px; }
+  .mcard.st-idle   { border-left-color: var(--border-bright); }
+  .mcard.st-behind  { border-left-color: var(--red); }
+  .mcard.st-warn   { border-left-color: var(--yellow); }
+  .mcard.st-ok     { border-left-color: var(--green); }
+  .mcard.st-done   { border-left-color: var(--accent); background: var(--accent-dim); }
+
+  .mcard-top { display:flex; justify-content:space-between; align-items:flex-start; }
+  .mcard-name { font-family:var(--font-mono); font-weight:700; font-size:17px; color:#c0326b; }
+  .mcard-plan-badge { font-family:var(--font-mono); font-size:12px; font-weight:700; color:#cc3377; border:1px solid #cc3377; background:rgba(204,51,119,.08); border-radius:4px; padding:2px 7px; white-space:nowrap; margin-left:7px; vertical-align:middle; }
+  .mcard-full { font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .mcard-dday { text-align:right; }
+  .mcard-dday .num { font-family:var(--font-mono); font-weight:900; font-size:22px; line-height:1; }
+  .mcard-dday .date { font-size:10px; color:var(--text-dim); margin-top:2px; }
+
+  .mcard-progress { margin-top:12px; }
+  .prow { display:flex; align-items:center; gap:8px; margin-top:6px; }
+  .prow:first-child { margin-top:0; }
+  .prow .plabel { font-size:11px; color:var(--text-dim); width:44px; flex-shrink:0; }
+  .prow .pbar { flex:1; height:8px; background:var(--bg-card2); border-radius:5px; overflow:hidden; }
+  .prow .pbar > div { height:100%; border-radius:5px; }
+  .prow .pval { font-family:var(--font-mono); font-size:12px; font-weight:700; width:56px; text-align:right; flex-shrink:0; }
+
+  .mcard-tag { display:inline-block; margin-top:11px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; }
+  .tag-idle   { background:var(--bg-card2); color:var(--text-dim); }
+  .tag-behind { background:var(--red-dim); color:var(--red); }
+  .tag-warn   { background:var(--yellow-dim); color:var(--yellow); }
+  .tag-ok     { background:var(--green-dim); color:var(--green); }
+  .tag-done   { background:var(--accent-dim); color:var(--accent2); }
+
+  .empty { text-align:center; padding:40px 20px; color:var(--text-dim); font-size:13px; }
+  .footer-note { text-align:center; font-size:11px; color:var(--text-dim); margin-top:22px; padding:0 20px; line-height:1.6; }
+  .footer-note b { color:var(--accent2); }
+
+  /* ── 특이사항 탭 */
+  .note-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:14px 15px; margin-bottom:10px; }
+  .note-card-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .note-row { background:var(--bg-card2); border-radius:8px; padding:9px 11px; margin-top:6px; }
+  .note-row:first-child { margin-top:0; }
+  .note-row .txt { font-size:13px; color:var(--text-secondary); line-height:1.5; white-space:pre-wrap; }
+  .note-row .meta { display:flex; justify-content:space-between; align-items:center; margin-top:5px; }
+  .note-status { font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; }
+  .note-status.s-progress { background:var(--yellow-dim); color:var(--yellow); }
+  .note-status.s-hold     { background:var(--bg-card2); color:var(--text-dim); border:1px solid var(--border); }
+  .note-status.s-done     { background:var(--green-dim); color:var(--green); }
+  .note-status.s-urgent   { background:var(--red-dim); color:var(--red); }
+  .note-date { font-size:10px; color:var(--text-dim); font-family:var(--font-mono); }
+  .note-stats { display:flex; gap:6px; margin:8px 0 10px; }
+  .note-stat { flex:1; background:var(--bg-card2); border-radius:8px; padding:6px 4px; text-align:center; }
+  .note-stat .v { font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--text-primary); }
+  .note-stat .k { font-size:9px; color:var(--text-dim); margin-top:1px; }
+  .note-stat.defect .v { color:var(--red); }
+
+  /* ── 근무일 확인 캘린더 */
+  .wd-cal-head { display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:10px; }
+  .wd-cal-head button { background:var(--bg-card2); border:1px solid var(--border); width:28px; height:28px; border-radius:8px; font-size:14px; font-weight:700; color:var(--text-secondary); }
+  .wd-cal-head .lbl { font-family:var(--font-mono); font-weight:700; font-size:14px; color:var(--accent2); min-width:80px; text-align:center; }
+  .wd-count { text-align:center; font-size:12px; color:var(--text-dim); margin-bottom:10px; }
+  .wd-count b { color:var(--accent2); font-family:var(--font-mono); }
+  .wd-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .wd-dow { text-align:center; font-size:10px; color:var(--text-dim); font-weight:700; padding-bottom:4px; }
+  .wd-cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:12px; border-radius:6px; color:var(--text-dim); }
+  .wd-cell.work { background:var(--green-dim); color:var(--green); font-weight:700; }
+  .wd-cell.today { border:1.5px solid var(--accent); font-weight:700; }
+  .wd-cell.empty { visibility:hidden; }
+
+  /* ── 실적 탭 */
+  .month-nav { display:flex; align-items:center; justify-content:center; gap:16px; margin:14px 16px; }
+  .month-nav button { background:var(--bg-card); border:1px solid var(--border); width:36px; height:36px; border-radius:10px; font-size:16px; font-weight:700; color:var(--text-secondary); }
+  .month-nav .label { font-family:var(--font-mono); font-size:18px; font-weight:700; color:var(--accent2); min-width:110px; text-align:center; }
+  .perf-summary { display:flex; gap:8px; margin:0 16px 14px; }
+  .perf-chip { flex:1; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:12px 6px; text-align:center; }
+  .perf-chip .n { font-family:var(--font-mono); font-size:19px; font-weight:700; }
+  .perf-chip .l { font-size:10px; color:var(--text-dim); margin-top:2px; }
+  .perf-item { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:13px 15px; margin-bottom:9px; }
+  .perf-item-top { display:flex; justify-content:space-between; align-items:baseline; }
+  .perf-item-name { font-family:var(--font-mono); font-weight:700; font-size:15px; color:#c0326b; }
+  .perf-item-rate { font-family:var(--font-mono); font-weight:900; font-size:15px; }
+  .perf-item-bar { height:7px; background:var(--bg-card2); border-radius:5px; overflow:hidden; margin-top:8px; }
+  .perf-item-bar > div { height:100%; border-radius:5px; }
+  .perf-item-nums { font-size:11px; color:var(--text-dim); margin-top:5px; font-family:var(--font-mono); }
+
+  /* ── 하단 탭바 */
+  .bottombar {
+    position: fixed; bottom:0; left:0; right:0; z-index:30;
+    background:#fff; border-top:1px solid var(--border);
+    display:flex; padding-bottom: env(safe-area-inset-bottom);
+  }
+  .bt-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:9px 0 8px; color:var(--text-dim); }
+  .bt-btn .ic { font-size:19px; }
+  .bt-btn .lb { font-size:10px; font-weight:700; }
+  .bt-btn.active { color:var(--accent); }
+
+  .tabpanel { display:none; }
+  .tabpanel.active { display:block; }
+
+  /* ── 공정별 상세 바텀시트 */
+  .sheet-overlay { display:none; position:fixed; inset:0; background:rgba(13,24,33,.55); z-index:50; }
+  .sheet-overlay.open { display:block; }
+  .sheet-box {
+    position:absolute; left:0; right:0; bottom:0; max-height:82vh;
+    background:#fff; border-radius:18px 18px 0 0; padding:16px 16px calc(16px + env(safe-area-inset-bottom));
+    overflow-y:auto;
+  }
+  .sheet-handle { width:36px; height:4px; background:var(--border); border-radius:3px; margin:0 auto 12px; }
+  .sheet-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .sheet-title { font-family:var(--font-mono); font-weight:700; font-size:16px; color:var(--text-primary); }
+  .sheet-close { background:var(--bg-card2); border:none; width:28px; height:28px; border-radius:8px; color:var(--text-dim); font-size:15px; }
+  .detail-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--bg-card2); }
+  .detail-row.na { color:var(--text-dim); font-size:13px; justify-content:space-between; }
+  .detail-label { font-size:12px; color:var(--text-dim); width:74px; flex-shrink:0; }
+  .detail-bar { flex:1; height:8px; background:var(--bg-card2); border-radius:5px; overflow:hidden; }
+  .detail-bar > div { height:100%; border-radius:5px; }
+  .detail-val { font-family:var(--font-mono); font-size:12px; font-weight:700; width:52px; text-align:right; flex-shrink:0; }
+  .detail-section-label { font-size:12px; font-weight:700; color:var(--text-dim); margin-bottom:6px; letter-spacing:.3px; }
+
+  /* ── 이미지 목록 / 뷰어 */
+  .img-list-row { display:flex; align-items:center; justify-content:space-between; padding:10px 2px; border-bottom:1px solid var(--bg-card2); font-size:13px; color:var(--text-secondary); }
+  .img-list-row:last-child { border-bottom:none; }
+  .sheet-box img.viewer-img { width:100%; border-radius:10px; margin-top:6px; }
+
+  /* ── 결품리스트 */
+  .shortage-info { font-size:11px; color:var(--text-dim); margin-bottom:8px; }
+  .shortage-card { background:var(--bg-card2); border-radius:8px; padding:0; margin-top:6px; display:flex; overflow:hidden; }
+  .shortage-card:first-child { margin-top:0; }
+  .shortage-line {
+    flex-shrink:0; width:64px; display:flex; align-items:center; justify-content:center; text-align:center;
+    background:var(--accent-dim); border-right:1px solid var(--border);
+    font-size:12px; font-weight:700; color:var(--accent2); padding:8px 4px; word-break:break-word;
+  }
+  .shortage-main { flex:1; padding:9px 11px; min-width:0; }
+  .shortage-card .comp { font-size:13px; font-weight:700; color:var(--text-primary); }
+  .shortage-card .order { font-size:11px; color:var(--text-dim); margin-top:1px; }
+  .shortage-card .row2 { display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim); margin-top:3px; }
+  .shortage-card .qty { font-family:var(--font-mono); font-weight:700; color:var(--red); }
+  .shortage-card .note { font-size:11px; color:var(--text-secondary); margin-top:3px; }
+
+  /* ── 히스토리 카드 */
+  .hist-chipbar { display:flex; gap:6px; padding:10px 16px 0; flex-wrap:wrap; }
+  .hist-chip { padding:6px 12px; border-radius:20px; border:1.5px solid var(--border); background:var(--bg-card); font-size:12px; font-weight:700; color:var(--text-dim); }
+  .hist-chip.active { background:var(--accent2); border-color:var(--accent2); color:#fff; }
+  .hist-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:13px 15px; margin-bottom:9px; }
+  .hist-top { display:flex; justify-content:space-between; align-items:baseline; }
+  .hist-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; background:var(--accent-dim); color:var(--accent2); }
+  .hist-badge.fail { background:var(--red-dim); color:var(--red); }
+  .hist-nums { font-size:12px; color:var(--text-dim); margin-top:6px; font-family:var(--font-mono); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo"><img src="data:image/png;base64,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" alt="Intellian"></div>
+    <div class="live-dot"></div>
+    <div>
+      <div class="topbar-title">C1 생산 현황<span class="ver">Rev11</span></div>
+      <div class="topbar-sub" id="lastSync">연결 중...</div>
+    </div>
+  </div>
+  <button class="refresh-btn" id="refreshBtn" onclick="manualRefresh()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+  </button>
+</div>
+
+<!-- ── 탭1: 현황 -->
+<div class="tabpanel active" id="panel-status">
+  <div class="segbar">
+    <button class="seg-btn active" data-seg="all" onclick="setSeg('all')">전체</button>
+    <button class="seg-btn" data-seg="ant" onclick="setSeg('ant')">ANT</button>
+    <button class="seg-btn" data-seg="ckd" onclick="setSeg('ckd')">CKD</button>
+  </div>
+  <div class="notice-wrap">
+    <div class="notice-toggle" id="noticeToggle" onclick="toggleNotice()">
+      <span>📋 공지판</span>
+      <span class="chev">▾</span>
+    </div>
+    <div class="notice-body" id="noticeBody"></div>
+  </div>
+  <div class="notice-wrap" style="margin-top:8px;">
+    <div class="notice-toggle" id="wdToggle" onclick="toggleWd()">
+      <span>📅 근무일 확인</span>
+      <span class="chev">▾</span>
+    </div>
+    <div class="notice-body" id="wdBody"></div>
+  </div>
+  <div class="notice-wrap" style="margin-top:8px;">
+    <div class="notice-toggle" id="imgToggle" onclick="toggleImgList()">
+      <span>🖼 등록 이미지</span>
+      <span class="chev">▾</span>
+    </div>
+    <div class="notice-body" id="imgListBody"></div>
+  </div>
+  <div class="summary-row" id="summaryRow"></div>
+  <div id="mainContent"></div>
+  <div class="footer-note">보기 전용 화면입니다. 수정은 PC에서 해주세요.<br>30초마다 <b>자동 갱신</b>됩니다.</div>
+</div>
+
+<!-- ── 탭2: 특이사항 -->
+<div class="tabpanel" id="panel-notes">
+  <div id="notesContent" style="padding:14px 16px;"></div>
+</div>
+
+<!-- ── 탭3: 실적 -->
+<div class="tabpanel" id="panel-perf">
+  <div class="month-nav">
+    <button onclick="changePerfMonth(-1)">‹</button>
+    <div class="label" id="perfMonthLabel"></div>
+    <button onclick="changePerfMonth(1)">›</button>
+  </div>
+  <div class="perf-summary" id="perfSummary"></div>
+  <div id="perfContent" style="padding:0 16px;"></div>
+</div>
+
+<!-- ── 탭4: 완료 히스토리 -->
+<div class="tabpanel" id="panel-history">
+  <div class="hist-chipbar" id="histCatBar"></div>
+  <div class="hist-chipbar" id="histMonthBar" style="margin-top:6px;"></div>
+  <div id="historyContent" style="padding:12px 16px;"></div>
+</div>
+
+<!-- ── 탭5: 결품리스트 -->
+<div class="tabpanel" id="panel-shortage">
+  <div id="shortageInfo" style="padding:12px 16px 0;"></div>
+  <div class="hist-chipbar" id="shortageSortBar"></div>
+  <div id="shortageContent" style="padding:10px 16px;"></div>
+</div>
+
+<div class="bottombar">
+  <button class="bt-btn active" data-tab="status" onclick="setTab('status')"><span class="ic">📊</span><span class="lb">현황</span></button>
+  <button class="bt-btn" data-tab="notes" onclick="setTab('notes')"><span class="ic">📋</span><span class="lb">특이사항</span></button>
+  <button class="bt-btn" data-tab="perf" onclick="setTab('perf')"><span class="ic">📈</span><span class="lb">실적</span></button>
+  <button class="bt-btn" data-tab="history" onclick="setTab('history')"><span class="ic">🗂</span><span class="lb">히스토리</span></button>
+  <button class="bt-btn" data-tab="shortage" onclick="setTab('shortage')"><span class="ic">📦</span><span class="lb">결품</span></button>
+</div>
+
+<!-- ── 공정별 상세 바텀시트 -->
+<div class="sheet-overlay" id="detailSheetOverlay" onclick="if(event.target===this)closeDetailSheet()">
+  <div class="sheet-box">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-title" id="detailSheetTitle">모델명</div>
+      <button class="sheet-close" onclick="closeDetailSheet()">✕</button>
+    </div>
+    <div id="detailSheetBody"></div>
+  </div>
+</div>
+
+<!-- ── 이미지 뷰어 바텀시트 -->
+<div class="sheet-overlay" id="imageViewOverlay" onclick="if(event.target===this)closeImageView()">
+  <div class="sheet-box">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div class="sheet-title" id="imageViewTitle">이미지</div>
+      <button class="sheet-close" onclick="closeImageView()">✕</button>
+    </div>
+    <div id="imageViewBody" style="text-align:center;color:var(--text-dim);font-size:13px;padding:20px 0;">불러오는 중...</div>
+  </div>
+</div>
+
+<script>
+// ⚠ 테스트용 구글시트 주소 (운영 전환 시 이 값만 바꾸면 됨)
+const GS_URL = 'https://script.google.com/macros/s/AKfycbwD0k2Qu4udUQCuRqrkiwL1nC3H7lJOsKdXFnHMq87Z53zbZUpCENHdiuPj8g3oPgpD/exec';
+
+let allModels = [];
+let allHistory = [];
+let procSets = {};
+let customWorkdays = new Set();
+let currentSeg = 'all';
+let currentTab = 'status';
+let noticeOpen = false;
+let perfYear = new Date().getFullYear();
+let perfMonth = new Date().getMonth() + 1;
+
+function pad(n){ return String(n).padStart(2,'0'); }
+
+function parseLocalDate(s) {
+  const clean = String(s||'').replace(/^'+/,'').split('T')[0];
+  const [y,m,d] = clean.split('-').map(Number);
+  return new Date(y, (m||1)-1, d||1);
+}
+
+function dateKey(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function isCustomWorkday(d) { return customWorkdays.has(dateKey(d)); }
+
+// PC버전과 동일하게 "근무일 수" 기준으로 D-day 계산 (달력일 아님)
+function calcDday(shipDate) {
+  if (!shipDate) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const ship = parseLocalDate(shipDate); ship.setHours(0,0,0,0);
+  if (isNaN(ship)) return null;
+  if (ship.getTime() === today.getTime()) return 0;
+  const dir = ship > today ? 1 : -1;
+  let count = 0;
+  let cur = new Date(today);
+  while (cur.getTime() !== ship.getTime()) {
+    cur.setDate(cur.getDate() + dir);
+    if (isCustomWorkday(cur)) count++;
+  }
+  return dir * count || dir;
+}
+
+function getDdayInfo(shipDate) {
+  const d = calcDday(shipDate);
+  if (d === null) return { text:'미설정', color:'var(--text-dim)' };
+  if (d > 0)  return { text:'D-'+d, color: d<=5?'var(--pink)':d<=10?'var(--yellow)':'var(--green)' };
+  if (d === 0) return { text:'D-DAY', color:'var(--red)' };
+  return { text:'D+'+Math.abs(d), color:'var(--red)' };
+}
+
+function escapeHtml(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function calcCkdCompletedSites(m, procSetArr) {
+  const siteCount = m.plan || 0;
+  let completed = siteCount > 0 ? Infinity : 0;
+  (procSetArr||[]).forEach(p => {
+    if (m.excludedProcs && m.excludedProcs.includes(p.id)) return;
+    const need = p.crateQty || 1;
+    const done = (m.procs && m.procs[p.id]) || 0;
+    completed = Math.min(completed, Math.floor(done/need));
+  });
+  if (!isFinite(completed)) completed = 0;
+  return Math.min(completed, siteCount);
+}
+
+function calcActualQty(m) {
+  const isCkd = m.procSet && m.procSet.indexOf('CKD') === 0;
+  if (isCkd) return { qty: calcCkdCompletedSites(m, (procSets&&procSets[m.procSet])||[]), unit:'Site' };
+  return { qty: (m.procs && m.procs['pack']) || 0, unit:'대' };
+}
+
+function statusOf(pct) {
+  if (pct >= 100) return { cls:'done', label:'완료' };
+  if (pct <= 0)   return { cls:'idle', label:'미시작' };
+  if (pct < 30)   return { cls:'behind', label:'지연' };
+  if (pct < 70)   return { cls:'warn', label:'진행중' };
+  return { cls:'ok', label:'순조' };
+}
+
+// ══════════ 하단 탭 전환 ══════════
+function setTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.bt-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tabpanel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'notes') renderNotesTab();
+  if (tab === 'perf') renderPerfTab();
+  if (tab === 'history') renderHistoryTab();
+  if (tab === 'shortage') renderShortageTab();
+}
+
+// ══════════ 탭1: 현황 ══════════
+function renderNotice(notice) {
+  const body = document.getElementById('noticeBody');
+  const plan = notice?.plan || '', issue = notice?.issue || '', memo = notice?.memo || '';
+  if (!plan && !issue && !memo) {
+    body.innerHTML = '<div class="notice-item" style="color:var(--text-dim)">등록된 공지가 없습니다.</div>';
+    return;
+  }
+  body.innerHTML = `
+    ${plan  ? `<div class="notice-item"><span class="lbl">📋 금일 작업 계획</span>${plan}</div>` : ''}
+    ${issue ? `<div class="notice-item"><span class="lbl">⚠ 특이사항</span>${issue}</div>` : ''}
+    ${memo  ? `<div class="notice-item"><span class="lbl">📝 공정별 메모</span>${memo}</div>` : ''}
+  `;
+}
+
+function toggleNotice() {
+  noticeOpen = !noticeOpen;
+  document.getElementById('noticeToggle').classList.toggle('open', noticeOpen);
+  document.getElementById('noticeBody').classList.toggle('open', noticeOpen);
+}
+
+let wdOpen = false;
+let wdViewYear = new Date().getFullYear();
+let wdViewMonth = new Date().getMonth(); // 0-indexed
+
+function toggleWd() {
+  wdOpen = !wdOpen;
+  document.getElementById('wdToggle').classList.toggle('open', wdOpen);
+  document.getElementById('wdBody').classList.toggle('open', wdOpen);
+  if (wdOpen) renderWdCalendar();
+}
+
+function changeWdMonth(delta) {
+  wdViewMonth += delta;
+  if (wdViewMonth > 11) { wdViewMonth = 0; wdViewYear++; }
+  if (wdViewMonth < 0)  { wdViewMonth = 11; wdViewYear--; }
+  renderWdCalendar();
+}
+
+function renderWdCalendar() {
+  const body = document.getElementById('wdBody');
+  const y = wdViewYear, m = wdViewMonth;
+  const firstDow = new Date(y, m, 1).getDay();
+  const lastDate = new Date(y, m + 1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dows = ['일','월','화','수','목','금','토'];
+
+  let workCount = 0;
+  let cells = '';
+  for (let i = 0; i < firstDow; i++) cells += '<div class="wd-cell empty"></div>';
+  for (let d = 1; d <= lastDate; d++) {
+    const key = `${y}-${pad(m+1)}-${pad(d)}`;
+    const isWork = customWorkdays.has(key);
+    if (isWork) workCount++;
+    const cur = new Date(y, m, d); cur.setHours(0,0,0,0);
+    const isToday = cur.getTime() === today.getTime();
+    cells += `<div class="wd-cell ${isWork?'work':''} ${isToday?'today':''}">${d}</div>`;
+  }
+
+  body.innerHTML = `
+    <div class="wd-cal-head">
+      <button onclick="changeWdMonth(-1)">‹</button>
+      <div class="lbl">${y}년 ${m+1}월</div>
+      <button onclick="changeWdMonth(1)">›</button>
+    </div>
+    <div class="wd-count">이번 화면 기준 근무일 <b>${workCount}일</b></div>
+    <div class="wd-grid">
+      ${dows.map(w => `<div class="wd-dow">${w}</div>`).join('')}
+      ${cells}
+    </div>
+  `;
+}
+
+// ══════════ 등록 이미지 갤러리 ══════════
+let imgListOpen = false;
+let sharedImagesMeta = [];
+let imgCache = {};
+
+function toggleImgList() {
+  imgListOpen = !imgListOpen;
+  document.getElementById('imgToggle').classList.toggle('open', imgListOpen);
+  document.getElementById('imgListBody').classList.toggle('open', imgListOpen);
+  if (imgListOpen) renderImgList();
+}
+
+function renderImgList() {
+  const body = document.getElementById('imgListBody');
+  if (!sharedImagesMeta || sharedImagesMeta.length === 0) {
+    body.innerHTML = '<div class="notice-item" style="color:var(--text-dim)">등록된 이미지가 없습니다.</div>';
+    return;
+  }
+  body.innerHTML = sharedImagesMeta.map(img => `
+    <div class="img-list-row" onclick="openImageView('${img.id}')">
+      <span>🖼 ${escapeHtml(img.title)}</span>
+      <span style="color:var(--text-dim);">›</span>
+    </div>
+  `).join('');
+}
+
+async function openImageView(id) {
+  const meta = (sharedImagesMeta||[]).find(m => m.id === id);
+  document.getElementById('imageViewTitle').textContent = meta ? meta.title : '이미지';
+  const body = document.getElementById('imageViewBody');
+  document.getElementById('imageViewOverlay').classList.add('open');
+
+  const descHtml = (meta && meta.desc) ? `<div style="font-size:13px;color:var(--text-secondary);margin-top:8px;text-align:left;">${escapeHtml(meta.desc)}</div>` : '';
+
+  if (imgCache[id]) {
+    body.innerHTML = `<img class="viewer-img" src="${imgCache[id]}">${descHtml}`;
+    return;
+  }
+  body.innerHTML = '<div style="padding:20px;">불러오는 중...</div>';
+  try {
+    const res = await fetch(GS_URL + '?action=load_shared_image&id=' + encodeURIComponent(id));
+    const json = await res.json();
+    if (json.status !== 'ok' || !json.data || !json.data.imageData) throw new Error('불러오기 실패');
+    imgCache[id] = json.data.imageData;
+    body.innerHTML = `<img class="viewer-img" src="${json.data.imageData}">${descHtml}`;
+  } catch (e) {
+    console.error(e);
+    body.innerHTML = '<div style="padding:20px;color:var(--red);">이미지를 불러오지 못했습니다.</div>';
+  }
+}
+
+function closeImageView() {
+  document.getElementById('imageViewOverlay').classList.remove('open');
+}
+
+// ══════════ 탭5: 결품리스트 (정렬 가능) ══════════
+let shortageData = { items: [] };
+const SHORTAGE_COLS = [
+  { key:'line',  label:'LINE',  type:'text' },
+  { key:'order', label:'Order', type:'text' },
+  { key:'comp',  label:'Comp.', type:'text' },
+  { key:'desc',  label:'Desc.', type:'text' },
+  { key:'qty',   label:'Qty.',  type:'num'  },
+  { key:'date',  label:'Date',  type:'text' },
+];
+let shortageSort = { col: null, dir: 'asc' };
+
+function setShortageSort(col) {
+  if (shortageSort.col === col) {
+    shortageSort.dir = shortageSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    shortageSort = { col, dir: 'asc' };
+  }
+  renderShortageTab();
+}
+
+function renderShortageTab() {
+  const infoEl = document.getElementById('shortageInfo');
+  const items = ((shortageData && shortageData.items) || []).slice();
+
+  if (shortageData.fileName) {
+    const dt = shortageData.uploadedAt ? new Date(shortageData.uploadedAt).toLocaleString('ko-KR') : '';
+    infoEl.innerHTML = `<div class="shortage-info"><b>${escapeHtml(shortageData.fileName)}</b> · ${items.length}건 · ${escapeHtml(shortageData.uploadedBy||'익명')} 업로드 · ${dt}</div>`;
+  } else {
+    infoEl.innerHTML = '<div class="shortage-info">업로드된 결품리스트가 없습니다.</div>';
+  }
+
+  document.getElementById('shortageSortBar').innerHTML = SHORTAGE_COLS.map(col => {
+    const active = shortageSort.col === col.key;
+    const arrow = active ? (shortageSort.dir === 'asc' ? ' ▲' : ' ▼') : '';
+    return `<button class="hist-chip ${active?'active':''}" onclick="setShortageSort('${col.key}')">${col.label}${arrow}</button>`;
+  }).join('');
+
+  if (shortageSort.col) {
+    const { col, dir } = shortageSort;
+    const colDef = SHORTAGE_COLS.find(c => c.key === col);
+    items.sort((a,b) => {
+      let av = a[col], bv = b[col];
+      if (colDef.type === 'num') { av = parseFloat(av)||0; bv = parseFloat(bv)||0; }
+      else { av = String(av||''); bv = String(bv||''); }
+      const cmp = av > bv ? 1 : av < bv ? -1 : 0;
+      return dir === 'asc' ? cmp : -cmp;
+    });
+  }
+
+  const content = document.getElementById('shortageContent');
+  if (items.length === 0) {
+    content.innerHTML = '<div class="empty">등록된 결품리스트가 없습니다.</div>';
+    return;
+  }
+  content.innerHTML = items.map(it => `
+    <div class="shortage-card">
+      <div class="shortage-line">${escapeHtml(it.line || '-')}</div>
+      <div class="shortage-main">
+        <div class="row2" style="margin-top:0;">
+          <span class="comp">${escapeHtml(it.comp || '(부품명 없음)')}</span>
+          <span class="qty">${escapeHtml(String(it.qty||0))}</span>
+        </div>
+        <div class="order">${escapeHtml(it.order||'')}</div>
+        <div class="row2"><span>${escapeHtml(it.desc||'')}</span><span>${escapeHtml(it.date||'')}</span></div>
+        ${it.note ? `<div class="note">📝 ${escapeHtml(it.note)}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══════════ 탭4: 완료 히스토리 ══════════
+let histCategory = 'all';
+let histMonth = 0;
+
+function setHistCategory(c) { histCategory = c; renderHistoryTab(); }
+function setHistMonth(m) { histMonth = m; renderHistoryTab(); }
+
+function renderHistoryTab() {
+  const catBar = document.getElementById('histCatBar');
+  catBar.innerHTML = [['all','전체'],['ant','ANT'],['ckd','CKD']].map(([c,label]) =>
+    `<button class="hist-chip ${histCategory===c?'active':''}" onclick="setHistCategory('${c}')">${label}</button>`
+  ).join('');
+
+  let filtered = allHistory.filter(h => {
+    if (histCategory === 'all') return true;
+    const isCkd = h.procSet && h.procSet.indexOf('CKD') === 0;
+    return histCategory === 'ckd' ? isCkd : !isCkd;
+  });
+
+  const months = [...new Set(filtered.map(h => getHistYearMonth(h).month).filter(Boolean))].sort((a,b) => b-a);
+  document.getElementById('histMonthBar').innerHTML =
+    `<button class="hist-chip ${histMonth===0?'active':''}" onclick="setHistMonth(0)">전체</button>` +
+    months.map(mo => `<button class="hist-chip ${histMonth===mo?'active':''}" onclick="setHistMonth(${mo})">${mo}월</button>`).join('');
+
+  if (histMonth !== 0) filtered = filtered.filter(h => getHistYearMonth(h).month === histMonth);
+  filtered = filtered.slice().sort((a,b) => new Date(b.completedAt||0) - new Date(a.completedAt||0));
+  _renderedHistory = filtered;
+
+  const content = document.getElementById('historyContent');
+  if (filtered.length === 0) {
+    content.innerHTML = '<div class="empty">완료 처리된 모델이 없습니다.</div>';
+    return;
+  }
+  content.innerHTML = filtered.map((h,i) => {
+    const { qty, unit } = calcActualQty(h);
+    const rate = h.plan > 0 ? Math.round(qty/h.plan*100) : 0;
+    return `
+      <div class="hist-card" onclick="openProcDetail('history', ${i})">
+        <div class="hist-top">
+          <span class="mcard-name" style="font-size:14px;">${escapeHtml(h.model)}</span>
+          <span class="hist-badge ${rate<100?'fail':''}">${rate>=100?'✔ 완료':'⚠ 미달성'}</span>
+        </div>
+        ${h.fullName ? `<div class="mcard-full">${escapeHtml(h.fullName)}</div>` : ''}
+        <div class="hist-nums">계획 ${h.plan}${unit} · 실적 ${qty}${unit} (${rate}%) · 완료일 ${escapeHtml(h.completedDate||'-')}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function setSeg(seg) {
+  currentSeg = seg;
+  document.querySelectorAll('.seg-btn').forEach(b => b.classList.toggle('active', b.dataset.seg === seg));
+  renderStatusTab();
+}
+
+function renderSummary(models) {
+  const now = new Date();
+  const curYear = now.getFullYear(), curMonth = now.getMonth() + 1;
+
+  const activeAnt = models.filter(m => !(m.procSet && m.procSet.indexOf('CKD')===0));
+  const histAntThisMonth = allHistory.filter(h => {
+    if (h.procSet && h.procSet.indexOf('CKD')===0) return false;
+    const ym = getHistYearMonth(h);
+    return ym.year === curYear && ym.month === curMonth;
+  });
+
+  let plan=0, main=0, final=0, pack=0;
+  activeAnt.forEach(m => { plan+=m.plan||0; main+=(m.procs&&m.procs['main'])||0; final+=(m.procs&&m.procs['final'])||0; pack+=(m.procs&&m.procs['pack'])||0; });
+  histAntThisMonth.forEach(h => { plan+=h.plan||0; main+=(h.procs&&h.procs['main'])||0; final+=(h.procs&&h.procs['final'])||0; pack+=(h.procs&&h.procs['pack'])||0; });
+
+  const pct = (n) => plan>0 ? Math.round(n/plan*100) : 0;
+  const row = document.getElementById('summaryRow');
+  row.innerHTML = `
+    <div class="summary-chip">
+      <div class="l">총 계획</div>
+      <div class="n">${plan}<small>대</small></div>
+    </div>
+    <div class="summary-chip">
+      <div class="l">조립 완료</div>
+      <div class="n">${main}/${plan}<small>대</small></div>
+      <div class="pct" style="color:var(--green);">${pct(main)}%</div>
+    </div>
+    <div class="summary-chip">
+      <div class="l">검사 완료</div>
+      <div class="n">${final}/${plan}<small>대</small></div>
+      <div class="pct" style="color:var(--yellow);">${pct(final)}%</div>
+    </div>
+    <div class="summary-chip">
+      <div class="l">포장 완료</div>
+      <div class="n">${pack}/${plan}<small>대</small></div>
+      <div class="pct" style="color:var(--accent2);">${pct(pack)}%</div>
+    </div>
+  `;
+}
+
+function renderAntCard(m, i) {
+  const plan = m.plan || 0;
+  const mainDone = (m.procs && m.procs['main']) || 0;
+  const packDone = (m.procs && m.procs['pack']) || 0;
+  const pct = plan > 0 ? Math.round(packDone/plan*100) : 0;
+  const st = statusOf(pct);
+  const dday = getDdayInfo(m.shipDate);
+  const mainPct = plan>0 ? Math.min(Math.round(mainDone/plan*100),100) : 0;
+  const packPct = plan>0 ? Math.min(Math.round(packDone/plan*100),100) : 0;
+
+  return `
+    <div class="mcard st-${st.cls}" onclick="openProcDetail('ant', ${i})">
+      <div class="mcard-top">
+        <div>
+          <div><span class="mcard-name">${escapeHtml(m.model)}</span><span class="mcard-plan-badge">${plan}대</span></div>
+          ${m.fullName ? `<div class="mcard-full">${escapeHtml(m.fullName)}</div>` : ''}
+        </div>
+        <div class="mcard-dday">
+          <div class="num" style="color:${dday.color}">${dday.text}</div>
+          <div class="date">${m.shipDate || '-'}</div>
+        </div>
+      </div>
+      <div class="mcard-progress">
+        <div class="prow">
+          <div class="plabel">조립</div>
+          <div class="pbar"><div style="width:${mainPct}%;background:var(--accent);"></div></div>
+          <div class="pval">${mainDone}/${plan}</div>
+        </div>
+        <div class="prow">
+          <div class="plabel">포장</div>
+          <div class="pbar"><div style="width:${packPct}%;background:${pct>=100?'var(--accent)':'var(--green)'};"></div></div>
+          <div class="pval">${packDone}/${plan}</div>
+        </div>
+      </div>
+      <span class="mcard-tag tag-${st.cls}">${st.label} · ${pct}%</span>
+    </div>
+  `;
+}
+
+function renderCkdCard(m, i) {
+  const procArr = (procSets && procSets[m.procSet]) || [];
+  const siteCount = m.plan || 0;
+  const completed = calcCkdCompletedSites(m, procArr);
+  const pct = siteCount>0 ? Math.round(completed/siteCount*100) : 0;
+  const st = statusOf(pct);
+  const dday = getDdayInfo(m.shipDate);
+
+  return `
+    <div class="mcard st-${st.cls}" onclick="openProcDetail('ckd', ${i})">
+      <div class="mcard-top">
+        <div>
+          <div><span class="mcard-name">${escapeHtml(m.model)}</span><span class="mcard-plan-badge">${siteCount} Site</span></div>
+          ${m.fullName ? `<div class="mcard-full">${escapeHtml(m.fullName)}</div>` : ''}
+        </div>
+        <div class="mcard-dday">
+          <div class="num" style="color:${dday.color}">${dday.text}</div>
+          <div class="date">${m.shipDate || '-'}</div>
+        </div>
+      </div>
+      <div class="mcard-progress">
+        <div class="prow">
+          <div class="plabel">포장</div>
+          <div class="pbar"><div style="width:${pct}%;background:${pct>=100?'var(--accent)':'var(--green)'};"></div></div>
+          <div class="pval">${completed}/${siteCount} Site</div>
+        </div>
+      </div>
+      <span class="mcard-tag tag-${st.cls}">${st.label} · ${pct}%</span>
+    </div>
+  `;
+}
+
+let _renderedAnt = [], _renderedCkd = [], _renderedHistory = [], _renderedPerfKeys = [];
+let monthlyRemarks = {};
+
+function openProcDetail(source, i) {
+  const m = source === 'ant' ? _renderedAnt[i] : source === 'ckd' ? _renderedCkd[i] : _renderedHistory[i];
+  if (!m) return;
+  const procArr = (procSets && procSets[m.procSet]) || [];
+  const isCkd = m.procSet && m.procSet.indexOf('CKD') === 0;
+
+  document.getElementById('detailSheetTitle').textContent = m.model + (m.fullName ? ' · ' + m.fullName : '');
+
+  let html = '';
+
+  // 특이사항 (완료된 모델도 완료 당시 기록이 그대로 남아있어 히스토리에서도 조회 가능)
+  if (m.noteData && m.noteData.length > 0) {
+    html += '<div class="detail-section-label">📋 특이사항</div>';
+    html += m.noteData.map(r => `
+      <div class="note-row" style="margin-top:6px;">
+        <div class="txt">${r.issue || r.text || '(내용 없음)'}</div>
+        ${r.remarks ? `<div class="txt" style="color:var(--text-dim);font-size:12px;margin-top:3px;">${r.remarks}</div>` : ''}
+        <div class="meta">
+          <span class="note-status ${noteStatusClass(r.status)}">${escapeHtml(r.status || '진행중')}</span>
+          <span class="note-date">${escapeHtml(r.lastUpdated || '')}${r.defectQty ? ' · 문제수량 '+escapeHtml(String(r.defectQty)) : ''}</span>
+        </div>
+      </div>
+    `).join('');
+    html += '<div class="detail-section-label" style="margin-top:14px;">⚙ 공정별 현황</div>';
+  }
+
+  if (procArr.length === 0) {
+    html += '<div class="empty">공정 세트 정보를 찾을 수 없습니다.</div>';
+  } else {
+    html += procArr.map(p => {
+      const isExcluded = m.excludedProcs && m.excludedProcs.includes(p.id);
+      if (isExcluded) {
+        return `<div class="detail-row na"><span>${escapeHtml(p.short)}</span><span>N/A</span></div>`;
+      }
+      const done = (m.procs && m.procs[p.id]) || 0;
+      const wip  = (m.wip && m.wip[p.id]) || 0;
+      const planQty = isCkd ? ((m.procPlan && m.procPlan[p.id]) || 0) : (m.plan || 0);
+      const pct = planQty > 0 ? Math.round(done / planQty * 100) : 0;
+      const issue = (m.issues && m.issues[p.id]) || '';
+      return `
+        <div class="detail-row" style="flex-wrap:wrap;">
+          <div class="detail-label">${escapeHtml(p.short)}</div>
+          <div class="detail-bar"><div style="width:${Math.min(pct,100)}%;background:${pct>=100?'var(--accent)':'var(--green)'};"></div></div>
+          <div class="detail-val">${done}${wip>0?`<span style="color:var(--yellow);">+${wip}</span>`:''}/${planQty} (${pct}%)</div>
+          ${issue ? `<div style="flex-basis:100%;font-size:11px;color:var(--red);margin-top:4px;">⚠ ${escapeHtml(issue)}</div>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  document.getElementById('detailSheetBody').innerHTML = html;
+  document.getElementById('detailSheetOverlay').classList.add('open');
+}
+
+function closeDetailSheet() {
+  document.getElementById('detailSheetOverlay').classList.remove('open');
+}
+
+function renderStatusTab() {
+  const main = document.getElementById('mainContent');
+  const ant = allModels.filter(m => !(m.procSet && m.procSet.indexOf('CKD')===0));
+  const ckd = allModels.filter(m => m.procSet && m.procSet.indexOf('CKD')===0);
+
+  if (allModels.length === 0) {
+    main.innerHTML = '<div class="empty">등록된 모델이 없습니다.</div>';
+    return;
+  }
+
+  let html = '';
+  if (currentSeg === 'all' || currentSeg === 'ant') {
+    if (ant.length > 0) {
+      html += '<div class="section-label">ANT 생산현황</div><div class="cards">';
+      ant.sort((a,b) => (calcDday(a.shipDate)??999) - (calcDday(b.shipDate)??999));
+      _renderedAnt = ant;
+      ant.forEach((m,i) => html += renderAntCard(m,i));
+      html += '</div>';
+    }
+  }
+  if (currentSeg === 'all' || currentSeg === 'ckd') {
+    if (ckd.length > 0) {
+      html += '<div class="section-label">CKD (미국공장 포장출하)</div><div class="cards">';
+      ckd.sort((a,b) => (calcDday(a.shipDate)??999) - (calcDday(b.shipDate)??999));
+      _renderedCkd = ckd;
+      ckd.forEach((m,i) => html += renderCkdCard(m,i));
+      html += '</div>';
+    }
+  }
+  if (!html) html = '<div class="empty">해당 카테고리에 표시할 모델이 없습니다.</div>';
+  main.innerHTML = html;
+}
+
+// ══════════ 탭2: 특이사항 모아보기 ══════════
+function noteStatusClass(status) {
+  if (!status) return 's-progress';
+  const s = String(status).toLowerCase();
+  if (s.includes('완료') || s.includes('done') || s.includes('complete')) return 's-done';
+  if (s.includes('보류') || s.includes('hold')) return 's-hold';
+  if (s.includes('긴급') || s.includes('urgent')) return 's-urgent';
+  return 's-progress';
+}
+
+function renderNotesTab() {
+  const wrap = document.getElementById('notesContent');
+  const withNotes = allModels.filter(m => m.noteData && m.noteData.length > 0);
+
+  withNotes.sort((a, b) => {
+    const aCkd = a.procSet && a.procSet.indexOf('CKD') === 0;
+    const bCkd = b.procSet && b.procSet.indexOf('CKD') === 0;
+    if (aCkd !== bCkd) return aCkd ? 1 : -1;
+    const da = a.shipDate ? (calcDday(a.shipDate) ?? Infinity) : Infinity;
+    const db = b.shipDate ? (calcDday(b.shipDate) ?? Infinity) : Infinity;
+    return da - db;
+  });
+
+  if (withNotes.length === 0) {
+    wrap.innerHTML = '<div class="empty">등록된 특이사항이 없습니다.</div>';
+    return;
+  }
+
+  wrap.innerHTML = withNotes.map(m => {
+    const dday = getDdayInfo(m.shipDate);
+    const isCkd = m.procSet && m.procSet.indexOf('CKD') === 0;
+    const defectQty = m.noteData.reduce((s,r) => s + (parseInt(r.defectQty)||0), 0);
+
+    let statsHtml;
+    if (isCkd) {
+      const procArr = (procSets && procSets[m.procSet]) || [];
+      const completed = calcCkdCompletedSites(m, procArr);
+      statsHtml = `
+        <div class="note-stats">
+          <div class="note-stat"><div class="v">${m.plan||0} Site</div><div class="k">계획</div></div>
+          <div class="note-stat"><div class="v">${completed} Site</div><div class="k">포장완료</div></div>
+          <div class="note-stat defect"><div class="v">${defectQty}</div><div class="k">문제수량</div></div>
+        </div>`;
+    } else {
+      const mainDone = (m.procs && m.procs['main']) || 0;
+      const packDone = (m.procs && m.procs['pack']) || 0;
+      statsHtml = `
+        <div class="note-stats">
+          <div class="note-stat"><div class="v">${m.plan||0}대</div><div class="k">계획</div></div>
+          <div class="note-stat"><div class="v">${mainDone}대</div><div class="k">조립완료</div></div>
+          <div class="note-stat"><div class="v">${packDone}대</div><div class="k">포장완료</div></div>
+          <div class="note-stat defect"><div class="v">${defectQty}대</div><div class="k">문제수량</div></div>
+        </div>`;
+    }
+
+    const rows = m.noteData.map(r => `
+      <div class="note-row">
+        <div class="txt">${r.issue || r.text || '(내용 없음)'}</div>
+        ${r.remarks ? `<div class="txt" style="color:var(--text-dim);font-size:12px;margin-top:3px;">${r.remarks}</div>` : ''}
+        <div class="meta">
+          <span class="note-status ${noteStatusClass(r.status)}">${escapeHtml(r.status || '진행중')}</span>
+          <span class="note-date">${escapeHtml(r.lastUpdated || '')}</span>
+        </div>
+      </div>
+    `).join('');
+
+    return `
+      <div class="note-card">
+        <div class="note-card-head">
+          <div>
+            <span class="mcard-name" style="font-size:15px;">${escapeHtml(m.model)}</span>
+            ${m.fullName ? `<div class="mcard-full">${escapeHtml(m.fullName)}</div>` : ''}
+          </div>
+          <span style="font-family:var(--font-mono);font-weight:900;font-size:15px;color:${dday.color};">${dday.text}</span>
+        </div>
+        ${statsHtml}
+        ${rows}
+      </div>
+    `;
+  }).join('');
+}
+
+// ══════════ 탭3: 계획대비실적 ══════════
+function getHistYearMonth(h) {
+  if (h.shipYear && h.shipMonth) return { year: h.shipYear, month: h.shipMonth };
+  const sd = h.shipDate ? parseLocalDate(h.shipDate) : null;
+  if (sd && !isNaN(sd)) return { year: sd.getFullYear(), month: sd.getMonth() + 1 };
+  const cd = h.completedAt ? new Date(h.completedAt) : null;
+  if (cd && !isNaN(cd)) return { year: cd.getFullYear(), month: cd.getMonth() + 1 };
+  return { year: null, month: null };
+}
+
+function changePerfMonth(delta) {
+  perfMonth += delta;
+  while (perfMonth > 12) { perfMonth -= 12; perfYear += 1; }
+  while (perfMonth < 1)  { perfMonth += 12; perfYear -= 1; }
+  renderPerfTab();
+}
+
+function renderPerfTab() {
+  document.getElementById('perfMonthLabel').textContent = `${perfYear}년 ${perfMonth}월`;
+
+  const hist = allHistory.filter(h => {
+    const ym = getHistYearMonth(h);
+    return ym.year === perfYear && ym.month === perfMonth;
+  });
+
+  const groups = {};
+  hist.forEach(h => {
+    const { qty } = calcActualQty(h);
+    const key = h.model || '(모델명 없음)';
+    if (!groups[key]) groups[key] = { plan: 0, actual: 0, unit: (h.procSet && h.procSet.indexOf('CKD')===0) ? 'Site' : '대' };
+    groups[key].plan += (h.plan || 0);
+    groups[key].actual += qty;
+  });
+
+  const keys = Object.keys(groups).sort();
+  let totalPlan = 0, totalActual = 0;
+  keys.forEach(k => { totalPlan += groups[k].plan; totalActual += groups[k].actual; });
+  const totalRate = totalPlan > 0 ? Math.round(totalActual/totalPlan*100) : 0;
+
+  document.getElementById('perfSummary').innerHTML = `
+    <div class="perf-chip"><div class="n">${totalPlan}</div><div class="l">총 계획</div></div>
+    <div class="perf-chip"><div class="n" style="color:var(--accent2);">${totalActual}</div><div class="l">총 실적</div></div>
+    <div class="perf-chip"><div class="n" style="color:${totalRate>=100?'var(--green)':totalRate>=70?'var(--yellow)':'var(--red)'};">${totalRate}%</div><div class="l">달성률</div></div>
+  `;
+
+  const content = document.getElementById('perfContent');
+  if (keys.length === 0) {
+    content.innerHTML = `<div class="empty">${perfYear}년 ${perfMonth}월에 완료 처리된 모델이 없습니다.</div>`;
+    return;
+  }
+
+  content.innerHTML = keys.map((k,i) => {
+    const g = groups[k];
+    const rate = g.plan > 0 ? Math.round(g.actual/g.plan*100) : 0;
+    const barMax = Math.max(g.plan, g.actual, 1);
+    const rateColor = rate>=100?'var(--green)':rate>=70?'var(--yellow)':'var(--red)';
+    const remarkKey = `${perfYear}-${pad(perfMonth)}`;
+    const hasRemark = !!(monthlyRemarks[remarkKey] && monthlyRemarks[remarkKey][k]);
+    return `
+      <div class="perf-item" onclick="openPerfRemark(${i})">
+        <div class="perf-item-top">
+          <span class="perf-item-name">${escapeHtml(k)}</span>
+          <span class="perf-item-rate" style="color:${rateColor};">${rate}%</span>
+        </div>
+        <div class="perf-item-bar"><div style="width:${Math.min(g.actual/barMax*100,100)}%;background:${rateColor};"></div></div>
+        <div class="perf-item-nums">${g.actual} / ${g.plan} ${g.unit}${hasRemark ? ' · 📝 비고 있음' : ''}</div>
+      </div>
+    `;
+  }).join('');
+  _renderedPerfKeys = keys;
+}
+
+function openPerfRemark(i) {
+  const k = _renderedPerfKeys[i];
+  if (!k) return;
+  const remarkKey = `${perfYear}-${pad(perfMonth)}`;
+  const text = (monthlyRemarks[remarkKey] && monthlyRemarks[remarkKey][k]) || '';
+  document.getElementById('detailSheetTitle').textContent = k + ' · 비고';
+  document.getElementById('detailSheetBody').innerHTML = text
+    ? `<div style="font-size:14px;color:var(--text-secondary);line-height:1.6;white-space:pre-wrap;padding:6px 0;">${escapeHtml(text)}</div>`
+    : '<div class="empty">등록된 비고(미달성 사유)가 없습니다.</div>';
+  document.getElementById('detailSheetOverlay').classList.add('open');
+}
+
+// ══════════ 데이터 로드 ══════════
+async function loadData(isManual) {
+  const btn = document.getElementById('refreshBtn');
+  if (isManual) btn.classList.add('spin');
+  try {
+    const res = await fetch(GS_URL + '?action=load');
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error(json.message || '불러오기 실패');
+    const d = json.data;
+    allModels = d.models || [];
+    allHistory = d.history || [];
+    procSets = d.procsets || {};
+    customWorkdays = new Set(d.workdays || []);
+    sharedImagesMeta = d.sharedImagesMeta || [];
+    monthlyRemarks = d.remarks || {};
+    shortageData = d.shortage || { items: [] };
+
+    renderSummary(allModels);
+    renderNotice(d.notice);
+    renderStatusTab();
+    if (wdOpen) renderWdCalendar();
+    if (imgListOpen) renderImgList();
+    if (currentTab === 'shortage') renderShortageTab();
+    if (currentTab === 'notes') renderNotesTab();
+    if (currentTab === 'perf') renderPerfTab();
+    if (currentTab === 'history') renderHistoryTab();
+
+    const now = new Date();
+    document.getElementById('lastSync').textContent = `업데이트: ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  } catch (e) {
+    console.error(e);
+    document.getElementById('lastSync').textContent = '연결 실패 · 재시도 중...';
+  } finally {
+    if (isManual) setTimeout(() => btn.classList.remove('spin'), 400);
+  }
+}
+
+function manualRefresh() { loadData(true); }
+
+loadData(false);
+setInterval(() => loadData(false), 30000);
+</script>
+</body>
+</html>
