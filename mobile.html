@@ -87,7 +87,12 @@
   /* ── 모델 카드 */
   .section-label { font-size:12px; font-weight:700; color:var(--text-dim); margin:16px 16px 6px; letter-spacing:.3px; }
   .cards { padding: 0 16px; display:flex; flex-direction:column; gap:10px; }
-  .mcard { background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--border-bright); border-radius:12px; padding:14px 15px; }
+  .mcard { background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--border-bright); border-radius:12px; padding:14px 15px; position:relative; }
+  .mcard-note-badge {
+    position:absolute; top:-8px; right:-8px; background:var(--red); color:#fff; font-size:11px; font-weight:700;
+    border-radius:10px; min-width:20px; height:20px; display:flex; align-items:center; justify-content:center; padding:0 5px;
+    box-shadow:0 1px 3px rgba(0,0,0,.25); z-index:2;
+  }
   .mcard.st-idle   { border-left-color: var(--border-bright); }
   .mcard.st-behind  { border-left-color: var(--red); }
   .mcard.st-warn   { border-left-color: var(--yellow); }
@@ -742,9 +747,11 @@ function renderAntCard(m, i) {
   const dday = getDdayInfo(m.shipDate);
   const mainPct = plan>0 ? Math.min(Math.round(mainDone/plan*100),100) : 0;
   const packPct = plan>0 ? Math.min(Math.round(packDone/plan*100),100) : 0;
+  const noteCount = (m.noteData || []).filter(r => r.status !== 'Completed').length;
 
   return `
     <div class="mcard st-${st.cls}" onclick="openProcDetail('ant', ${i})">
+      ${noteCount>0 ? `<div class="mcard-note-badge">📋 ${noteCount}</div>` : ''}
       <div class="mcard-top">
         <div>
           <div><span class="mcard-name">${escapeHtml(m.model)}</span><span class="mcard-plan-badge">${plan}대</span></div>
@@ -779,9 +786,11 @@ function renderCkdCard(m, i) {
   const pct = siteCount>0 ? Math.round(completed/siteCount*100) : 0;
   const st = statusOf(pct);
   const dday = getDdayInfo(m.shipDate);
+  const noteCount = (m.noteData || []).filter(r => r.status !== 'Completed').length;
 
   return `
     <div class="mcard st-${st.cls}" onclick="openProcDetail('ckd', ${i})">
+      ${noteCount>0 ? `<div class="mcard-note-badge">📋 ${noteCount}</div>` : ''}
       <div class="mcard-top">
         <div>
           <div><span class="mcard-name">${escapeHtml(m.model)}</span><span class="mcard-plan-badge">${siteCount} Site</span></div>
