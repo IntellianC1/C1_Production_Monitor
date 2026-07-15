@@ -2320,6 +2320,7 @@ function renderCkdTable() {
             <span class="proc-total">${planQty}</span>
           </div>
           <div class="proc-pct ${donePct===100?'pct-done':donePct>0?'pct-high':'pct-0'}">${donePct}%</div>
+          ${issue?`<div class="proc-issue-text">⚠ ${issue}</div>`:''}
         `;
       }
       tr.appendChild(td);
