@@ -2306,8 +2306,10 @@ function renderCkdTable() {
         const planQty = (m.procPlan && m.procPlan[procId]) || 0;
         const done    = (m.procs    && m.procs[procId])    || 0;
         const donePct = planQty > 0 ? Math.min(Math.round((done/planQty)*100), 100) : 0;
+        const issue = (m.issues && m.issues[procId]) || '';
+        if (issue) td.classList.add('proc-issue-cell');
         td.onclick = () => openCellModal(mi, procId, CKD_PROC_MAP[procId].name, planQty, donePct);
-        td.title = `[${CKD_PROC_MAP[procId].name}] 클릭하여 편집`;
+        td.title = `[${CKD_PROC_MAP[procId].name}] 클릭하여 편집${issue?' | ⚠ '+issue:''}`;
         td.innerHTML = `
           <div class="proc-progress-bar" style="position:relative;height:6px;">
             <div style="position:absolute;top:0;left:0;height:100%;width:${donePct}%;background:var(--green);border-radius:2px;"></div>
