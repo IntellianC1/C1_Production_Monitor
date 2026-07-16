@@ -2699,9 +2699,6 @@ async function saveModel() {
   });
   // 편집 시 기존 snData/issues/wip/wipPct 유지 (출하일/수량 수정해도 날아가지 않게)
   const existing = editingModelIdx >= 0 ? models[editingModelIdx] : {};
-  const matchModel    = existing.model    || null; // 편집 전 원래 식별자 (부분패치 매칭용)
-  const matchShipDate = existing.shipDate || null;
-  const matchFullName = existing.fullName || '';
   const selectedColorDot = document.querySelector('#cardColorPicker .mc-color-dot.selected');
   const cardColor = selectedColorDot ? selectedColorDot.dataset.color : 'default';
   const entry = {
@@ -2734,17 +2731,8 @@ async function saveModel() {
     }
   }
 
-  // 즉시 시트 전송 + 충돌 감지 (전체)
+  // 즉시 시트 전송 + 충돌 감지 (전체 배열을 정확하게 다시 씀 - 추가/편집 모두 이걸로 충분)
   await instantSaveModels('모델 편집/추가', 'modelSavedBadge');
-  // 부분패치는 "기존 모델 편집"일 때만 (신규 생성 시 호출하면 instantSaveModels가 이미 추가한 행이
-  // matchModel/matchShipDate 없어서 또 한 번 append 되어 중복 행이 생기는 버그가 있었음)
-  if (editingModelIdx >= 0) {
-    gsPost('save_model_edit', {
-      matchModel, matchShipDate, matchFullName,
-      model: modelName, fullName, plan, shipDate, procSet: procSetKey,
-      excludedProcs, procPlan,
-    }).catch(e => console.error('save_model_edit 실패:', e));
-  }
   closeModal();
 }
 
@@ -2755,14 +2743,25 @@ async function saveModel() {
 // fieldNames: 비교할 필드 이름 배열 (예: ['procs','wip','wipPct'])
 // mySnapshot: 팝업 열 때 그 필드들만 뽑아서 만든 객체
 // 다르면 확인창을 띄우고, "취소"하면 false(저장 중단), "확인"이면 true(그대로 진행)
+// 배열은 순서 상관없이(정렬 후) 비교, 그 외엔 그대로 - 순서만 달라서 오탐(false positive) 나는 것 방지
+function normalizeForCompare(val) {
+  if (Array.isArray(val)) return JSON.stringify([...val].sort());
+  if (val && typeof val === 'object') {
+    const sortedKeys = Object.keys(val).sort();
+    const out = {};
+    sortedKeys.forEach(k => { out[k] = val[k]; });
+    return JSON.stringify(out);
+  }
+  return JSON.stringify(val);
+}
+
 async function checkModelConflict(modelName, shipDate, fullName, fieldNames, mySnapshot) {
   try {
     const res  = await fetch(GS_URL + '?action=check_model&model=' + encodeURIComponent(modelName) + '&shipDate=' + encodeURIComponent(shipDate) + '&fullName=' + encodeURIComponent(fullName || ''));
     const json = await res.json();
     if (json.status !== 'ok' || !json.data || !json.data.exists) return true; // 신규 모델이거나 조회 실패면 그냥 진행
-    const sheetPart = {};
-    fieldNames.forEach(f => { sheetPart[f] = json.data[f]; });
-    if (JSON.stringify(sheetPart) !== JSON.stringify(mySnapshot)) {
+    const isDifferent = fieldNames.some(f => normalizeForCompare(json.data[f]) !== normalizeForCompare(mySnapshot[f]));
+    if (isDifferent) {
       return confirm(
         '⚠ 이 창을 여는 사이, 다른 PC에서 이 모델을 이미 수정했습니다.\n' +
         '계속 저장하면 그 변경사항이 덮어써질 수 있습니다.\n\n그래도 저장하시겠습니까?'
