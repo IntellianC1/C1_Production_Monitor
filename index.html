@@ -2194,6 +2194,13 @@ function renderCkdCards() {
     let mcClass = 'mc-idle';
     if (pct === 100) mcClass = 'mc-done'; else if (pct > 0) mcClass = 'mc-ok';
     const barColor = pct === 100 ? 'var(--accent)' : pct > 0 ? 'var(--green)' : 'var(--text-dim)';
+    // 완료수량 0이어도 진행중(wip) 흔적이 있으면 미시작이 아니라 진행중으로 판단 (ANT와 동일 기준)
+    const ckdHasActivity = procSet.some(p => {
+      if (m.excludedProcs && m.excludedProcs.includes(p.id)) return false;
+      const done = (m.procs && m.procs[p.id]) || 0;
+      const wip  = (m.wip   && m.wip[p.id])   || 0;
+      return done > 0 || wip > 0;
+    });
 
     const card = document.createElement('div');
     const bgClass = m.cardColor && m.cardColor !== 'default' ? `mc-bg-${m.cardColor}` : 'mc-bg-default';
@@ -2280,9 +2287,27 @@ function renderCkdTable() {
 
     const modelTd = document.createElement('td');
     modelTd.className = 'model-cell';
+    // 매트릭스 좌측 열에도 상태태그 표시 (Site 완료 개념 기준)
+    const mxSiteCount = m.plan || 0;
+    let mxCompletedSites = mxSiteCount > 0 ? Infinity : 0;
+    let mxHasActivity = false;
+    CKD_PROC_IDS_ORDERED.forEach(pid => {
+      if (!CKD_PROC_MAP[pid]) return;
+      if (m.excludedProcs && m.excludedProcs.includes(pid)) return;
+      const pPlan = (m.procPlan && m.procPlan[pid]) || 0;
+      const pDone = (m.procs && m.procs[pid]) || 0;
+      const pWip  = (m.wip   && m.wip[pid])   || 0;
+      if (pDone > 0 || pWip > 0) mxHasActivity = true;
+      if (pPlan > 0) mxCompletedSites = Math.min(mxCompletedSites, Math.floor(pDone / pPlan));
+    });
+    if (!isFinite(mxCompletedSites)) mxCompletedSites = 0;
+    const mxPct = mxSiteCount > 0 ? Math.round((Math.min(mxCompletedSites, mxSiteCount) / mxSiteCount) * 100) : 0;
     modelTd.innerHTML = `
       <div class="model-name" style="max-width:100%;white-space:normal;word-break:break-word;">${m.model}${m.fullName ? `<span style="font-size:12px;font-weight:400;color:var(--text-dim);"> (${escapeHtml(m.fullName)})</span>` : ''}</div>
       <div class="model-plan">계획 <span>${m.plan}</span> Site</div>
+      <div style="display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap;">
+        ${statusTag(mxPct, mxHasActivity)}
+      </div>
       <div style="font-family:var(--font-mono);font-size:14px;margin-top:4px;">
         📦 <strong style="color:${ddayColor}">${ddayText}</strong>
         ${m.shipDate ? `<span style="color:var(--text-dim);font-size:15px;margin-left:3px;">${m.shipDate}</span>` : ''}
@@ -2305,7 +2330,11 @@ function renderCkdTable() {
       } else {
         const planQty = (m.procPlan && m.procPlan[procId]) || 0;
         const done    = (m.procs    && m.procs[procId])    || 0;
+        const wip     = (m.wip      && m.wip[procId])      || 0;
+        const wipP    = (m.wipPct   && m.wipPct[procId])   || 0;
         const donePct = planQty > 0 ? Math.min(Math.round((done/planQty)*100), 100) : 0;
+        const wipPctBar = planQty > 0 ? Math.min(Math.round((wip/planQty)*100), 100) : 0;
+        const effPct  = planQty > 0 ? Math.min(Math.round(((done + wip*(wipP/100)) / planQty) * 100), 100) : 0;
         const issue = (m.issues && m.issues[procId]) || '';
         if (issue) td.classList.add('proc-issue-cell');
         td.onclick = () => openCellModal(mi, procId, CKD_PROC_MAP[procId].name, planQty, donePct);
@@ -2313,13 +2342,15 @@ function renderCkdTable() {
         td.innerHTML = `
           <div class="proc-progress-bar" style="position:relative;height:6px;">
             <div style="position:absolute;top:0;left:0;height:100%;width:${donePct}%;background:var(--green);border-radius:2px;"></div>
+            <div style="position:absolute;top:0;left:${donePct}%;height:100%;width:${wipPctBar}%;background:var(--yellow);opacity:.75;"></div>
           </div>
           <div class="proc-nums" style="margin-top:5px;">
             <span class="proc-done pct-high">${done}</span>
+            ${wip>0?`<span style="font-family:var(--font-mono);font-size:16px;color:var(--yellow);">+${wip}</span>`:''}
             <span class="proc-slash">/</span>
             <span class="proc-total">${planQty}</span>
           </div>
-          <div class="proc-pct ${donePct===100?'pct-done':donePct>0?'pct-high':'pct-0'}">${donePct}%</div>
+          <div class="proc-pct ${effPct===100?'pct-done':effPct>0?'pct-high':'pct-0'}">${effPct}%</div>
           ${issue?`<div class="proc-issue-text">⚠ ${issue}</div>`:''}
         `;
       }
@@ -4915,8 +4946,9 @@ async function saveCellEdit() {
   models[modelIdx].issues[procId] = issueChecked && issueVal ? issueVal : '';
   localStorage.setItem('kaa_models', JSON.stringify(models)); renderTable(); updateAll();
 
-  // 공정 수량 즉시 시트 전송
-  await instantSaveModels('공정 수량', 'cellSavedBadge');
+  // 공정 수량은 부분패치로만 즉시 전송 (전체 배열 덮어쓰기 없이 이 필드만 정확히 반영 -
+  // 다른 PC가 방금 저장한 '다른 모델'의 변경사항이 오래된 로컬 전체저장으로 덮어써지는 사고 방지)
+  setBadgeSaving('cellSavedBadge');
   closeCellModal();
   gsPost('save_proc', {
     model:    models[modelIdx].model,
@@ -4927,8 +4959,8 @@ async function saveCellEdit() {
     wip:      models[modelIdx].wip[procId]    || 0,
     wipPct:   models[modelIdx].wipPct[procId] || 0,
     issue:    models[modelIdx].issues[procId] || '',
-  }).then(() => setSyncStatus('공정 저장됨 ✓', 'var(--green)'))
-    .catch(() => setSyncStatus('공정 저장 실패', 'var(--red)'));
+  }).then(() => { lastInstantSaveTime = Date.now(); setSyncStatus('공정 저장됨 ✓', 'var(--green)'); setBadgeSaved('cellSavedBadge'); })
+    .catch(() => { setSyncStatus('공정 저장 실패', 'var(--red)'); setBadgeFailed('cellSavedBadge'); });
 }
 document.getElementById('cellWipSlider').addEventListener('input', function() {
   document.getElementById('cellWipPctVal').textContent = this.value + '%';
@@ -5259,13 +5291,14 @@ async function saveSnData() {
   // lastEditTime 건드리지 않음 → gsLoad 차단 안 됨
   localStorage.setItem('kaa_models', JSON.stringify(models));
   renderTable(); updateAll();
-  await instantSaveModels('상세', 'snSavedBadge');
+  setBadgeSaving('snSavedBadge');
   gsPost('save_detail', {
     model:    models[detailModelIdx].model,
     shipDate: models[detailModelIdx].shipDate,
     fullName: models[detailModelIdx].fullName || '',
     snData:   models[detailModelIdx].snData,
-  }).catch(e => console.error('save_detail 실패:', e));
+  }).then(() => { lastInstantSaveTime = Date.now(); setBadgeSaved('snSavedBadge'); })
+    .catch(e => { console.error('save_detail 실패:', e); setBadgeFailed('snSavedBadge'); });
 }
 
 
@@ -6254,16 +6287,16 @@ async function saveNoteData() {
   // draft를 models에 반영
   models[noteModelIdx].noteData = JSON.parse(JSON.stringify(noteDraft));
   saveData();
-  // 즉시 시트 전송 + 충돌 감지
-  await instantSaveModels('특이사항', 'noteSavedBadge');
-  // 특이사항만 부분 업데이트 (다른 PC의 동시 저장으로 인한 유실 방지)
+  // 특이사항은 부분패치로만 즉시 전송 (전체 배열을 다시 쓰지 않아, 다른 PC가 방금 저장한
+  // '다른 모델'의 최신 데이터가 이 PC의 오래된 로컬 전체저장으로 덮어써지는 사고를 원천 차단)
+  setBadgeSaving('noteSavedBadge');
   gsPost('save_note', {
     model:    models[noteModelIdx].model,
     shipDate: models[noteModelIdx].shipDate,
     fullName: models[noteModelIdx].fullName || '',
     noteData: models[noteModelIdx].noteData,
-  }).then(() => setSyncStatus('특이사항 저장됨 ✓', 'var(--green)'))
-    .catch(() => setSyncStatus('특이사항 저장 실패', 'var(--red)'));
+  }).then(() => { lastInstantSaveTime = Date.now(); setSyncStatus('특이사항 저장됨 ✓', 'var(--green)'); setBadgeSaved('noteSavedBadge'); })
+    .catch(() => { setSyncStatus('특이사항 저장 실패', 'var(--red)'); setBadgeFailed('noteSavedBadge'); });
   // summary 갱신
   renderNoteSummary(noteModelIdx);
   // 모델카드(특이사항 버튼 색상/뱃지) 즉시 갱신
