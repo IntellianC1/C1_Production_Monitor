@@ -3195,8 +3195,8 @@ function computeMonthlyPerf(year, month) {
     return ym.year === year && ym.month === month;
   });
   const groups = {}; // modelName -> { plan, actual, unit, subs:{fullName->{plan,actual}} }
-  hist.forEach(m => {
-    const { qty: actual, unit } = calcActualQty(m);
+
+  function addToGroup(m, actual, unit) {
     const key = m.model || '(모델명 없음)';
     if (!groups[key]) groups[key] = { plan: 0, actual: 0, unit, subs: {} };
     groups[key].plan   += (m.plan || 0);
@@ -3205,7 +3205,24 @@ function computeMonthlyPerf(year, month) {
     if (!groups[key].subs[subKey]) groups[key].subs[subKey] = { plan: 0, actual: 0, unit };
     groups[key].subs[subKey].plan   += (m.plan || 0);
     groups[key].subs[subKey].actual += actual;
+  }
+
+  hist.forEach(m => {
+    const { qty: actual, unit } = calcActualQty(m);
+    addToGroup(m, actual, unit);
   });
+
+  // 진행중(미완료) 모델도 각자의 포장기준일이 속한 달에 포함 - 완료 시점/오늘 날짜와 무관
+  // (완료 히스토리도 shipYear/shipMonth가 포장기준일 기준으로 이미 기록되어 있으므로, 같은 기준으로 통일)
+  models.forEach(m => {
+    if (!m.shipDate) return;
+    const sd = parseLocalDate(m.shipDate);
+    if (isNaN(sd)) return;
+    if (sd.getFullYear() !== year || sd.getMonth() + 1 !== month) return;
+    const { qty: actual, unit } = calcActualQty(m);
+    addToGroup(m, actual, unit);
+  });
+
   return groups;
 }
 

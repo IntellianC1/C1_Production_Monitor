@@ -1014,12 +1014,24 @@ function renderPerfTab() {
   });
 
   const groups = {};
-  hist.forEach(h => {
-    const { qty } = calcActualQty(h);
-    const key = h.model || '(모델명 없음)';
-    if (!groups[key]) groups[key] = { plan: 0, actual: 0, unit: (h.procSet && h.procSet.indexOf('CKD')===0) ? 'Site' : '대' };
-    groups[key].plan += (h.plan || 0);
+  function addToGroup(m, qty, unit) {
+    const key = m.model || '(모델명 없음)';
+    if (!groups[key]) groups[key] = { plan: 0, actual: 0, unit };
+    groups[key].plan += (m.plan || 0);
     groups[key].actual += qty;
+  }
+  hist.forEach(h => {
+    const { qty, unit } = calcActualQty(h);
+    addToGroup(h, qty, unit);
+  });
+  // 진행중(미완료) 모델도 각자의 포장기준일이 속한 달에 포함 - 완료 시점/오늘 날짜와 무관
+  allModels.forEach(m => {
+    if (!m.shipDate) return;
+    const sd = parseLocalDate(m.shipDate);
+    if (isNaN(sd)) return;
+    if (sd.getFullYear() !== perfYear || sd.getMonth() + 1 !== perfMonth) return;
+    const { qty, unit } = calcActualQty(m);
+    addToGroup(m, qty, unit);
   });
 
   const keys = Object.keys(groups).sort();
