@@ -296,12 +296,15 @@
 
 <!-- ── 탭3: 실적 -->
 <div class="tabpanel" id="panel-perf">
-  <div class="month-nav">
-    <button onclick="changePerfMonth(-1)">‹</button>
-    <div class="label" id="perfMonthLabel"></div>
-    <button onclick="changePerfMonth(1)">›</button>
+  <div style="display:flex;justify-content:center;gap:8px;margin:14px 16px 0;">
+    <button id="perfModeMonthBtn" onclick="setPerfViewMode('month')" class="hist-chip active" style="flex:1;text-align:center;">월별</button>
+    <button id="perfModeYearBtn" onclick="setPerfViewMode('year')" class="hist-chip" style="flex:1;text-align:center;">연도별</button>
   </div>
-  <div class="perf-summary" id="perfSummary"></div>
+  <div class="month-nav">
+    <button onclick="perfNavPrev()">‹</button>
+    <div class="label" id="perfMonthLabel"></div>
+    <button onclick="perfNavNext()">›</button>
+  </div>
   <div id="perfContent" style="padding:0 16px;"></div>
 </div>
 
@@ -364,6 +367,7 @@ let currentTab = 'status';
 let noticeOpen = false;
 let perfYear = new Date().getFullYear();
 let perfMonth = new Date().getMonth() + 1;
+let perfViewMode = 'month'; // 'month' | 'year'
 
 function pad(n){ return String(n).padStart(2,'0'); }
 
@@ -813,7 +817,7 @@ function renderCkdCard(m, i) {
   `;
 }
 
-let _renderedAnt = [], _renderedCkd = [], _renderedHistory = [], _renderedPerfKeys = [];
+let _renderedAnt = [], _renderedCkd = [], _renderedHistory = [];
 let monthlyRemarks = {};
 
 function openProcDetail(source, i) {
@@ -895,7 +899,9 @@ function renderStatusTab() {
   }
   if (currentSeg === 'all' || currentSeg === 'ckd') {
     if (ckd.length > 0) {
-      html += '<div class="section-label">CKD (미국공장 포장출하)</div><div class="cards">';
+      html += '<div class="section-label">CKD (미국공장 포장출하)</div>';
+      html += renderCkdSummary();
+      html += '<div class="cards">';
       ckd.sort((a,b) => (calcDday(a.shipDate)??999) - (calcDday(b.shipDate)??999));
       _renderedCkd = ckd;
       ckd.forEach((m,i) => html += renderCkdCard(m,i));
@@ -904,6 +910,32 @@ function renderStatusTab() {
   }
   if (!html) html = '<div class="empty">해당 카테고리에 표시할 모델이 없습니다.</div>';
   main.innerHTML = html;
+}
+
+// CKD 요약 (총계획/포장완료, Site 단위) - PC 메인화면과 동일 기준(당월 전체 = 진행중 + 이번달 완료분)
+function renderCkdSummary() {
+  const ckdActive = allModels.filter(m => m.procSet && m.procSet.indexOf('CKD') === 0);
+  let plan = 0, done = 0;
+  ckdActive.forEach(m => {
+    plan += m.plan || 0;
+    done += calcCkdCompletedSites(m, (procSets && procSets[m.procSet]) || []);
+  });
+  const now = new Date();
+  const curYear = now.getFullYear(), curMonth = now.getMonth() + 1;
+  allHistory.forEach(h => {
+    if (!(h.procSet && h.procSet.indexOf('CKD') === 0)) return;
+    const ym = getHistYearMonth(h);
+    if (ym.year !== curYear || ym.month !== curMonth) return;
+    plan += h.plan || 0;
+    done += calcCkdCompletedSites(h, (procSets && procSets[h.procSet]) || []);
+  });
+  const pct = plan > 0 ? Math.round(done / plan * 100) : 0;
+  return `
+    <div class="summary-row" style="margin-top:0;margin-bottom:12px;">
+      <div class="summary-chip"><div class="l">총 계획</div><div class="n">${plan}<small>Site</small></div></div>
+      <div class="summary-chip"><div class="l">포장 완료</div><div class="n">${done}/${plan}<small>Site</small></div><div class="pct" style="color:var(--accent2);">${pct}%</div></div>
+    </div>
+  `;
 }
 
 // ══════════ 탭2: 특이사항 모아보기 ══════════
@@ -1005,61 +1037,90 @@ function changePerfMonth(delta) {
   renderPerfTab();
 }
 
-function renderPerfTab() {
-  document.getElementById('perfMonthLabel').textContent = `${perfYear}년 ${perfMonth}월`;
+function setPerfViewMode(mode) {
+  perfViewMode = mode;
+  document.getElementById('perfModeMonthBtn').classList.toggle('active', mode === 'month');
+  document.getElementById('perfModeYearBtn').classList.toggle('active', mode === 'year');
+  renderPerfTab();
+}
+function perfNavPrev() { perfViewMode === 'month' ? changePerfMonth(-1) : changePerfYear(-1); }
+function perfNavNext() { perfViewMode === 'month' ? changePerfMonth(1)  : changePerfYear(1); }
+function changePerfYear(delta) { perfYear += delta; renderPerfTab(); }
 
-  const hist = allHistory.filter(h => {
-    const ym = getHistYearMonth(h);
-    return ym.year === perfYear && ym.month === perfMonth;
-  });
-
-  const groups = {};
-  function addToGroup(m, qty, unit) {
+// PC와 동일 로직: month가 null이면 그 해 전체(연도별) 합산, ANT/CKD 완전 분리
+function computePerf(year, month) {
+  const antGroups = {}, ckdGroups = {};
+  function addToGroup(groups, m, actual, unit) {
     const key = m.model || '(모델명 없음)';
     if (!groups[key]) groups[key] = { plan: 0, actual: 0, unit };
     groups[key].plan += (m.plan || 0);
-    groups[key].actual += qty;
+    groups[key].actual += actual;
   }
-  hist.forEach(h => {
+  function ymMatches(y, m) {
+    if (month === null) return y === year;
+    return y === year && m === month;
+  }
+  allHistory.forEach(h => {
+    const ym = getHistYearMonth(h);
+    if (!ymMatches(ym.year, ym.month)) return;
+    const isCkd = h.procSet && h.procSet.indexOf('CKD') === 0;
     const { qty, unit } = calcActualQty(h);
-    addToGroup(h, qty, unit);
+    addToGroup(isCkd ? ckdGroups : antGroups, h, qty, unit);
   });
-  // 진행중(미완료) 모델도 각자의 포장기준일이 속한 달에 포함 - 완료 시점/오늘 날짜와 무관
   allModels.forEach(m => {
     if (!m.shipDate) return;
     const sd = parseLocalDate(m.shipDate);
     if (isNaN(sd)) return;
-    if (sd.getFullYear() !== perfYear || sd.getMonth() + 1 !== perfMonth) return;
+    if (!ymMatches(sd.getFullYear(), sd.getMonth() + 1)) return;
+    const isCkd = m.procSet && m.procSet.indexOf('CKD') === 0;
     const { qty, unit } = calcActualQty(m);
-    addToGroup(m, qty, unit);
+    addToGroup(isCkd ? ckdGroups : antGroups, m, qty, unit);
   });
+  return { ant: antGroups, ckd: ckdGroups };
+}
 
+function renderPerfTab() {
+  document.getElementById('perfMonthLabel').textContent = perfViewMode === 'month' ? `${perfYear}년 ${perfMonth}월` : `${perfYear}년`;
+
+  const monthArg = perfViewMode === 'month' ? perfMonth : null;
+  const { ant: antGroups, ckd: ckdGroups } = computePerf(perfYear, monthArg);
+
+  const content = document.getElementById('perfContent');
+  content.innerHTML = buildPerfSection('🛰 ANT', antGroups, true, '_renderedPerfKeysAnt')
+                     + buildPerfSection('📦 CKD', ckdGroups, false, '_renderedPerfKeysCkd');
+}
+
+function buildPerfSection(title, groups, showRemark, storeVarName) {
   const keys = Object.keys(groups).sort();
+  window[storeVarName] = keys;
   let totalPlan = 0, totalActual = 0;
   keys.forEach(k => { totalPlan += groups[k].plan; totalActual += groups[k].actual; });
   const totalRate = totalPlan > 0 ? Math.round(totalActual/totalPlan*100) : 0;
+  const unit = keys.length > 0 ? groups[keys[0]].unit : (title.indexOf('CKD') >= 0 ? 'Site' : '대');
 
-  document.getElementById('perfSummary').innerHTML = `
-    <div class="perf-chip"><div class="n">${totalPlan}</div><div class="l">총 계획</div></div>
-    <div class="perf-chip"><div class="n" style="color:var(--accent2);">${totalActual}</div><div class="l">총 실적</div></div>
-    <div class="perf-chip"><div class="n" style="color:${totalRate>=100?'var(--green)':totalRate>=70?'var(--yellow)':'var(--red)'};">${totalRate}%</div><div class="l">달성률</div></div>
+  let html = `<div class="section-label" style="margin-top:16px;">${title}</div>`;
+  html += `
+    <div class="perf-summary">
+      <div class="perf-chip"><div class="n">${totalPlan}<small style="font-size:11px;">${unit}</small></div><div class="l">총 계획</div></div>
+      <div class="perf-chip"><div class="n" style="color:var(--accent2);">${totalActual}<small style="font-size:11px;">${unit}</small></div><div class="l">총 실적</div></div>
+      <div class="perf-chip"><div class="n" style="color:${totalRate>=100?'var(--green)':totalRate>=70?'var(--yellow)':'var(--red)'};">${totalRate}%</div><div class="l">달성률</div></div>
+    </div>
   `;
 
-  const content = document.getElementById('perfContent');
   if (keys.length === 0) {
-    content.innerHTML = `<div class="empty">${perfYear}년 ${perfMonth}월에 완료 처리된 모델이 없습니다.</div>`;
-    return;
+    html += `<div class="empty">해당 기간에 데이터가 없습니다.</div>`;
+    return html;
   }
 
-  content.innerHTML = keys.map((k,i) => {
+  const remarkKey = `${perfYear}-${pad(perfMonth)}`;
+  html += keys.map((k,i) => {
     const g = groups[k];
     const rate = g.plan > 0 ? Math.round(g.actual/g.plan*100) : 0;
     const barMax = Math.max(g.plan, g.actual, 1);
     const rateColor = rate>=100?'var(--green)':rate>=70?'var(--yellow)':'var(--red)';
-    const remarkKey = `${perfYear}-${pad(perfMonth)}`;
-    const hasRemark = !!(monthlyRemarks[remarkKey] && monthlyRemarks[remarkKey][k]);
+    const hasRemark = showRemark && !!(monthlyRemarks[remarkKey] && monthlyRemarks[remarkKey][k]);
     return `
-      <div class="perf-item" onclick="openPerfRemark(${i})">
+      <div class="perf-item" ${showRemark ? `onclick="openPerfRemark(${i})"` : ''}>
         <div class="perf-item-top">
           <span class="perf-item-name">${escapeHtml(k)}</span>
           <span class="perf-item-rate" style="color:${rateColor};">${rate}%</span>
@@ -1069,11 +1130,11 @@ function renderPerfTab() {
       </div>
     `;
   }).join('');
-  _renderedPerfKeys = keys;
+  return html;
 }
 
 function openPerfRemark(i) {
-  const k = _renderedPerfKeys[i];
+  const k = _renderedPerfKeysAnt[i];
   if (!k) return;
   const remarkKey = `${perfYear}-${pad(perfMonth)}`;
   const text = (monthlyRemarks[remarkKey] && monthlyRemarks[remarkKey][k]) || '';

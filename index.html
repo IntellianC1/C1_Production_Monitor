@@ -1308,6 +1308,21 @@
   <div style="margin-top:28px;padding-top:18px;border-top:2px solid var(--border-bright);">
     <div style="font-size:19px;font-weight:700;color:var(--accent2);margin-bottom:12px;">📦 CKD (미국공장 포장출하)</div>
 
+    <!-- CKD 전체 합계 스트립 -->
+    <div id="ckdTotalStripWrap"><div class="total-strip">
+      <div class="ts-item">
+        <div class="ts-label">총 계획</div><div class="ts-sub" style="margin:0 4px;">당월 전체</div><div class="ts-value ts-accent" id="ckdSumTotal" style="margin:0 2px;">0</div><div class="ts-sub">Site</div>
+      </div>
+      <div class="ts-item">
+        <div class="ts-label">포장 완료</div>
+        <div class="ts-value ts-green" id="ckdSumDone" style="margin:0 2px;">0</div>
+        <div class="ts-sub">/</div>
+        <div class="ts-value ts-accent" id="ckdSumTotalPack" style="margin:0 2px;">0</div>
+        <div class="ts-sub">Site</div>
+        <div class="ts-sub" id="ckdSumDonePct" style="margin-left:6px;">0%</div>
+      </div>
+    </div></div>
+
     <!-- CKD 모델별 요약 카드 -->
     <div class="model-cards-row" id="ckdCardsRow"></div>
 
@@ -1566,6 +1581,7 @@ let modelFullnames = JSON.parse(localStorage.getItem('kaa_model_fullnames') || '
 // 계획대비실적 탭 상태
 let perfYear  = new Date().getFullYear();
 let perfMonth = new Date().getMonth() + 1;
+let perfViewMode = 'month'; // 'month' | 'year'
 // 비고 저장소: { "YYYY-MM": { "모델명": "비고텍스트" } }
 let monthlyRemarks = JSON.parse(localStorage.getItem('kaa_monthly_remarks') || '{}');
 
@@ -2407,6 +2423,28 @@ function updateAll() {
   document.getElementById('sumTotalPack').textContent  = totalPlan;
   document.getElementById('sumDonePct').textContent    = donePct + '%';
 
+  // ── CKD 총계 스트립 (Site 단위, ANT와 완전히 별도 집계)
+  let ckdTotalPlan = 0, ckdTotalDone = 0;
+  models.filter(mo => mo.procSet && mo.procSet.indexOf('CKD') === 0).forEach(mo => {
+    ckdTotalPlan += mo.plan || 0;
+    ckdTotalDone += calcCkdCompletedSites(mo);
+  });
+  loadHistory().forEach(h => {
+    if (!(h.procSet && h.procSet.indexOf('CKD') === 0)) return;
+    const ym = getHistYearMonth(h);
+    if (ym.year !== curYear || ym.month !== curMonth) return;
+    ckdTotalPlan += h.plan || 0;
+    ckdTotalDone += calcCkdCompletedSites(h);
+  });
+  const ckdDonePct = ckdTotalPlan > 0 ? Math.round(ckdTotalDone / ckdTotalPlan * 100) : 0;
+  const ckdSumTotalEl = document.getElementById('ckdSumTotal');
+  if (ckdSumTotalEl) {
+    ckdSumTotalEl.textContent = ckdTotalPlan;
+    document.getElementById('ckdSumDone').textContent      = ckdTotalDone;
+    document.getElementById('ckdSumTotalPack').textContent = ckdTotalPlan;
+    document.getElementById('ckdSumDonePct').textContent   = ckdDonePct + '%';
+  }
+
   renderModelCards();
   renderCkdCards();
   setTimeout(initCardDrag, 50);
@@ -3189,14 +3227,12 @@ function getHistYearMonth(m) {
   return { year: null, month: null };
 }
 
-function computeMonthlyPerf(year, month) {
-  const hist = loadHistory().filter(m => {
-    const ym = getHistYearMonth(m);
-    return ym.year === year && ym.month === month;
-  });
-  const groups = {}; // modelName -> { plan, actual, unit, subs:{fullName->{plan,actual}} }
+// year/month 기준 계획대비실적 집계. month가 null이면 그 해 전체(연도별) 합산.
+// ANT/CKD는 단위가 달라서(대 vs Site) 처음부터 완전히 분리된 결과로 반환
+function computePerf(year, month) {
+  const antGroups = {}, ckdGroups = {};
 
-  function addToGroup(m, actual, unit) {
+  function addToGroup(groups, m, actual, unit) {
     const key = m.model || '(모델명 없음)';
     if (!groups[key]) groups[key] = { plan: 0, actual: 0, unit, subs: {} };
     groups[key].plan   += (m.plan || 0);
@@ -3207,23 +3243,31 @@ function computeMonthlyPerf(year, month) {
     groups[key].subs[subKey].actual += actual;
   }
 
-  hist.forEach(m => {
-    const { qty: actual, unit } = calcActualQty(m);
-    addToGroup(m, actual, unit);
+  function ymMatches(y, m) {
+    if (month === null) return y === year;       // 연도별: 월 무관하고 해만 일치하면 됨
+    return y === year && m === month;             // 월별: 해+월 모두 일치
+  }
+
+  loadHistory().forEach(h => {
+    const ym = getHistYearMonth(h);
+    if (!ymMatches(ym.year, ym.month)) return;
+    const isCkd = h.procSet && h.procSet.indexOf('CKD') === 0;
+    const { qty: actual, unit } = calcActualQty(h);
+    addToGroup(isCkd ? ckdGroups : antGroups, h, actual, unit);
   });
 
-  // 진행중(미완료) 모델도 각자의 포장기준일이 속한 달에 포함 - 완료 시점/오늘 날짜와 무관
-  // (완료 히스토리도 shipYear/shipMonth가 포장기준일 기준으로 이미 기록되어 있으므로, 같은 기준으로 통일)
+  // 진행중(미완료) 모델도 각자의 포장기준일이 속한 달/해에 포함 - 완료 시점/오늘 날짜와 무관
   models.forEach(m => {
     if (!m.shipDate) return;
     const sd = parseLocalDate(m.shipDate);
     if (isNaN(sd)) return;
-    if (sd.getFullYear() !== year || sd.getMonth() + 1 !== month) return;
+    if (!ymMatches(sd.getFullYear(), sd.getMonth() + 1)) return;
+    const isCkd = m.procSet && m.procSet.indexOf('CKD') === 0;
     const { qty: actual, unit } = calcActualQty(m);
-    addToGroup(m, actual, unit);
+    addToGroup(isCkd ? ckdGroups : antGroups, m, actual, unit);
   });
 
-  return groups;
+  return { ant: antGroups, ckd: ckdGroups };
 }
 
 // 최근 monthsBack개월 전체 달성률(%) 추이 계산
@@ -3234,7 +3278,10 @@ function computeMonthlyTrend(year, month, monthsBack) {
     let yy = year, mm = month - i;
     while (mm <= 0) { mm += 12; yy -= 1; }
     let totalPlan = 0, totalActual = 0;
-    hist.filter(m => { const ym = getHistYearMonth(m); return ym.year === yy && ym.month === mm; }).forEach(m => {
+    hist.filter(m => {
+      if (m.procSet && m.procSet.indexOf('CKD') === 0) return false; // CKD는 단위(Site)가 달라 추이 그래프(ANT 전용)에서 제외
+      const ym = getHistYearMonth(m); return ym.year === yy && ym.month === mm;
+    }).forEach(m => {
       const { qty } = calcActualQty(m);
       totalPlan   += (m.plan || 0);
       totalActual += qty;
@@ -3249,6 +3296,16 @@ function changePerfMonth(delta) {
   perfMonth += delta;
   while (perfMonth > 12) { perfMonth -= 12; perfYear += 1; }
   while (perfMonth < 1)  { perfMonth += 12; perfYear -= 1; }
+  renderPerfView();
+}
+
+function changePerfYear(delta) {
+  perfYear += delta;
+  renderPerfView();
+}
+
+function setPerfViewMode(mode) {
+  perfViewMode = mode;
   renderPerfView();
 }
 
@@ -3294,33 +3351,46 @@ async function saveAllPerfRemarks() {
 
 function renderPerfView() {
   const container = document.getElementById('perfContent');
-  const groups = computeMonthlyPerf(perfYear, perfMonth);
-  const modelKeys = Object.keys(groups).sort();
+  const monthArg = perfViewMode === 'month' ? perfMonth : null;
+  const { ant: antGroups, ckd: ckdGroups } = computePerf(perfYear, monthArg);
 
+  // ── 뷰모드 토글 + 연/월 네비게이션
+  let html = `
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;">
+      <button onclick="setPerfViewMode('month')" style="font-size:14px;font-weight:700;padding:7px 18px;cursor:pointer;border-radius:2px;border:1px solid var(--border);background:${perfViewMode==='month'?'var(--accent)':'var(--bg-card2)'};color:${perfViewMode==='month'?'#fff':'var(--text-dim)'};">월별</button>
+      <button onclick="setPerfViewMode('year')" style="font-size:14px;font-weight:700;padding:7px 18px;cursor:pointer;border-radius:2px;border:1px solid var(--border);background:${perfViewMode==='year'?'var(--accent)':'var(--bg-card2)'};color:${perfViewMode==='year'?'#fff':'var(--text-dim)'};">연도별</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px;">
+      <button onclick="${perfViewMode==='month' ? 'changePerfMonth(-1)' : 'changePerfYear(-1)'}" style="font-size:18px;padding:6px 14px;cursor:pointer;background:var(--bg-card2);border:1px solid var(--border);color:var(--text-primary);border-radius:2px;">◀</button>
+      <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--accent2);min-width:140px;text-align:center;">${perfYear}년${perfViewMode==='month' ? ' ' + perfMonth + '월' : ''}</div>
+      <button onclick="${perfViewMode==='month' ? 'changePerfMonth(1)' : 'changePerfYear(1)'}" style="font-size:18px;padding:6px 14px;cursor:pointer;background:var(--bg-card2);border:1px solid var(--border);color:var(--text-primary);border-radius:2px;">▶</button>
+    </div>
+  `;
+
+  html += renderPerfSection('🛰 ANT (안테나)', antGroups, 'perfBarGradAnt', perfViewMode === 'month');
+  html += renderPerfSection('📦 CKD (미국공장 포장출하)', ckdGroups, 'perfBarGradCkd', false);
+
+  container.innerHTML = html;
+}
+
+// 한 카테고리(ANT 또는 CKD)의 요약카드+그래프+상세표를 렌더링
+function renderPerfSection(title, groups, gradId, showRemarks) {
+  const modelKeys = Object.keys(groups).sort();
   let totalPlan = 0, totalActual = 0;
   modelKeys.forEach(k => { totalPlan += groups[k].plan; totalActual += groups[k].actual; });
   const totalRate = totalPlan > 0 ? Math.round((totalActual / totalPlan) * 100) : 0;
+  const unitLabel = modelKeys.length > 0 ? groups[modelKeys[0]].unit : (title.indexOf('CKD') >= 0 ? 'Site' : '대');
 
-  const trend = computeMonthlyTrend(perfYear, perfMonth, 6);
-  const remarkKey = `${perfYear}-${String(perfMonth).padStart(2,'0')}`;
-  const remarksForMonth = monthlyRemarks[remarkKey] || {};
-
-  // ── 월 선택 헤더 + 요약카드
-  let html = `
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
-      <button onclick="changePerfMonth(-1)" style="font-size:18px;padding:6px 14px;cursor:pointer;background:var(--bg-card2);border:1px solid var(--border);color:var(--text-primary);border-radius:2px;">◀</button>
-      <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--accent2);min-width:140px;text-align:center;">${perfYear}년 ${perfMonth}월</div>
-      <button onclick="changePerfMonth(1)" style="font-size:18px;padding:6px 14px;cursor:pointer;background:var(--bg-card2);border:1px solid var(--border);color:var(--text-primary);border-radius:2px;">▶</button>
-    </div>
-
+  let html = `<div style="font-size:21px;font-weight:700;color:var(--text-primary);margin:26px 0 12px;padding-top:14px;border-top:2px solid var(--border-bright);">${title}</div>`;
+  html += `
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;">
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:18px;text-align:center;">
         <div style="font-size:15px;color:var(--text-dim);letter-spacing:.5px;margin-bottom:6px;">총 계획</div>
-        <div style="font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--text-primary);">${totalPlan}</div>
+        <div style="font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--text-primary);">${totalPlan}<span style="font-size:15px;color:var(--text-dim);margin-left:4px;">${unitLabel}</span></div>
       </div>
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:18px;text-align:center;">
         <div style="font-size:15px;color:var(--text-dim);letter-spacing:.5px;margin-bottom:6px;">총 실적</div>
-        <div style="font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--accent);">${totalActual}</div>
+        <div style="font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--accent);">${totalActual}<span style="font-size:15px;color:var(--text-dim);margin-left:4px;">${unitLabel}</span></div>
       </div>
       <div style="background:linear-gradient(135deg, var(--accent-dim), var(--bg-card));border:1px solid var(--accent2);border-radius:6px;padding:18px;text-align:center;">
         <div style="font-size:15px;color:var(--accent2);letter-spacing:.5px;margin-bottom:6px;font-weight:700;">달성률</div>
@@ -3330,37 +3400,41 @@ function renderPerfView() {
   `;
 
   if (modelKeys.length === 0) {
-    html += `<div style="padding:50px;text-align:center;color:var(--text-dim);font-size:18px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;">${perfYear}년 ${perfMonth}월에 완료 처리된 모델이 없습니다.</div>`;
-    container.innerHTML = html;
-    return;
+    html += `<div style="padding:40px;text-align:center;color:var(--text-dim);font-size:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;margin-bottom:10px;">해당 기간에 데이터가 없습니다.</div>`;
+    return html;
   }
 
-  // ── 월별 추이 라인그래프 (SVG)
-  html += renderTrendSvg(trend);
+  // 월별 추이 그래프는 ANT + "월별" 조회일 때만 (CKD/연도별은 생략)
+  if (title.indexOf('ANT') >= 0 && perfViewMode === 'month') {
+    const trend = computeMonthlyTrend(perfYear, perfMonth, 6);
+    html += renderTrendSvg(trend);
+  }
 
-  // ── 모델별 막대그래프 (세로 그룹형 SVG)
-  html += `<div style="font-size:19px;font-weight:700;color:var(--text-secondary);margin:24px 0 10px;">모델별 계획 대비 실적</div>`;
-  html += renderModelBarSvg(modelKeys, groups);
+  html += `<div style="font-size:17px;font-weight:700;color:var(--text-secondary);margin:16px 0 10px;">모델별 계획 대비 실적</div>`;
+  html += renderModelBarSvg(modelKeys, groups, gradId);
 
-  // ── 계층형 표 (1차 모델명 + 2차 세부모델명 + 비고)
-  html += `<div style="font-size:19px;font-weight:700;color:var(--text-secondary);margin:24px 0 10px;">모델별 상세 내역</div>`;
-  html += `<table style="width:100%;border-collapse:collapse;background:var(--bg-card);">
+  html += `<div style="font-size:17px;font-weight:700;color:var(--text-secondary);margin:20px 0 10px;">모델별 상세 내역</div>`;
+  html += `<table style="width:100%;border-collapse:collapse;background:var(--bg-card);margin-bottom:10px;">
     <thead>
       <tr style="background:var(--bg-panel);">
         <th style="padding:8px 12px;border:1px solid var(--border);font-size:15px;text-align:left;">모델</th>
         <th style="padding:8px 12px;border:1px solid var(--border);font-size:15px;width:100px;">계획</th>
         <th style="padding:8px 12px;border:1px solid var(--border);font-size:15px;width:100px;">실적</th>
         <th style="padding:8px 12px;border:1px solid var(--border);font-size:15px;width:100px;">달성률</th>
-        <th style="padding:8px 12px;border:1px solid var(--border);font-size:15px;min-width:260px;">
+        ${showRemarks ? `<th style="padding:8px 12px;border:1px solid var(--border);font-size:15px;min-width:260px;">
           <div style="display:flex;align-items:center;gap:8px;">
             <span>비고 (1차 모델명 단위)</span>
             <button onclick="saveAllPerfRemarks()" style="margin-left:auto;font-size:13px;font-weight:700;padding:4px 12px;cursor:pointer;background:var(--accent);color:#fff;border:none;border-radius:2px;">💾 비고 저장</button>
             <span id="perfRemarkBadge" style="font-size:12px;font-weight:700;opacity:0;transition:opacity .3s;"></span>
           </div>
-        </th>
+        </th>` : ''}
       </tr>
     </thead>
     <tbody>`;
+
+  const remarkKey = `${perfYear}-${String(perfMonth).padStart(2,'0')}`;
+  const remarksForMonth = monthlyRemarks[remarkKey] || {};
+
   modelKeys.forEach(k => {
     const g = groups[k];
     const rate = g.plan > 0 ? Math.round((g.actual / g.plan) * 100) : 0;
@@ -3372,11 +3446,11 @@ function renderPerfView() {
         <td style="padding:8px 12px;border:1px solid var(--border);text-align:center;font-family:var(--font-mono);font-size:16px;">${g.plan}</td>
         <td style="padding:8px 12px;border:1px solid var(--border);text-align:center;font-family:var(--font-mono);font-size:16px;">${g.actual}</td>
         <td style="padding:8px 12px;border:1px solid var(--border);text-align:center;font-family:var(--font-mono);font-size:16px;font-weight:700;color:${rateColor};">${rate}%${rate<100?' ⚠':''}</td>
-        <td style="padding:6px 8px;border:1px solid var(--border);">
+        ${showRemarks ? `<td style="padding:6px 8px;border:1px solid var(--border);">
           <input type="text" value="${remarkVal}" placeholder="미달성 사유 등 입력" class="perf-remark-input" data-model="${escapeHtml(k)}"
             style="width:100%;padding:5px 8px;font-size:14px;background:var(--bg-card2);border:1px solid var(--border);color:var(--text-primary);font-family:var(--font-main);"
             oninput="setPerfRemarkNeedsSave()" />
-        </td>
+        </td>` : ''}
       </tr>`;
     Object.keys(g.subs).sort().forEach(sk => {
       const s = g.subs[sk];
@@ -3386,13 +3460,12 @@ function renderPerfView() {
         <td style="padding:6px 12px;border:1px solid var(--border);text-align:center;font-family:var(--font-mono);font-size:14px;color:var(--text-dim);">${s.plan}</td>
         <td style="padding:6px 12px;border:1px solid var(--border);text-align:center;font-family:var(--font-mono);font-size:14px;color:var(--text-dim);">${s.actual}</td>
         <td style="padding:6px 12px;border:1px solid var(--border);"></td>
-        <td style="padding:6px 12px;border:1px solid var(--border);"></td>
+        ${showRemarks ? `<td style="padding:6px 12px;border:1px solid var(--border);"></td>` : ''}
       </tr>`;
     });
   });
   html += `</tbody></table>`;
-
-  container.innerHTML = html;
+  return html;
 }
 
 // 최근 N개월 달성률 추이를 SVG 라인그래프로 그림
@@ -3451,7 +3524,8 @@ function renderTrendSvg(points) {
 }
 
 // 모델별 계획 vs 실적 - 세로 그룹형 막대그래프 (SVG, 라운드 상단 + 값 라벨)
-function renderModelBarSvg(modelKeys, groups) {
+function renderModelBarSvg(modelKeys, groups, gradId) {
+  gradId = gradId || 'perfBarGrad';
   const n = modelKeys.length;
   const groupW = 130;               // 모델 1개가 차지하는 가로폭
   const barW = 34;                  // 막대 1개 폭
@@ -3485,7 +3559,7 @@ function renderModelBarSvg(modelKeys, groups) {
       <g>
         <rect x="${planX}" y="${planY}" width="${barW}" height="${Math.max(planH,1.5)}" rx="4" fill="var(--border-bright)" opacity="0.55"/>
         ${g.plan>0 ? `<text x="${planX+barW/2}" y="${planY-6}" font-size="12" fill="var(--text-dim)" text-anchor="middle" font-family="var(--font-mono)">${g.plan}</text>` : ''}
-        <rect x="${actualX}" y="${actualY}" width="${barW}" height="${Math.max(actualH,1.5)}" rx="4" fill="url(#perfBarGrad)"/>
+        <rect x="${actualX}" y="${actualY}" width="${barW}" height="${Math.max(actualH,1.5)}" rx="4" fill="url(#${gradId})"/>
         ${g.actual>0 ? `<text x="${actualX+barW/2}" y="${actualY-6}" font-size="12" fill="var(--accent2)" font-weight="700" text-anchor="middle" font-family="var(--font-mono)">${g.actual}</text>` : ''}
         <text x="${cx}" y="${H-30}" font-size="14" font-weight="700" fill="#cc3377" text-anchor="middle" font-family="var(--font-mono)">${escapeSvgText(k)}</text>
         <text x="${cx}" y="${H-12}" font-size="12" font-weight="700" fill="${rateColor}" text-anchor="middle" font-family="var(--font-mono)">${rate}%</text>
@@ -3496,7 +3570,7 @@ function renderModelBarSvg(modelKeys, groups) {
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:24px;overflow-x:auto;">
       <svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto;display:block;margin:0 auto;">
         <defs>
-          <linearGradient id="perfBarGrad" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="var(--accent)"/>
             <stop offset="100%" stop-color="var(--accent2)"/>
           </linearGradient>
