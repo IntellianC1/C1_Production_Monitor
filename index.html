@@ -1095,7 +1095,7 @@
       style="font-family:var(--font-main);font-size:15px;font-weight:700;
              padding:7px 18px;cursor:pointer;border:none;
              background:var(--accent);color:#000;transition:all .2s;white-space:nowrap;">
-      💾 저장
+      💾 공지 저장
     </button>
     <div class="clock" id="clock">--:--:--</div>
   </div>
@@ -1582,6 +1582,7 @@ let modelFullnames = JSON.parse(localStorage.getItem('kaa_model_fullnames') || '
 let perfYear  = new Date().getFullYear();
 let perfMonth = new Date().getMonth() + 1;
 let perfViewMode = 'month'; // 'month' | 'year'
+let noticeBaseline = { plan: '', issue: '', memo: '' }; // 마지막으로 시트와 일치가 확인된 공지 내용 (충돌감지 기준값)
 // 비고 저장소: { "YYYY-MM": { "모델명": "비고텍스트" } }
 let monthlyRemarks = JSON.parse(localStorage.getItem('kaa_monthly_remarks') || '{}');
 
@@ -2944,100 +2945,42 @@ document.getElementById('saveNameInput')?.addEventListener('keydown', e => {
 
 async function manualSave(saverName) {
   if (!(await requireSynced())) return;
-  // 저장 "시작"하는 즉시 저장차단(90초) 타이머부터 걸어둠 - 기존엔 저장 "완료" 시점에만 걸려서,
-  // 수정중 3분 타이머가 저장 도중에 끝나버리면 자동갱신이 끼어들 수 있는 빈틈이 있었음
+
+  // ── 공지 저장 전 충돌확인: 내가 이 화면을 보고 있는 사이, 다른 PC가 이미 공지를 저장했는지 실시간 확인
+  const curPlan  = document.getElementById('noticePlan')?.innerHTML  || '';
+  const curIssue = document.getElementById('noticeIssue')?.innerHTML || '';
+  const curMemo  = document.getElementById('noticeMemo')?.innerHTML  || '';
+  try {
+    const checkRes  = await fetch(GS_URL + '?action=check_notice');
+    const checkJson = await checkRes.json();
+    const sheetNotice = checkJson.data || {};
+    const sheetChanged =
+      (sheetNotice.plan  || '') !== noticeBaseline.plan ||
+      (sheetNotice.issue || '') !== noticeBaseline.issue ||
+      (sheetNotice.memo  || '') !== noticeBaseline.memo;
+    if (sheetChanged) {
+      const stripHtml = s => String(s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || '(내용 없음)';
+      const msg =
+        '⚠ 이 화면을 수정하는 사이, 다른 PC에서 이미 공지를 저장했습니다.\n\n' +
+        '[다른 PC가 저장한 최신 내용]\n' +
+        '금일 작업 계획: ' + stripHtml(sheetNotice.plan)  + '\n' +
+        '특이사항: '       + stripHtml(sheetNotice.issue) + '\n' +
+        '공정별 메모: '     + stripHtml(sheetNotice.memo)  + '\n' +
+        (sheetNotice.savedBy ? '\n저장자: ' + sheetNotice.savedBy : '') +
+        '\n\n계속 저장하면 위 내용이 지금 내가 입력한 내용으로 덮어써집니다.\n그래도 저장하시겠습니까?';
+      if (!confirm(msg)) return;
+    }
+  } catch(e) {
+    console.warn('공지 충돌확인 실패 (무시하고 저장 진행):', e);
+  }
+
+  // 메인저장은 이제 공지판(금일 작업계획/특이사항/공정별 메모)만 담당함.
+  // 모델/근무일/공정세트/히스토리는 각자 즉시저장되고 있어서, 여기서 또 전체를 다시 보내면
+  // 오히려 다른 PC가 방금 반영한 최신값을 오래된 로컬본으로 덮어쓸 위험만 생김 - 그래서 뺐음.
   lastSaveTime = Date.now();
   const btn = document.getElementById('mainSaveBtn');
   if (btn) { btn.textContent = '저장 중...'; btn.disabled = true; }
   setMainBadgeSaving();
-
-  // ── 저장 전 시트 최신 데이터 병합
-  try {
-    const res     = await fetch(GS_URL + '?action=load');
-    const json    = await res.json();
-    const sheetModels = json.data?.models || [];
-
-    // ── 시트에는 있지만 로컬엔 없는 모델을 먼저 채워넣기
-    // (신규 PC로 열었거나, 첫 동기화 전에 저장을 누르는 경우 로컬 models가 비어있거나 오래된 상태일 수 있음.
-    //  이 보정이 없으면 저장 시 시트에만 있던 모델이 통째로 사라지는 심각한 데이터 유실이 발생함)
-    sheetModels.forEach(sheetM => {
-      const existsLocally = models.some(m => m.model === sheetM.model && m.shipDate === sheetM.shipDate && (m.fullName||'') === (sheetM.fullName||''));
-      if (!existsLocally) models.push(sheetM);
-    });
-
-    // ── 시트 히스토리에 이미 "완료 처리"된 모델은 내 로컬에서 제거하고 저장
-    // (다른 PC가 먼저 완료 처리했는데 내 로컬이 그 사실을 아직 못 받아온 상태로 메인저장을 누르면,
-    //  내 오래된 로컬 사본이 다시 시트에 써져서 완료된 모델이 부활하는 버그가 있었음 - 이 필터로 방지)
-    // ⚠ 세부모델명(fullName)까지 포함해서 키를 만들어야 함 - 안 그러면 모델명+포장기준일만 같고
-    //   세부모델명이 다른 "완전히 별개의 모델"까지 오인해서 지워버리는 사고가 남
-    const sheetHistoryKeys = new Set(
-      (json.data?.history || []).map(h => h.model + '|' + String(h.shipDate||'').replace(/^'+/,'').split('T')[0].substring(0,10) + '|' + (h.fullName||''))
-    );
-    models = models.filter(m => !sheetHistoryKeys.has(m.model + '|' + String(m.shipDate||'').replace(/^'+/,'').split('T')[0].substring(0,10) + '|' + (m.fullName||'')));
-
-    hasSyncedOnce = true;
-
-    if (sheetModels.length > 0) {
-      const conflicts = []; // 충돌 목록
-
-      models.forEach((m, mi) => {
-        const sheetM = sheetModels.find(s =>
-          s.model === m.model && s.shipDate === m.shipDate && (s.fullName||'') === (m.fullName||'')
-        );
-        if (!sheetM) return;
-
-        Object.keys(sheetM.procs || {}).forEach(procId => {
-          const myVal    = m.procs[procId];
-          const sheetVal = sheetM.procs[procId];
-          // 내 로컬값과 시트값이 다르고, 내가 수정한 기록이 없는 공정 → 시트 기준으로 병합
-          if (myVal !== sheetVal) {
-            const myWip    = (m.wip    || {})[procId];
-            const sheetWip = (sheetM.wip || {})[procId];
-            // 양쪽 다 변경된 경우 → 충돌
-            if (myVal !== undefined && sheetVal !== undefined && myVal !== sheetVal) {
-              conflicts.push({ model: m.model, procId, myVal, sheetVal, mi, sheetM });
-            }
-          }
-        });
-      });
-
-      // 충돌 처리
-      if (conflicts.length > 0) {
-        const msg = conflicts.map(c =>
-          '[' + c.model + '] ' + c.procId + ': 내 값 ' + c.myVal + '대 / 시트 최신값 ' + c.sheetVal + '대'
-        ).join('\n');
-        const overwrite = confirm(
-          '다른 사용자가 수정한 공정이 있습니다:\n\n' + msg + '\n\n내 데이터로 덮어쓰시겠습니까?\n(취소 시 시트 최신값 유지)'
-        );
-        if (!overwrite) {
-          // 충돌 공정은 시트 데이터로 복원
-          conflicts.forEach(c => {
-            models[c.mi].procs[c.procId]  = c.sheetVal;
-            models[c.mi].wip[c.procId]    = (c.sheetM.wip    || {})[c.procId] || 0;
-            models[c.mi].wipPct[c.procId] = (c.sheetM.wipPct || {})[c.procId] || 0;
-          });
-          saveData(); renderTable(); updateAll();
-        }
-      } else {
-        // 충돌 없음 - 시트에만 있는 변경사항 병합
-        models.forEach((m, mi) => {
-          const sheetM = sheetModels.find(s =>
-            s.model === m.model && s.shipDate === m.shipDate && (s.fullName||'') === (m.fullName||'')
-          );
-          if (!sheetM) return;
-          Object.keys(sheetM.procs || {}).forEach(procId => {
-            if (m.procs[procId] === undefined) {
-              models[mi].procs[procId]  = sheetM.procs[procId];
-              models[mi].wip[procId]    = (sheetM.wip    || {})[procId] || 0;
-              models[mi].wipPct[procId] = (sheetM.wipPct || {})[procId] || 0;
-            }
-          });
-        });
-      }
-    }
-  } catch(e) {
-    console.warn('병합 중 오류 (무시하고 저장 진행):', e);
-  }
 
   const now     = new Date();
   const dateStr = `${now.getMonth()+1}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -3061,25 +3004,17 @@ async function manualSave(saverName) {
   localStorage.setItem('kaa_notice', JSON.stringify(noticeData));
 
   try {
-    // 기존엔 6개 요청을 Promise.all로 "동시에" 보냈지만, 구글시트/앱스크립트 특성상
-    // 실제로는 순서대로 처리되는 경우가 많아 요청 왕복 자체가 병목이었음 → 1개 요청으로 통합 (데이터/기능은 동일)
-    await gsPost('save_all', {
-      models:   models,
-      notice:   noticeData,
-      workdays: [...customWorkdays],
-      procsets: PROC_SETS,
-      summary:  JSON.parse(localStorage.getItem('kaa_summary') || '[]'),
-      history:  loadHistory(),
-    });
+    await gsPost('save_notice', noticeData);
+    noticeBaseline = { plan: curPlan, issue: curIssue, memo: curMemo }; // 방금 저장한 내용을 새 기준값으로
     setSyncStatus('저장됨 ✓', 'var(--green)');
     setMainBadgeSaved();
-    if (btn) { btn.textContent = '💾 저장'; btn.disabled = false; }
+    if (btn) { btn.textContent = '💾 공지 저장'; btn.disabled = false; }
     lastSaveTime = Date.now();
     lastEditTime = 0;     // 저장 완료 후 3분 차단 해제
     lastNoticeEdit = 0;   // 공지 차단도 해제
   } catch(e) {
     setSyncStatus('저장 실패', 'var(--red)');
-    if (btn) { btn.textContent = '💾 저장'; btn.disabled = false; }
+    if (btn) { btn.textContent = '💾 공지 저장'; btn.disabled = false; }
   }
 }
 
@@ -5091,6 +5026,7 @@ function initNotice() {
   document.getElementById('noticePlan').innerHTML  = saved.plan  || '';
   document.getElementById('noticeIssue').innerHTML = saved.issue || '';
   document.getElementById('noticeMemo').innerHTML  = saved.memo  || '';
+  noticeBaseline = { plan: saved.plan || '', issue: saved.issue || '', memo: saved.memo || '' };
 
   // 엔터+Ctrl 저장 단축키
   ['noticePlan','noticeIssue','noticeMemo'].forEach(id => {
@@ -6023,6 +5959,7 @@ async function gsLoad() {
         if (ni && document.activeElement !== ni) ni.innerHTML = d.notice.issue || '';
         if (nm && document.activeElement !== nm) nm.innerHTML = d.notice.memo  || '';
         localStorage.setItem('kaa_notice', JSON.stringify(d.notice));
+        noticeBaseline = { plan: d.notice.plan || '', issue: d.notice.issue || '', memo: d.notice.memo || '' };
       }
       // 내가 더 최신이면 → 시트 공지 무시 (내 입력 보호)
 
