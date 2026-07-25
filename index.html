@@ -865,7 +865,7 @@
   .history-overlay.open { display:flex; }
   .history-modal {
     background:var(--bg-panel); border:1px solid var(--border-bright);
-    width:1200px; max-height:85vh; display:flex; flex-direction:column;
+    width:1560px; max-width:95vw; max-height:85vh; display:flex; flex-direction:column;
     box-shadow:0 8px 24px rgba(0,0,0,.15);
   }
   .history-header {
@@ -4712,7 +4712,7 @@ function renderHistoryBody() {
         ${doneLabel} ${packDone}${unitLabel} (${rate}%) &nbsp;|&nbsp;
         포장 기준일: ${m.shipDate || '-'} &nbsp;|&nbsp;
         공정 세트: ${m.procSet} (${procSet.length}공정)
-        ${m.carriedOver ? `<br><span style="color:var(--orange);font-weight:700;">📦 이월 처리됨 — 연도별 집계 시 완료된 수량만 반영되고, 미완료로 남은 수량은 제외됩니다 (월별 집계에는 계획 전량 포함)</span>` : ''}
+        ${m.carriedOver ? `<div style="white-space:normal;margin-top:4px;color:var(--orange);font-weight:700;">📦 이월 처리됨 — 연도별 집계 시 완료된 수량만 반영되고, 미완료로 남은 수량은 제외됩니다 (월별 집계에는 계획 전량 포함)</div>` : ''}
       </div>
       ${noteRows.length > 0 ? `<div style="margin-top:6px;"><button onclick="openHistoryNotePopup(${i})" style="font-size:13px;padding:3px 12px;background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(204,136,0,.3);border-radius:2px;cursor:pointer;">📋 특이사항 보기 (${noteRows.length}건)</button></div>` : ''}
     `;
