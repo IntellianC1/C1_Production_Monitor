@@ -3186,9 +3186,13 @@ function computePerf(year, month) {
   loadHistory().forEach(h => {
     const ym = getHistYearMonth(h);
     if (!ymMatches(ym.year, ym.month)) return;
-    if (month === null && h.carriedOver) return; // 연도별 집계에서는 "이월" 체크된 항목 제외 (월별 집계에는 그대로 포함)
     const isCkd = h.procSet && h.procSet.indexOf('CKD') === 0;
     const { qty: actual, unit } = calcActualQty(h);
+    if (month === null && h.carriedOver) {
+      // 연도별 집계: 이월은 "실제 포장완료된 수량"만 계획=실적으로 반영 (미완료로 남아 다음 기간으로 넘어간 수량은 제외)
+      addToGroup(isCkd ? ckdGroups : antGroups, { ...h, plan: actual }, actual, unit);
+      return;
+    }
     addToGroup(isCkd ? ckdGroups : antGroups, h, actual, unit);
   });
 
@@ -4708,7 +4712,7 @@ function renderHistoryBody() {
         ${doneLabel} ${packDone}${unitLabel} (${rate}%) &nbsp;|&nbsp;
         포장 기준일: ${m.shipDate || '-'} &nbsp;|&nbsp;
         공정 세트: ${m.procSet} (${procSet.length}공정)
-        ${m.carriedOver ? `<br><span style="color:var(--orange);font-weight:700;">📦 이월 처리됨 — 연도별 계획대비실적 집계에서 제외됩니다 (월별 집계에는 포함)</span>` : ''}
+        ${m.carriedOver ? `<br><span style="color:var(--orange);font-weight:700;">📦 이월 처리됨 — 연도별 집계 시 완료된 수량만 반영되고, 미완료로 남은 수량은 제외됩니다 (월별 집계에는 계획 전량 포함)</span>` : ''}
       </div>
       ${noteRows.length > 0 ? `<div style="margin-top:6px;"><button onclick="openHistoryNotePopup(${i})" style="font-size:13px;padding:3px 12px;background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(204,136,0,.3);border-radius:2px;cursor:pointer;">📋 특이사항 보기 (${noteRows.length}건)</button></div>` : ''}
     `;
