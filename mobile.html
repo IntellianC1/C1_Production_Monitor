@@ -691,6 +691,7 @@ function renderHistoryTab() {
         </div>
         ${h.fullName ? `<div class="mcard-full">${escapeHtml(h.fullName)}</div>` : ''}
         <div class="hist-nums">계획 ${h.plan}${unit} · 실적 ${qty}${unit} (${rate}%) · 완료일 ${escapeHtml(h.completedDate||'-')}</div>
+        ${h.carriedOver ? `<div style="margin-top:5px;"><span style="font-size:11px;font-weight:700;color:var(--orange, #dd5500);border:1px solid var(--orange, #dd5500);border-radius:20px;padding:2px 9px;">📦 이월 (연도별 집계 제외)</span></div>` : ''}
       </div>
     `;
   }).join('');
@@ -1063,6 +1064,7 @@ function computePerf(year, month) {
   allHistory.forEach(h => {
     const ym = getHistYearMonth(h);
     if (!ymMatches(ym.year, ym.month)) return;
+    if (month === null && h.carriedOver) return; // 연도별 집계에서는 "이월" 항목 제외 (월별에는 포함) - PC와 동일 기준
     const isCkd = h.procSet && h.procSet.indexOf('CKD') === 0;
     const { qty, unit } = calcActualQty(h);
     addToGroup(isCkd ? ckdGroups : antGroups, h, qty, unit);
