@@ -47,6 +47,8 @@
   .live-badge { display:flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:23px; color:var(--green); }
   .live-dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 1.5s infinite; }
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+  @keyframes imgBlink { 0%,100%{opacity:1;} 50%{opacity:.45;} }
+  .img-btn-blink { animation: imgBlink 1.1s ease-in-out infinite; }
   .clock { font-family:var(--font-mono); font-size:23px; color:var(--accent); letter-spacing:2px; }
   .month-badge { font-family:var(--font-mono); font-size:21px; color:var(--yellow); background:var(--yellow-dim); border:1px solid rgba(255,215,0,.3); padding:4px 12px; }
 
@@ -4262,6 +4264,22 @@ function isScheduleActive(img) {
   return true;
 }
 
+// 종료일이 지난(만료된) 자동팝업 이미지는 자동으로 삭제 (누구든 접속했을 때 발견하는 쪽에서 정리)
+let expiredCleanupInProgress = new Set();
+function cleanupExpiredSharedImages() {
+  const todayStr = dateKey(new Date());
+  const expired = sharedImagesMeta.filter(img => img.endDate && img.endDate < todayStr && !expiredCleanupInProgress.has(img.id));
+  expired.forEach(img => {
+    expiredCleanupInProgress.add(img.id);
+    closeFloatingImagePopup(img.id);
+    gsPost('delete_shared_image', { id: img.id }).then(() => {
+      sharedImagesMeta = sharedImagesMeta.filter(m => m.id !== img.id);
+      localStorage.setItem('kaa_shared_images_meta', JSON.stringify(sharedImagesMeta));
+      renderSharedImageButtons();
+    }).catch(e => console.error('만료 이미지 자동삭제 실패:', e));
+  });
+}
+
 function renderSharedImageButtons() {
   const row = document.getElementById('sharedImageBtnRow');
   if (!row) return;
@@ -4271,7 +4289,7 @@ function renderSharedImageButtons() {
       ? 'background:var(--red-dim);color:var(--red);border:1px solid rgba(221,17,51,.4);font-size:14px;padding:7px 14px;font-weight:700;'
       : 'background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(204,136,0,.3);font-size:14px;padding:7px 14px;';
     return `
-    <button class="btn" onclick="openSharedImageViewModal('${img.id}')" style="${style}">
+    <button class="btn ${active?'img-btn-blink':''}" onclick="openSharedImageViewModal('${img.id}')" style="${style}">
       ${active ? '🔴' : '🖼'} ${escapeHtml(img.title)}
     </button>
   `;
@@ -6323,14 +6341,17 @@ async function gsLoad() {
     }
 
     // ── sharedImagesMeta: 공유이미지 갤러리 제목목록 (이미지 본체는 온디맨드라 여기 포함 안 됨, 가벼움)
+    // ※ 데이터가 안 바뀐 것처럼 보여도 매번 무조건 버튼/자동팝업/만료체크를 다시 함 (예전엔 diff가 같으면 건너뛰어서
+    //   새로고침해도 자동팝업이 다시 안 뜨는 문제가 있었음 - 세션이 새로 시작될 때마다 항상 재확인해야 정상 동작함)
     if (d.sharedImagesMeta && Array.isArray(d.sharedImagesMeta)) {
       const sheetSiStr = JSON.stringify(d.sharedImagesMeta);
       const localSiStr = JSON.stringify(sharedImagesMeta);
       if (sheetSiStr !== localSiStr) {
         sharedImagesMeta = d.sharedImagesMeta;
         localStorage.setItem('kaa_shared_images_meta', sheetSiStr);
-        renderSharedImageButtons();
       }
+      renderSharedImageButtons(); // 내부에서 checkAndShowScheduledImages() 호출됨
+      cleanupExpiredSharedImages();
     }
 
     // ── appVersion: 현재 정식 배포 버전 (저장/수정 차단 판단 기준)
