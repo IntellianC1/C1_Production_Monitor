@@ -893,6 +893,11 @@
     padding:3px 8px; cursor:pointer; font-size:19px; border-radius:2px;
   }
   .btn-history-del:hover { background:var(--red-dim); }
+  .btn-history-revert {
+    background:none; border:1px solid rgba(0,153,204,.4); color:var(--accent2);
+    padding:3px 8px; cursor:pointer; font-size:19px; border-radius:2px;
+  }
+  .btn-history-revert:hover { background:var(--accent-dim); }
   .history-empty { text-align:center; padding:40px; color:var(--text-dim); font-size:19px; }
   /* ─ 공정 편집 모달 ─ */
   .pe-overlay{display:none;position:fixed;inset:0;background:rgba(100,110,130,.55);z-index:3000;align-items:center;justify-content:center;}
@@ -1071,7 +1076,7 @@
 <header class="header">
   <div class="header-left">
     <img src="data:image/png;base64,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" style="height:30px;object-fit:contain;" alt="Intellian">
-    <div class="header-title">C1 생산 현황 <span>모니터링</span><span class="ver-badge">Rev12</span><span id="versionMismatchBadge" style="display:none;font-size:12px;font-weight:700;color:var(--red);border:1px solid var(--red);border-radius:2px;padding:1px 6px;margin-left:6px;vertical-align:middle;cursor:pointer;" onclick="requireSynced()" title="클릭하면 상세 안내">⚠ 예전 버전</span><button onclick="promoteThisVersionToOfficial()" title="이 버전을 정식 배포 버전으로 지정 (전체 배포 완료 후 관리자만 사용, 비밀번호 필요)" style="font-size:10px;padding:1px 5px;margin-left:6px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">정식지정</button><button onclick="changeAdminPasswordPrompt()" title="정식지정용 관리자 비밀번호 변경" style="font-size:10px;padding:1px 5px;margin-left:4px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">🔑 비밀번호 변경</button></div>
+    <div class="header-title">C1 생산 현황 <span>모니터링</span><span class="ver-badge">Rev13</span><span id="versionMismatchBadge" style="display:none;font-size:12px;font-weight:700;color:var(--red);border:1px solid var(--red);border-radius:2px;padding:1px 6px;margin-left:6px;vertical-align:middle;cursor:pointer;" onclick="requireSynced()" title="클릭하면 상세 안내">⚠ 예전 버전</span><button onclick="promoteThisVersionToOfficial()" title="이 버전을 정식 배포 버전으로 지정 (전체 배포 완료 후 관리자만 사용, 비밀번호 필요)" style="font-size:10px;padding:1px 5px;margin-left:6px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">정식지정</button><button onclick="changeAdminPasswordPrompt()" title="정식지정용 관리자 비밀번호 변경" style="font-size:10px;padding:1px 5px;margin-left:4px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">🔑 비밀번호 변경</button></div>
   </div>
   <div class="header-right">
     <div style="display:flex;align-items:center;gap:4px;border:1px solid var(--border);border-radius:2px;padding:3px 6px;background:var(--bg-card);">
@@ -1371,14 +1376,21 @@
 <div class="save-name-overlay" id="sharedImageAddOverlay">
   <div class="save-name-modal" style="width:min(560px, 92vw);max-width:none;">
     <div class="save-name-header">
-      <div class="save-name-title">🖼 이미지 등록</div>
+      <div class="save-name-title" id="sharedImageAddTitle">🖼 이미지 등록</div>
     </div>
     <div class="save-name-body">
       <div class="save-name-label">제목</div>
       <input class="save-name-input" id="sharedImgTitleInput" type="text" placeholder="예) 작업표준서" maxlength="30" style="margin-bottom:12px;" />
       <div class="save-name-label">설명 (선택)</div>
       <input class="save-name-input" id="sharedImgDescInput" type="text" placeholder="간단한 설명" maxlength="100" style="margin-bottom:12px;" />
-      <div class="save-name-label">이미지 파일</div>
+      <div class="save-name-label">자동 팝업 일정 (선택) — 설정한 기간에는 접속 시 자동으로 이미지가 뜨고, 버튼이 빨간색으로 표시돼요</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <input class="save-name-input" id="sharedImgStartInput" type="date" style="flex:1;" />
+        <span style="color:var(--text-dim);">~</span>
+        <input class="save-name-input" id="sharedImgEndInput" type="date" style="flex:1;" />
+        <button onclick="clearSharedImgSchedule()" title="일정 지우기" style="font-size:12px;padding:6px 8px;cursor:pointer;background:var(--bg-card2);border:1px solid var(--border);color:var(--text-dim);border-radius:2px;">지우기</button>
+      </div>
+      <div class="save-name-label" id="sharedImgFileLabel">이미지 파일</div>
       <input type="file" id="sharedImgFileInput" accept="image/*" onchange="handleSharedImgFileChange(this)" style="width:100%;padding:8px;background:var(--bg-card2);border:1px solid var(--border);color:var(--text-primary);" />
       <div id="sharedImgPasteZone" tabindex="0"
         style="margin-top:8px;padding:14px;border:1px dashed var(--border-bright);border-radius:2px;text-align:center;color:var(--text-dim);font-size:13px;cursor:text;outline:none;">
@@ -1388,7 +1400,7 @@
     </div>
     <div class="save-name-footer">
       <button class="save-name-cancel" onclick="closeSharedImageAddModal()">취소</button>
-      <button class="save-name-confirm" onclick="submitSharedImage()">등록</button>
+      <button class="save-name-confirm" id="sharedImageSubmitBtn" onclick="submitSharedImage()">등록</button>
     </div>
   </div>
 </div>
@@ -1412,9 +1424,11 @@
       </div>
       <div id="sharedImageViewDesc" style="font-size:15px;color:var(--text-primary);margin-top:10px;"></div>
       <div id="sharedImageViewMeta" style="font-size:13px;color:var(--text-dim);margin-top:6px;"></div>
+      <div id="sharedImageViewSchedule" style="font-size:13px;color:var(--orange);margin-top:4px;font-weight:700;"></div>
     </div>
     <div class="save-name-footer">
       <button class="save-name-cancel" id="sharedImageDeleteBtn" style="color:var(--red);border-color:rgba(221,17,51,.4);" onclick="deleteSharedImageConfirm()">🗑 삭제</button>
+      <button class="save-name-cancel" onclick="openSharedImageEditModal()">🔄 이미지 변경</button>
       <button class="save-name-cancel" onclick="downloadSharedImage()">⬇ 다운로드</button>
       <button class="save-name-confirm" onclick="closeSharedImageViewModal()">닫기</button>
     </div>
@@ -2381,8 +2395,17 @@ function renderCkdTable() {
 function updateAll() {
   let totalPlan = 0, totalMainDone = 0, totalFinalDone = 0, totalDone = 0, activeCount = 0, delayCount = 0, weightedSum = 0;
 
-  // 현재 활성 모델 (CKD는 단위(Site)가 달라서 이 스트립 집계에선 제외, ANT만 포함)
-  const antActiveModels = models.filter(mo => !(mo.procSet && mo.procSet.indexOf('CKD') === 0));
+  // 현재 활성 모델 중, 포장기준일이 "이번 달"인 것만 포함 (CKD는 단위(Site)가 달라서 이 스트립 집계에선 제외, ANT만 포함)
+  // ※ 미래/과거 달 물량을 미리 등록해도 그 달이 되기 전까지는 이번 달 요약에 안 잡히도록 함
+  const _now = new Date();
+  const curYear = _now.getFullYear(), curMonth = _now.getMonth() + 1;
+  const antActiveModels = models.filter(mo => {
+    if (mo.procSet && mo.procSet.indexOf('CKD') === 0) return false;
+    if (!mo.shipDate) return false;
+    const sd = parseLocalDate(mo.shipDate);
+    if (isNaN(sd)) return false;
+    return sd.getFullYear() === curYear && sd.getMonth() + 1 === curMonth;
+  });
   antActiveModels.forEach(mo => {
     totalPlan      += mo.plan;
     totalMainDone  += mo.procs['main']  || 0;
@@ -2395,9 +2418,7 @@ function updateAll() {
     if (wPct < ePct - 10) delayCount++;
   });
 
-  // 이번 달에 완료 처리된 모델도 총계에서 빠지면 안 되므로 합산에 포함
-  const _now = new Date();
-  const curYear = _now.getFullYear(), curMonth = _now.getMonth() + 1;
+  // 이번 달에 완료 처리된 모델도 총계에서 빠지면 안 되므로 합산에 포함 (포장기준일 기준으로 이미 이번 달로 기록되어 있음)
   loadHistory().forEach(h => {
     if (h.procSet && h.procSet.indexOf('CKD') === 0) return; // CKD는 단위가 달라 제외
     const ym = getHistYearMonth(h);
@@ -2424,9 +2445,15 @@ function updateAll() {
   document.getElementById('sumTotalPack').textContent  = totalPlan;
   document.getElementById('sumDonePct').textContent    = donePct + '%';
 
-  // ── CKD 총계 스트립 (Site 단위, ANT와 완전히 별도 집계)
+  // ── CKD 총계 스트립 (Site 단위, ANT와 완전히 별도 집계) - 포장기준일이 이번 달인 것만
   let ckdTotalPlan = 0, ckdTotalDone = 0;
-  models.filter(mo => mo.procSet && mo.procSet.indexOf('CKD') === 0).forEach(mo => {
+  models.filter(mo => {
+    if (!(mo.procSet && mo.procSet.indexOf('CKD') === 0)) return false;
+    if (!mo.shipDate) return false;
+    const sd = parseLocalDate(mo.shipDate);
+    if (isNaN(sd)) return false;
+    return sd.getFullYear() === curYear && sd.getMonth() + 1 === curMonth;
+  }).forEach(mo => {
     ckdTotalPlan += mo.plan || 0;
     ckdTotalDone += calcCkdCompletedSites(mo);
   });
@@ -3824,9 +3851,13 @@ function confirmMyName() {
     processCkdRefFile(f, inp);
   }
   if (pendingSharedImageSubmit) {
-    const { title, desc, file: sf } = pendingSharedImageSubmit;
+    const p = pendingSharedImageSubmit;
     pendingSharedImageSubmit = null;
-    processSharedImageSubmit(title, desc, sf);
+    if (p.mode === 'edit') {
+      processSharedImageUpdate(p.id, p.title, p.desc, p.startDate, p.endDate, p.file);
+    } else {
+      processSharedImageSubmit(p.title, p.desc, p.startDate, p.endDate, p.file);
+    }
   }
 }
 document.getElementById('myNameInput')?.addEventListener('keydown', e => {
@@ -4161,10 +4192,12 @@ document.addEventListener('click', function(e) {
   });
 })();
 
-// ── 공유이미지 갤러리 (제목별로 여러 개 등록 가능, 삭제 가능)
+// ── 공유이미지 갤러리 (제목별로 여러 개 등록 가능, 삭제 가능, 일정 등록 시 자동 팝업)
 let sharedImagesMeta = JSON.parse(localStorage.getItem('kaa_shared_images_meta') || '[]');
 let sharedImageViewingId = null;
 let sharedImgSelectedFile = null; // 파일선택 또는 Ctrl+V 붙여넣기로 선택된 이미지 (공통)
+let sharedImgEditingId = null; // null이면 신규 등록, 값 있으면 그 id의 이미지를 변경하는 중
+let autoShownImageIds = new Set(); // 이번 세션에 이미 자동으로 띄운 이미지 id (중복 자동팝업 방지)
 
 function showSharedImgPreview(file) {
   sharedImgSelectedFile = file;
@@ -4220,21 +4253,42 @@ document.addEventListener('paste', function(e) {
   });
 })();
 
+// 오늘이 이미지의 자동팝업 일정(시작일~종료일) 안에 있는지 판단
+function isScheduleActive(img) {
+  if (!img.startDate && !img.endDate) return false;
+  const todayStr = dateKey(new Date()); // YYYY-MM-DD
+  if (img.startDate && todayStr < img.startDate) return false;
+  if (img.endDate && todayStr > img.endDate) return false;
+  return true;
+}
+
 function renderSharedImageButtons() {
   const row = document.getElementById('sharedImageBtnRow');
   if (!row) return;
-  row.innerHTML = sharedImagesMeta.map(img => `
-    <button class="btn" onclick="openSharedImageViewModal('${img.id}')"
-      style="background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(204,136,0,.3);font-size:14px;padding:7px 14px;">
-      🖼 ${escapeHtml(img.title)}
+  row.innerHTML = sharedImagesMeta.map(img => {
+    const active = isScheduleActive(img);
+    const style = active
+      ? 'background:var(--red-dim);color:var(--red);border:1px solid rgba(221,17,51,.4);font-size:14px;padding:7px 14px;font-weight:700;'
+      : 'background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(204,136,0,.3);font-size:14px;padding:7px 14px;';
+    return `
+    <button class="btn" onclick="openSharedImageViewModal('${img.id}')" style="${style}">
+      ${active ? '🔴' : '🖼'} ${escapeHtml(img.title)}
     </button>
-  `).join('');
+  `;
+  }).join('');
+  checkAndShowScheduledImages();
 }
 
 function openSharedImageAddModal() {
   startModalEditLock(); // 팝업 열려있는 동안 자동갱신 차단
+  sharedImgEditingId = null;
+  document.getElementById('sharedImageAddTitle').textContent = '🖼 이미지 등록';
+  document.getElementById('sharedImageSubmitBtn').textContent = '등록';
+  document.getElementById('sharedImgFileLabel').textContent = '이미지 파일';
   document.getElementById('sharedImgTitleInput').value = '';
   document.getElementById('sharedImgDescInput').value = '';
+  document.getElementById('sharedImgStartInput').value = '';
+  document.getElementById('sharedImgEndInput').value = '';
   document.getElementById('sharedImgFileInput').value = '';
   sharedImgSelectedFile = null;
   const preview = document.getElementById('sharedImgPreview');
@@ -4249,6 +4303,40 @@ function openSharedImageAddModal() {
   document.getElementById('sharedImageAddOverlay').classList.add('open');
   setTimeout(() => zone?.focus(), 100);
 }
+
+// 보기 팝업에서 "🔄 이미지 변경" 눌렀을 때 - 같은 팝업을 편집모드로 채워서 염
+function openSharedImageEditModal() {
+  const meta = sharedImagesMeta.find(m => m.id === sharedImageViewingId);
+  if (!meta) return;
+  startModalEditLock();
+  sharedImgEditingId = meta.id;
+  document.getElementById('sharedImageAddTitle').textContent = '🔄 이미지 변경 — ' + meta.title;
+  document.getElementById('sharedImageSubmitBtn').textContent = '변경 저장';
+  document.getElementById('sharedImgFileLabel').textContent = '새 이미지 파일 (선택 — 안 고르면 기존 이미지 유지)';
+  document.getElementById('sharedImgTitleInput').value = meta.title || '';
+  document.getElementById('sharedImgDescInput').value = meta.desc || '';
+  document.getElementById('sharedImgStartInput').value = meta.startDate || '';
+  document.getElementById('sharedImgEndInput').value = meta.endDate || '';
+  document.getElementById('sharedImgFileInput').value = '';
+  sharedImgSelectedFile = null;
+  const preview = document.getElementById('sharedImgPreview');
+  preview.style.display = 'none';
+  preview.src = '';
+  const zone = document.getElementById('sharedImgPasteZone');
+  if (zone) {
+    zone.textContent = '새 이미지로 바꾸려면 여기를 클릭한 뒤 Ctrl+V로 붙여넣거나, 파일을 끌어다 놓으세요';
+    zone.style.borderColor = 'var(--border-bright)';
+    zone.style.color = 'var(--text-dim)';
+  }
+  closeSharedImageViewModal();
+  document.getElementById('sharedImageAddOverlay').classList.add('open');
+  setTimeout(() => zone?.focus(), 100);
+}
+
+function clearSharedImgSchedule() {
+  document.getElementById('sharedImgStartInput').value = '';
+  document.getElementById('sharedImgEndInput').value = '';
+}
 function closeSharedImageAddModal() {
   document.getElementById('sharedImageAddOverlay').classList.remove('open');
   stopModalEditLock(); // 자동갱신 차단 해제
@@ -4257,26 +4345,47 @@ function closeSharedImageAddModal() {
 async function submitSharedImage() {
   const title = document.getElementById('sharedImgTitleInput').value.trim();
   const desc  = document.getElementById('sharedImgDescInput').value.trim();
+  const startDate = document.getElementById('sharedImgStartInput').value || '';
+  const endDate   = document.getElementById('sharedImgEndInput').value || '';
   const file  = sharedImgSelectedFile; // 파일선택 또는 Ctrl+V 붙여넣기로 선택된 이미지
   if (!title) { alert('제목을 입력해주세요.'); return; }
+  if (startDate && endDate && startDate > endDate) { alert('종료일이 시작일보다 빠를 수 없습니다.'); return; }
+
+  if (sharedImgEditingId) {
+    // 변경 모드: 새 파일은 선택 시에만 필요 (안 고르면 기존 이미지 유지)
+    if (file && !/^image\//.test(file.type)) { alert('이미지 파일만 등록할 수 있습니다.'); return; }
+    const myName = localStorage.getItem('kaa_my_name') || '';
+    if (!myName) {
+      pendingSharedImageSubmit = { mode: 'edit', id: sharedImgEditingId, title, desc, startDate, endDate, file };
+      const nameInp = document.getElementById('myNameInput');
+      if (nameInp) nameInp.value = '';
+      document.getElementById('myNameOverlay').classList.add('open');
+      setTimeout(() => nameInp?.focus(), 100);
+      return;
+    }
+    await processSharedImageUpdate(sharedImgEditingId, title, desc, startDate, endDate, file);
+    return;
+  }
+
+  // 신규 등록 모드: 이미지 필수
   if (!file)  { alert('이미지 파일을 선택하거나 Ctrl+V로 붙여넣어주세요.'); return; }
   if (!/^image\//.test(file.type)) { alert('이미지 파일만 등록할 수 있습니다.'); return; }
 
   const myName = localStorage.getItem('kaa_my_name') || '';
   if (!myName) {
-    pendingSharedImageSubmit = { title, desc, file };
+    pendingSharedImageSubmit = { mode: 'new', title, desc, startDate, endDate, file };
     const nameInp = document.getElementById('myNameInput');
     if (nameInp) nameInp.value = '';
     document.getElementById('myNameOverlay').classList.add('open');
     setTimeout(() => nameInp?.focus(), 100);
     return;
   }
-  await processSharedImageSubmit(title, desc, file);
+  await processSharedImageSubmit(title, desc, startDate, endDate, file);
 }
 
 let pendingSharedImageSubmit = null;
 
-function processSharedImageSubmit(title, desc, file) {
+function processSharedImageSubmit(title, desc, startDate, endDate, file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = async function(e) {
@@ -4287,11 +4396,11 @@ function processSharedImageSubmit(title, desc, file) {
         // 이 경우엔 직접 fetch로 응답을 파싱해서 사용 (fake id를 쓰면 나중에 이미지를 못 찾는 버그 있었음)
         const res  = await fetch(GS_URL, { method:'POST', body: JSON.stringify({
           action: 'save_shared_image',
-          data: { title, desc, imageData: dataUrl, uploadedBy: myName },
+          data: { title, desc, imageData: dataUrl, uploadedBy: myName, startDate, endDate },
         })});
         const json = await res.json();
         if (json.status !== 'ok' || !json.data || !json.data.id) throw new Error(json.message || '응답에 id 없음');
-        sharedImagesMeta.push({ id: json.data.id, title, desc, uploadedBy: myName, uploadedAt: new Date().toISOString() });
+        sharedImagesMeta.push({ id: json.data.id, title, desc, uploadedBy: myName, uploadedAt: new Date().toISOString(), startDate, endDate });
         localStorage.setItem('kaa_shared_images_meta', JSON.stringify(sharedImagesMeta));
         renderSharedImageButtons();
         closeSharedImageAddModal();
@@ -4302,6 +4411,40 @@ function processSharedImageSubmit(title, desc, file) {
       resolve();
     };
     reader.readAsDataURL(file);
+  });
+}
+
+// 이미지 변경 (같은 id 유지, 새 파일은 선택했을 때만 교체)
+function processSharedImageUpdate(id, title, desc, startDate, endDate, file) {
+  return new Promise((resolve) => {
+    const myName = localStorage.getItem('kaa_my_name') || '익명';
+    const send = async (imageData) => {
+      try {
+        const res  = await fetch(GS_URL, { method:'POST', body: JSON.stringify({
+          action: 'update_shared_image',
+          data: { id, title, desc, startDate, endDate, uploadedBy: myName, imageData: imageData || undefined },
+        })});
+        const json = await res.json();
+        if (json.status !== 'ok') throw new Error(json.message || '변경 실패');
+        const idx = sharedImagesMeta.findIndex(m => m.id === id);
+        if (idx >= 0) sharedImagesMeta[idx] = { ...sharedImagesMeta[idx], title, desc, startDate, endDate };
+        localStorage.setItem('kaa_shared_images_meta', JSON.stringify(sharedImagesMeta));
+        if (imageData) delete sharedImageCache[id]; // 이미지가 바뀌었으니 캐시 무효화 (다음에 열 때 새로 받아옴)
+        renderSharedImageButtons();
+        closeSharedImageAddModal();
+      } catch(err) {
+        console.error('update_shared_image 실패:', err);
+        alert('이미지 변경에 실패했습니다.');
+      }
+      resolve();
+    };
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = e => send(e.target.result);
+      reader.readAsDataURL(file);
+    } else {
+      send(null); // 이미지는 그대로 두고 제목/설명/일정만 변경
+    }
   });
 }
 
@@ -4373,6 +4516,12 @@ async function openSharedImageViewModal(id) {
   const meta = sharedImagesMeta.find(m => m.id === id);
   document.getElementById('sharedImageViewTitle').textContent = '🖼 ' + (meta ? meta.title : '이미지');
   document.getElementById('sharedImageViewDesc').textContent  = meta && meta.desc ? meta.desc : '';
+  const scheduleEl = document.getElementById('sharedImageViewSchedule');
+  if (meta && (meta.startDate || meta.endDate)) {
+    scheduleEl.textContent = `📅 자동 팝업 기간: ${meta.startDate || '제한없음'} ~ ${meta.endDate || '제한없음'}${isScheduleActive(meta) ? ' (현재 진행중)' : ''}`;
+  } else {
+    scheduleEl.textContent = '';
+  }
   const loading = document.getElementById('sharedImageViewLoading');
   const zoomBox = document.getElementById('sharedImgZoomBox');
   const img     = document.getElementById('sharedImageViewImg');
@@ -4430,12 +4579,77 @@ async function deleteSharedImageConfirm() {
     await gsPost('delete_shared_image', { id: sharedImageViewingId });
     sharedImagesMeta = sharedImagesMeta.filter(m => m.id !== sharedImageViewingId);
     localStorage.setItem('kaa_shared_images_meta', JSON.stringify(sharedImagesMeta));
+    closeFloatingImagePopup(sharedImageViewingId);
     renderSharedImageButtons();
     closeSharedImageViewModal();
   } catch(e) {
     console.error('delete_shared_image 실패:', e);
     alert('삭제에 실패했습니다.');
   }
+}
+
+// ── 일정 등록 이미지 자동 팝업 (여러 개 겹치면 다 같이 떠 있을 수 있게, 고정 팝업 하나 재사용 대신 매번 새로 생성)
+function checkAndShowScheduledImages() {
+  const toShow = sharedImagesMeta.filter(img => isScheduleActive(img) && !autoShownImageIds.has(img.id));
+  toShow.forEach(img => {
+    autoShownImageIds.add(img.id);
+    const stackIndex = document.querySelectorAll('.floating-img-popup').length;
+    openFloatingImagePopup(img.id, stackIndex);
+  });
+}
+
+async function openFloatingImagePopup(id, stackIndex) {
+  const meta = sharedImagesMeta.find(m => m.id === id);
+  if (!meta) return;
+  if (document.getElementById('floatPopup_' + id)) return; // 이미 떠있으면 중복생성 방지
+  const offset = stackIndex * 34;
+  const wrap = document.createElement('div');
+  wrap.className = 'floating-img-popup';
+  wrap.id = 'floatPopup_' + id;
+  wrap.style.cssText = `position:fixed; top:${60+offset}px; left:${60+offset}px; z-index:${9500+stackIndex}; width:min(560px,90vw); background:#fff; border-radius:6px; border:1px solid var(--border-bright); box-shadow:0 10px 30px rgba(0,0,0,.35);`;
+  wrap.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--red-dim);border-radius:6px 6px 0 0;">
+      <div style="font-weight:700;color:var(--red);font-size:15px;">🔔 ${escapeHtml(meta.title)}</div>
+      <button onclick="closeFloatingImagePopup('${id}')" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-dim);line-height:1;">✕</button>
+    </div>
+    <div style="padding:14px 16px;max-height:70vh;overflow:auto;">
+      <div id="floatLoading_${id}" style="text-align:center;padding:20px;color:var(--text-dim);">불러오는 중...</div>
+      <img id="floatImg_${id}" style="display:none;width:100%;border:1px solid var(--border);border-radius:2px;" />
+      ${meta.desc ? `<div style="font-size:14px;color:var(--text-primary);margin-top:8px;">${escapeHtml(meta.desc)}</div>` : ''}
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px;">📅 ${meta.startDate||''} ~ ${meta.endDate||''} 기간 자동 표시</div>
+    </div>
+  `;
+  document.body.appendChild(wrap);
+
+  if (sharedImageCache[id]) {
+    document.getElementById('floatLoading_'+id).style.display = 'none';
+    const imgEl = document.getElementById('floatImg_'+id);
+    if (imgEl) { imgEl.src = sharedImageCache[id]; imgEl.style.display = 'block'; }
+    return;
+  }
+  try {
+    const res  = await fetch(GS_URL + '?action=load_shared_image&id=' + encodeURIComponent(id));
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error(json.message);
+    const imgData = json.data && json.data.imageData;
+    if (imgData) {
+      sharedImageCache[id] = imgData;
+      const imgEl = document.getElementById('floatImg_'+id);
+      if (imgEl) { imgEl.src = imgData; imgEl.style.display = 'block'; }
+    }
+  } catch(e) {
+    console.error('load_shared_image(자동팝업) 실패:', e);
+    const loadEl = document.getElementById('floatLoading_'+id);
+    if (loadEl) loadEl.textContent = '이미지를 불러오지 못했습니다.';
+    return;
+  }
+  const loadEl = document.getElementById('floatLoading_'+id);
+  if (loadEl) loadEl.style.display = 'none';
+}
+
+function closeFloatingImagePopup(id) {
+  const el = document.getElementById('floatPopup_' + id);
+  if (el) el.remove();
 }
 
 // ── CKD 구성표 이미지 (온디맨드 로드 - 30초 정기동기화엔 절대 안 실림)
@@ -4704,6 +4918,7 @@ function renderHistoryBody() {
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <div class="history-card-date">완료일: ${m.completedDate || '-'}</div>
+          <button class="btn-history-revert" onclick="revertHistoryToModel(${i})" title="완료를 취소하고 진행중 모델카드로 되돌립니다">↺ 되돌리기</button>
           <button class="btn-history-del" onclick="deleteHistory(${i})">삭제</button>
         </div>
       </div>
@@ -4782,6 +4997,38 @@ function deleteHistory(idx) {
   renderHistoryBody();
   // 즉시 서버로도 전송 (기존엔 메인저장을 기다렸음)
   gsPost('save_history', hist).catch(e => console.error('save_history 실패:', e));
+}
+
+// 완료 취소 - 히스토리에서 빼고 진행중 모델카드로 되돌림 (잘못된 상태로 완료 처리한 걸 바로잡을 때 사용)
+// 요약/실적 집계에 자동으로 정상 반영되도록, 별도 로직 없이 "완료 처리를 되감는" 방식으로 구현
+async function revertHistoryToModel(idx) {
+  const hist = loadHistory();
+  const h = hist[idx];
+  if (!h) return;
+  if (!confirm(`"${h.model}"의 완료 처리를 취소하고, 진행중 모델카드로 되돌리시겠습니까?\n\n되돌린 뒤 모델카드를 다시 정확하게 수정하고, 확인되면 다시 완료 처리해주세요.`)) return;
+
+  // 히스토리 전용 필드(completedAt/completedDate/shipMonth/shipYear/carriedOver)는 제거하고
+  // 나머지 원본 모델 데이터(procs/wip/snData/noteData 등)는 그대로 유지해서 활성 모델로 복원
+  const { completedAt, completedDate, shipMonth, shipYear, carriedOver, ...restored } = h;
+  models.push(restored);
+  saveData();
+
+  hist.splice(idx, 1);
+  saveHistory(hist);
+
+  renderHistoryBody();
+  renderTable();
+  updateAll();
+
+  // 즉시 서버 반영 (모델 전체 + 히스토리 둘 다)
+  try {
+    await instantSaveModels('완료 취소(되돌리기)', null);
+    await gsPost('save_history', hist);
+    alert(`"${h.model}"이(가) 진행중 모델카드로 복원되었습니다.\n메인 화면에서 정보를 수정한 뒤, 확인되면 다시 완료 처리해주세요.`);
+  } catch(e) {
+    console.error('revertHistoryToModel 저장 실패:', e);
+    alert('되돌리기는 되었지만 서버 저장 중 문제가 발생했습니다. 새로고침 후 다시 확인해주세요.');
+  }
 }
 
 // ── 모델 삭제

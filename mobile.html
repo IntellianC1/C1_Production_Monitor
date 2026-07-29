@@ -88,6 +88,11 @@
   .section-label { font-size:12px; font-weight:700; color:var(--text-dim); margin:16px 16px 6px; letter-spacing:.3px; }
   .cards { padding: 0 16px; display:flex; flex-direction:column; gap:10px; }
   .mcard { background:var(--bg-card); border:1px solid var(--border); border-left:4px solid var(--border-bright); border-radius:12px; padding:14px 15px; position:relative; }
+  .mcard.mc-bg-blue    { background:#e8f4fd; }
+  .mcard.mc-bg-green   { background:#e8f9ee; }
+  .mcard.mc-bg-yellow  { background:#fffde7; }
+  .mcard.mc-bg-pink    { background:#fde8f0; }
+  .mcard.mc-bg-purple  { background:#f0e8fd; }
   .mcard-note-badge {
     position:absolute; top:-8px; right:-8px; background:var(--red); color:#fff; font-size:11px; font-weight:700;
     border-radius:10px; min-width:20px; height:20px; display:flex; align-items:center; justify-content:center; padding:0 5px;
@@ -247,7 +252,7 @@
     <div class="topbar-logo"><img src="data:image/png;base64,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" alt="Intellian"></div>
     <div class="live-dot"></div>
     <div>
-      <div class="topbar-title">C1 생산 현황<span class="ver">Rev12</span></div>
+      <div class="topbar-title">C1 생산 현황<span class="ver">Rev13</span></div>
       <div class="topbar-sub" id="lastSync">연결 중...</div>
     </div>
   </div>
@@ -525,6 +530,15 @@ function renderWdCalendar() {
 let imgListOpen = false;
 let sharedImagesMeta = [];
 let imgCache = {};
+let autoShownImageIds = new Set(); // 이번 세션에 이미 자동으로 띄운 이미지 id (중복 방지)
+
+function isScheduleActive(img) {
+  if (!img.startDate && !img.endDate) return false;
+  const todayStr = dateKey(new Date());
+  if (img.startDate && todayStr < img.startDate) return false;
+  if (img.endDate && todayStr > img.endDate) return false;
+  return true;
+}
 
 function toggleImgList() {
   imgListOpen = !imgListOpen;
@@ -539,12 +553,16 @@ function renderImgList() {
     body.innerHTML = '<div class="notice-item" style="color:var(--text-dim)">등록된 이미지가 없습니다.</div>';
     return;
   }
-  body.innerHTML = sharedImagesMeta.map(img => `
-    <div class="img-list-row" onclick="openImageView('${img.id}')">
-      <span>🖼 ${escapeHtml(img.title)}</span>
+  body.innerHTML = sharedImagesMeta.map(img => {
+    const active = isScheduleActive(img);
+    return `
+    <div class="img-list-row" onclick="openImageView('${img.id}')" style="${active?'color:var(--red);font-weight:700;':''}">
+      <span>${active?'🔴':'🖼'} ${escapeHtml(img.title)}</span>
       <span style="color:var(--text-dim);">›</span>
     </div>
-  `).join('');
+  `;
+  }).join('');
+  checkAndShowScheduledImages();
 }
 
 async function openImageView(id) {
@@ -570,6 +588,66 @@ async function openImageView(id) {
     console.error(e);
     body.innerHTML = '<div style="padding:20px;color:var(--red);">이미지를 불러오지 못했습니다.</div>';
   }
+}
+
+// 일정 등록 이미지 자동 팝업 (여러 개 겹치면 계단식으로 다 같이 뜸)
+function checkAndShowScheduledImages() {
+  const toShow = sharedImagesMeta.filter(img => isScheduleActive(img) && !autoShownImageIds.has(img.id));
+  toShow.forEach(img => {
+    autoShownImageIds.add(img.id);
+    const stackIndex = document.querySelectorAll('.floating-img-popup').length;
+    openFloatingImagePopup(img.id, stackIndex);
+  });
+}
+
+async function openFloatingImagePopup(id, stackIndex) {
+  const meta = sharedImagesMeta.find(m => m.id === id);
+  if (!meta) return;
+  if (document.getElementById('floatPopup_' + id)) return;
+  const offset = stackIndex * 18;
+  const wrap = document.createElement('div');
+  wrap.className = 'floating-img-popup';
+  wrap.id = 'floatPopup_' + id;
+  wrap.style.cssText = `position:fixed; top:${70+offset}px; left:${14+offset}px; right:${14-offset}px; z-index:${9500+stackIndex}; background:#fff; border-radius:10px; border:1px solid var(--border); box-shadow:0 10px 26px rgba(0,0,0,.35); max-width:480px; margin:0 auto;`;
+  wrap.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--red-dim,#fdeaea);border-radius:10px 10px 0 0;">
+      <div style="font-weight:700;color:var(--red);font-size:13px;">🔔 ${escapeHtml(meta.title)}</div>
+      <button onclick="closeFloatingImagePopup('${id}')" style="background:none;border:none;font-size:17px;cursor:pointer;color:var(--text-dim);line-height:1;">✕</button>
+    </div>
+    <div style="padding:12px 14px;max-height:60vh;overflow:auto;">
+      <div id="floatLoading_${id}" style="text-align:center;padding:16px;color:var(--text-dim);font-size:12px;">불러오는 중...</div>
+      <img id="floatImg_${id}" style="display:none;width:100%;border-radius:6px;" />
+      ${meta.desc ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:6px;">${escapeHtml(meta.desc)}</div>` : ''}
+    </div>
+  `;
+  document.body.appendChild(wrap);
+
+  if (imgCache[id]) {
+    document.getElementById('floatLoading_'+id).style.display = 'none';
+    const imgEl = document.getElementById('floatImg_'+id);
+    if (imgEl) { imgEl.src = imgCache[id]; imgEl.style.display = 'block'; }
+    return;
+  }
+  try {
+    const res  = await fetch(GS_URL + '?action=load_shared_image&id=' + encodeURIComponent(id));
+    const json = await res.json();
+    if (json.status !== 'ok' || !json.data || !json.data.imageData) throw new Error('불러오기 실패');
+    imgCache[id] = json.data.imageData;
+    const imgEl = document.getElementById('floatImg_'+id);
+    if (imgEl) { imgEl.src = json.data.imageData; imgEl.style.display = 'block'; }
+  } catch(e) {
+    console.error('자동팝업 이미지 로드 실패:', e);
+    const loadEl = document.getElementById('floatLoading_'+id);
+    if (loadEl) loadEl.textContent = '이미지를 불러오지 못했습니다.';
+    return;
+  }
+  const loadEl = document.getElementById('floatLoading_'+id);
+  if (loadEl) loadEl.style.display = 'none';
+}
+
+function closeFloatingImagePopup(id) {
+  const el = document.getElementById('floatPopup_' + id);
+  if (el) el.remove();
 }
 
 function closeImageView() {
@@ -707,7 +785,14 @@ function renderSummary(models) {
   const now = new Date();
   const curYear = now.getFullYear(), curMonth = now.getMonth() + 1;
 
-  const activeAnt = models.filter(m => !(m.procSet && m.procSet.indexOf('CKD')===0));
+  // 포장기준일이 "이번 달"인 활성 모델만 포함 (미래/과거 달 물량을 미리 등록해도 그 달이 되기 전까진 안 잡히게)
+  const activeAnt = models.filter(m => {
+    if (m.procSet && m.procSet.indexOf('CKD')===0) return false;
+    if (!m.shipDate) return false;
+    const sd = parseLocalDate(m.shipDate);
+    if (isNaN(sd)) return false;
+    return sd.getFullYear() === curYear && sd.getMonth() + 1 === curMonth;
+  });
   const histAntThisMonth = allHistory.filter(h => {
     if (h.procSet && h.procSet.indexOf('CKD')===0) return false;
     const ym = getHistYearMonth(h);
@@ -746,16 +831,18 @@ function renderSummary(models) {
 function renderAntCard(m, i) {
   const plan = m.plan || 0;
   const mainDone = (m.procs && m.procs['main']) || 0;
+  const finalDone = (m.procs && m.procs['final']) || 0;
   const packDone = (m.procs && m.procs['pack']) || 0;
   const pct = plan > 0 ? Math.round(packDone/plan*100) : 0;
   const st = statusOf(pct);
   const dday = getDdayInfo(m.shipDate);
-  const mainPct = plan>0 ? Math.min(Math.round(mainDone/plan*100),100) : 0;
-  const packPct = plan>0 ? Math.min(Math.round(packDone/plan*100),100) : 0;
+  const mainPct  = plan>0 ? Math.min(Math.round(mainDone/plan*100),100)  : 0;
+  const finalPct = plan>0 ? Math.min(Math.round(finalDone/plan*100),100) : 0;
+  const packPct  = plan>0 ? Math.min(Math.round(packDone/plan*100),100)  : 0;
   const noteCount = (m.noteData || []).filter(r => r.status !== 'Completed').length;
 
   return `
-    <div class="mcard st-${st.cls}" onclick="openProcDetail('ant', ${i})">
+    <div class="mcard st-${st.cls} ${m.cardColor && m.cardColor!=='default' ? 'mc-bg-'+m.cardColor : ''}" onclick="openProcDetail('ant', ${i})">
       ${noteCount>0 ? `<div class="mcard-note-badge">📋 ${noteCount}</div>` : ''}
       <div class="mcard-top">
         <div>
@@ -772,6 +859,11 @@ function renderAntCard(m, i) {
           <div class="plabel">조립</div>
           <div class="pbar"><div style="width:${mainPct}%;background:var(--accent);"></div></div>
           <div class="pval">${mainDone}/${plan}</div>
+        </div>
+        <div class="prow">
+          <div class="plabel">검사</div>
+          <div class="pbar"><div style="width:${finalPct}%;background:var(--yellow);"></div></div>
+          <div class="pval">${finalDone}/${plan}</div>
         </div>
         <div class="prow">
           <div class="plabel">포장</div>
@@ -794,7 +886,7 @@ function renderCkdCard(m, i) {
   const noteCount = (m.noteData || []).filter(r => r.status !== 'Completed').length;
 
   return `
-    <div class="mcard st-${st.cls}" onclick="openProcDetail('ckd', ${i})">
+    <div class="mcard st-${st.cls} ${m.cardColor && m.cardColor!=='default' ? 'mc-bg-'+m.cardColor : ''}" onclick="openProcDetail('ckd', ${i})">
       ${noteCount>0 ? `<div class="mcard-note-badge">📋 ${noteCount}</div>` : ''}
       <div class="mcard-top">
         <div>
@@ -915,14 +1007,20 @@ function renderStatusTab() {
 
 // CKD 요약 (총계획/포장완료, Site 단위) - PC 메인화면과 동일 기준(당월 전체 = 진행중 + 이번달 완료분)
 function renderCkdSummary() {
-  const ckdActive = allModels.filter(m => m.procSet && m.procSet.indexOf('CKD') === 0);
+  const now = new Date();
+  const curYear = now.getFullYear(), curMonth = now.getMonth() + 1;
+  const ckdActive = allModels.filter(m => {
+    if (!(m.procSet && m.procSet.indexOf('CKD') === 0)) return false;
+    if (!m.shipDate) return false;
+    const sd = parseLocalDate(m.shipDate);
+    if (isNaN(sd)) return false;
+    return sd.getFullYear() === curYear && sd.getMonth() + 1 === curMonth;
+  });
   let plan = 0, done = 0;
   ckdActive.forEach(m => {
     plan += m.plan || 0;
     done += calcCkdCompletedSites(m, (procSets && procSets[m.procSet]) || []);
   });
-  const now = new Date();
-  const curYear = now.getFullYear(), curMonth = now.getMonth() + 1;
   allHistory.forEach(h => {
     if (!(h.procSet && h.procSet.indexOf('CKD') === 0)) return;
     const ym = getHistYearMonth(h);
@@ -1173,6 +1271,7 @@ async function loadData(isManual) {
     renderStatusTab();
     if (wdOpen) renderWdCalendar();
     if (imgListOpen) renderImgList();
+    checkAndShowScheduledImages(); // 이미지 목록 패널을 안 열어도 자동팝업은 항상 체크
     if (currentTab === 'shortage') renderShortageTab();
     if (currentTab === 'notes') renderNotesTab();
     if (currentTab === 'perf') renderPerfTab();
