@@ -6013,15 +6013,15 @@ function renameProcSet(key) {
   renderPeBody(newKey);
 }
 
+// ── Google Sheets 연동
+const GS_URL = 'https://script.google.com/macros/s/AKfycbwD0k2Qu4udUQCuRqrkiwL1nC3H7lJOsKdXFnHMq87Z53zbZUpCENHdiuPj8g3oPgpD/exec';
+
 loadProcSets();
 init();
 initNotice();
 initSaveInfo();
 initSummary();
-renderSharedImageButtons();
-
-// ── Google Sheets 연동
-const GS_URL = 'https://script.google.com/macros/s/AKfycbwD0k2Qu4udUQCuRqrkiwL1nC3H7lJOsKdXFnHMq87Z53zbZUpCENHdiuPj8g3oPgpD/exec';
+renderSharedImageButtons(); // GS_URL 선언 이후에 호출되어야 함 (자동팝업이 이미지 로드 시 GS_URL을 바로 사용하기 때문)
 
 function setSyncStatus(msg, color) {
   const dot = document.getElementById('syncDot');
