@@ -99,12 +99,12 @@
   .wp-gauge-row-label { font-size:24px; font-weight:800; color:var(--text-secondary); margin-bottom:8px; }
   .wp-note-badge-inline { position:absolute; top:6px; right:6px; background:var(--red); color:#fff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 6px; }
   /* ── 계획/완료 미니 테이블 (완료 = 포장완료 수량 기준) */
-  .wp-mini-table { flex-shrink:0; width:118px; border:1px solid var(--border); border-radius:3px; overflow:hidden; background:#fff; }
-  .wp-mini-table-head { display:flex; background:var(--navy, #0d1f3c); }
-  .wp-mini-table-head div { flex:1; text-align:center; color:#fff; font-size:15px; font-weight:800; padding:5px 0; }
+  .wp-mini-table { flex-shrink:0; width:118px; align-self:stretch; display:flex; flex-direction:column; border-radius:3px; overflow:hidden; background:#fff; }
+  .wp-mini-table-head { display:flex; background:var(--navy, #0d1f3c); flex-shrink:0; }
+  .wp-mini-table-head div { flex:1; text-align:center; color:#fff; font-size:15px; font-weight:800; padding:6px 0; }
   .wp-mini-table-head div:first-child { border-right:1px solid rgba(255,255,255,.2); }
-  .wp-mini-table-body { display:flex; }
-  .wp-mini-table-body div { flex:1; text-align:center; font-family:var(--font-mono); font-size:28px; font-weight:800; padding:6px 0; color:var(--text-primary); }
+  .wp-mini-table-body { display:flex; flex:1; }
+  .wp-mini-table-body div { flex:1; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:32px; font-weight:800; color:var(--text-primary); }
   .wp-mini-table-body div:first-child { border-right:1px solid var(--border); }
   .ts-item { flex:1; padding:10px 16px; border-right:1px solid var(--border); display:flex; align-items:center; gap:10px; }
   .ts-item:last-child { border-right:none; }
@@ -3620,11 +3620,11 @@ function renderWeekPlanView() {
 
   html += `
     <div class="wp-summary">
-      <div class="wp-summary-cell">
+      <div class="wp-summary-cell" style="flex:0 0 320px;">
         <div class="wp-summary-label">ANT 총계획 (이번 주)</div>
         <div style="font-family:var(--font-mono);font-size:34px;font-weight:800;">${antPlan}대</div>
       </div>
-      <div class="wp-summary-cell" style="flex:0;display:flex;align-items:center;">
+      <div class="wp-summary-cell" style="flex:0 0 auto;display:flex;align-items:stretch;">
         ${buildPlanDoneTable(antPlan, antPack)}
       </div>
       <div class="wp-summary-cell">
@@ -3641,14 +3641,14 @@ function renderWeekPlanView() {
       </div>
     </div>
     <div class="wp-summary" style="margin-top:-6px;">
-      <div class="wp-summary-cell">
+      <div class="wp-summary-cell" style="flex:0 0 320px;">
         <div class="wp-summary-label">CKD 총계획 (이번 주)</div>
         <div style="font-family:var(--font-mono);font-size:34px;font-weight:800;">${ckdPlan} Site</div>
       </div>
-      <div class="wp-summary-cell" style="flex:0;display:flex;align-items:center;">
+      <div class="wp-summary-cell" style="flex:0 0 auto;display:flex;align-items:stretch;">
         ${buildPlanDoneTable(ckdPlan, ckdPack)}
       </div>
-      <div class="wp-summary-cell" style="flex:3;">
+      <div class="wp-summary-cell" style="flex:1;">
         <div class="wp-summary-label">포장 완료</div>
         ${buildGaugeBar(ckdPack, ckdPlan, ckdPack < ckdPlan*expectedRatio - 0.5, null, 'Site')}
       </div>
