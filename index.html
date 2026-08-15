@@ -79,7 +79,7 @@
   .wp-summary { display:flex; background:var(--bg-card); border:1px solid var(--border); margin-bottom:16px; }
   .wp-summary-cell { flex:1; padding:10px 16px; border-right:1px solid var(--border); }
   .wp-summary-cell:last-child { border-right:none; }
-  .wp-summary-label { font-size:22px; font-weight:800; color:var(--text-secondary); margin-bottom:6px; }
+  .wp-summary-label { font-size:26px; font-weight:800; color:var(--text-secondary); margin-bottom:6px; }
   .wp-gauge-track { position:relative; height:16px; background:var(--bg-panel); border-radius:2px; overflow:hidden; }
   .wp-gauge-fill { position:absolute; top:0; left:0; height:100%; background:var(--accent2); transition:width .3s; }
   .wp-gauge-fill.done-soft { background:rgba(0,170,85,.28); }
@@ -88,16 +88,24 @@
   .wp-card { background:var(--bg-card); border:1px dashed var(--border-bright); border-left:4px solid transparent; border-radius:2px; display:flex; margin-bottom:10px; overflow:hidden; }
   .wp-card.wp-card-delayed { border-left-color:var(--red); }
   .wp-card.wp-card-done { opacity:.7; }
-  .wp-card-left { width:180px; flex-shrink:0; background:var(--bg-card2); padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; position:relative; }
-  .wp-card-model { font-family:var(--font-mono); font-size:22px; font-weight:700; color:var(--red); text-align:center; }
-  .wp-card-fullname { font-size:13px; color:var(--text-secondary); text-align:center; }
-  .wp-card-qty { background:#fde8e8; color:var(--red); font-weight:700; font-size:18px; padding:4px 16px; border-radius:2px; margin:2px 0; }
+  .wp-card-left { width:180px; flex-shrink:0; background:var(--bg-card2); padding:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; position:relative; }
+  .wp-card-model { font-family:var(--font-mono); font-size:26px; font-weight:800; color:var(--red); text-align:center; line-height:1.15; word-break:break-word; }
+  .wp-card-fullname { font-size:12px; color:var(--text-secondary); text-align:center; }
+  .wp-card-qty { background:#fde8e8; color:var(--red); font-weight:800; font-size:21px; padding:3px 14px; border-radius:2px; margin:2px 0; }
   .wp-card-btns { display:flex; gap:4px; flex-wrap:wrap; justify-content:center; }
   .wp-card-btns button { font-size:11px; padding:3px 8px; cursor:pointer; border-radius:2px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); }
   .wp-card-right { flex:1; display:flex; align-items:center; gap:14px; padding:14px 16px; }
   .wp-gauge-row { flex:1; }
   .wp-gauge-row-label { font-size:24px; font-weight:800; color:var(--text-secondary); margin-bottom:8px; }
   .wp-note-badge-inline { position:absolute; top:6px; right:6px; background:var(--red); color:#fff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 6px; }
+  /* ── 계획/완료 미니 테이블 (완료 = 포장완료 수량 기준) */
+  .wp-mini-table { flex-shrink:0; width:118px; border:1px solid var(--border); border-radius:3px; overflow:hidden; background:#fff; }
+  .wp-mini-table-head { display:flex; background:var(--navy, #0d1f3c); }
+  .wp-mini-table-head div { flex:1; text-align:center; color:#fff; font-size:15px; font-weight:800; padding:5px 0; }
+  .wp-mini-table-head div:first-child { border-right:1px solid rgba(255,255,255,.2); }
+  .wp-mini-table-body { display:flex; }
+  .wp-mini-table-body div { flex:1; text-align:center; font-family:var(--font-mono); font-size:28px; font-weight:800; padding:6px 0; color:var(--text-primary); }
+  .wp-mini-table-body div:first-child { border-right:1px solid var(--border); }
   .ts-item { flex:1; padding:10px 16px; border-right:1px solid var(--border); display:flex; align-items:center; gap:10px; }
   .ts-item:last-child { border-right:none; }
   .ts-label { font-size:19px; font-weight:700; color:var(--text-secondary); letter-spacing:1px; text-transform:uppercase; white-space:nowrap; }
@@ -3549,6 +3557,16 @@ function buildGaugeBar(done, planQty, isDelayed, onClick, unit) {
   `;
 }
 
+// 계획/완료(포장완료 기준) 미니 테이블 - 요약 스트립과 카드에서 공통으로 사용
+function buildPlanDoneTable(planQty, doneQty) {
+  return `
+    <div class="wp-mini-table">
+      <div class="wp-mini-table-head"><div>계획</div><div>완료</div></div>
+      <div class="wp-mini-table-body"><div>${planQty}</div><div>${doneQty}</div></div>
+    </div>
+  `;
+}
+
 function renderWeekPlanView() {
   const container = document.getElementById('weekPlanContent');
   const entries = weeklyPlans.filter(e => e.weekStart === currentWeekStart);
@@ -3604,7 +3622,10 @@ function renderWeekPlanView() {
     <div class="wp-summary">
       <div class="wp-summary-cell">
         <div class="wp-summary-label">ANT 총계획 (이번 주)</div>
-        <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;">${antPlan}대</div>
+        <div style="font-family:var(--font-mono);font-size:34px;font-weight:800;">${antPlan}대</div>
+      </div>
+      <div class="wp-summary-cell" style="flex:0;display:flex;align-items:center;">
+        ${buildPlanDoneTable(antPlan, antPack)}
       </div>
       <div class="wp-summary-cell">
         <div class="wp-summary-label">조립 완료</div>
@@ -3622,7 +3643,10 @@ function renderWeekPlanView() {
     <div class="wp-summary" style="margin-top:-6px;">
       <div class="wp-summary-cell">
         <div class="wp-summary-label">CKD 총계획 (이번 주)</div>
-        <div style="font-family:var(--font-mono);font-size:26px;font-weight:700;">${ckdPlan} Site</div>
+        <div style="font-family:var(--font-mono);font-size:34px;font-weight:800;">${ckdPlan} Site</div>
+      </div>
+      <div class="wp-summary-cell" style="flex:0;display:flex;align-items:center;">
+        ${buildPlanDoneTable(ckdPlan, ckdPack)}
       </div>
       <div class="wp-summary-cell" style="flex:3;">
         <div class="wp-summary-label">포장 완료</div>
@@ -3676,6 +3700,7 @@ function renderWeekPlanView() {
             </div>
           </div>
           <div class="wp-card-right">
+            ${buildPlanDoneTable(e.planQty, done.pack)}
             ${gaugesHtml}
           </div>
         </div>
