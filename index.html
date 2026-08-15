@@ -70,10 +70,12 @@
   .total-strip { display:flex; align-items:center; gap:0; background:var(--bg-card); border:1px solid var(--border); margin-bottom:14px; overflow:hidden; }
 
   /* ── 주간계획 */
-  .wp-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-  .wp-week-nav { display:flex; align-items:center; gap:10px; background:var(--navy, #0d1f3c); color:#fff; padding:8px 18px; border-radius:2px; }
-  .wp-week-nav button { background:rgba(255,255,255,.12); border:none; color:#fff; width:26px; height:26px; border-radius:2px; cursor:pointer; font-size:14px; }
-  .wp-week-nav .wp-week-label { font-family:var(--font-mono); font-size:19px; font-weight:700; min-width:130px; text-align:center; }
+  .wp-header { display:flex; align-items:center; justify-content:space-between; background:var(--navy, #0d1f3c); padding:14px 22px; border-radius:2px; margin-bottom:14px; }
+  .wp-header-left { display:flex; align-items:center; gap:16px; }
+  .wp-header-title { color:#fff; font-size:24px; font-weight:800; letter-spacing:.3px; }
+  .wp-week-nav { display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.14); color:#fff; padding:6px 16px; border-radius:2px; }
+  .wp-week-nav button { background:rgba(255,255,255,.18); border:none; color:#fff; width:26px; height:26px; border-radius:2px; cursor:pointer; font-size:14px; }
+  .wp-week-nav .wp-week-label { font-family:var(--font-mono); font-size:18px; font-weight:700; min-width:110px; text-align:center; }
   .wp-summary { display:flex; background:var(--bg-card); border:1px solid var(--border); margin-bottom:16px; }
   .wp-summary-cell { flex:1; padding:10px 16px; border-right:1px solid var(--border); }
   .wp-summary-cell:last-child { border-right:none; }
@@ -82,7 +84,7 @@
   .wp-gauge-fill { position:absolute; top:0; left:0; height:100%; background:var(--accent2); transition:width .3s; }
   .wp-gauge-fill.done { background:var(--green); }
   .wp-gauge-fill.behind { background:var(--red); }
-  .wp-gauge-text { position:relative; z-index:1; height:100%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--text-primary);
+  .wp-gauge-text { position:relative; z-index:1; height:100%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:800; color:var(--text-primary);
     text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 5px #fff, 0 0 5px #fff; }
   .wp-card { background:var(--bg-card); border:1px dashed var(--border-bright); border-radius:2px; display:flex; margin-bottom:10px; overflow:hidden; }
   .wp-card-left { width:180px; flex-shrink:0; background:var(--bg-card2); padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; position:relative; }
@@ -1249,12 +1251,24 @@
       <div class="save-name-title" id="weekPlanAddTitle">📅 주간계획 모델 추가</div>
     </div>
     <div class="save-name-body">
-      <div class="save-name-label">모델 선택 (생산현황에 등록된 모델 중에서, ANT/CKD 모두 가능)</div>
-      <select class="save-name-input" id="weekPlanModelSelect" style="margin-bottom:12px;"></select>
-      <div class="save-name-label">이번 주 목표 수량</div>
+      <div class="save-name-label">모델명 (기존 목록에서 선택 또는 직접 입력)</div>
+      <input class="save-name-input" id="weekPlanModelInput" list="weekPlanModelNameOptions" placeholder="예) KAA" style="margin-bottom:12px;" oninput="refreshWeekPlanFullNameOptions()" />
+      <datalist id="weekPlanModelNameOptions"></datalist>
+
+      <div class="save-name-label">세부 모델명 (선택 또는 직접 입력)</div>
+      <input class="save-name-input" id="weekPlanFullNameInput" list="weekPlanFullNameOptions" placeholder="예) KAA1-24B-D20 (선택)" style="margin-bottom:12px;" />
+      <datalist id="weekPlanFullNameOptions"></datalist>
+
+      <div class="save-name-label">구분</div>
+      <div style="display:flex;gap:16px;margin-bottom:12px;">
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:14px;"><input type="radio" name="weekPlanType" id="weekPlanTypeAnt" value="ant" checked> ANT (조립·검사·포장)</label>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:14px;"><input type="radio" name="weekPlanType" id="weekPlanTypeCkd" value="ckd"> CKD (포장 Site)</label>
+      </div>
+
+      <div class="save-name-label" id="weekPlanQtyLabel">이번 주 목표 수량</div>
       <input class="save-name-input" id="weekPlanQtyInput" type="number" min="1" placeholder="예) 5" style="margin-bottom:6px;" />
       <div style="font-size:12px;color:var(--text-dim);margin-top:6px;line-height:1.5;">
-        💡 생산현황 수치와는 무관하게, 이 화면에서 게이지를 눌러 완료수량을 직접 입력해서 관리합니다.
+        💡 생산현황과는 완전히 별개로, 이 화면에서 게이지를 눌러 완료수량을 직접 입력해서 관리합니다.
       </div>
     </div>
     <div class="save-name-footer">
@@ -1664,6 +1678,7 @@ let modelFullnames = JSON.parse(localStorage.getItem('kaa_model_fullnames') || '
 let perfYear  = new Date().getFullYear();
 let weeklyPlans = JSON.parse(localStorage.getItem('kaa_weekly_plans') || '[]');
 let currentWeekStart = getMondayStr(new Date());
+let liveTrackedWeekStart = currentWeekStart; // 사용자가 수동으로 다른 주로 이동하지 않은 이상, 실제 날짜가 넘어가면 이 값을 따라 자동 전환됨
 let weekPlanEditingId = null; // 기준선 보정용 편집 대상 id
 let perfMonth = new Date().getMonth() + 1;
 let perfViewMode = 'month'; // 'month' | 'year'
@@ -3451,16 +3466,34 @@ function getMondayStr(date) {
   return dateKey(d);
 }
 
-// "YYYY-MM-DD"(월요일) → "8월 3주차" 라벨 (그 달의 첫 월요일이 1주차)
+// "YYYY-MM-DD"(월요일) → "8월 3주차" 라벨. 규칙: 그 달 "1일"이 포함된 주가 1주차
+// (그 주 안에 1일이 없으면, 그 달의 "1일이 포함된 주"부터 몇 번째 주인지로 계산)
 function getWeekLabel(weekStartStr) {
   const mon = parseLocalDate(weekStartStr);
-  const month = mon.getMonth() + 1;
-  const year  = mon.getFullYear();
-  let firstMon = new Date(year, mon.getMonth(), 1);
-  while (firstMon.getDay() !== 1) firstMon.setDate(firstMon.getDate() + 1);
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(mon); d.setDate(mon.getDate() + i);
+    if (d.getDate() === 1) return `${d.getMonth()+1}월 1주차`;
+  }
+  const month = mon.getMonth();
+  const firstOfMonth = new Date(mon.getFullYear(), month, 1);
+  const firstMon = parseLocalDate(getMondayStr(firstOfMonth));
   const weekNum = Math.round((mon - firstMon) / (7*86400000)) + 1;
-  return `${month}월 ${weekNum}주차`;
+  return `${month+1}월 ${weekNum}주차`;
 }
+
+// 실제 날짜가 주(週)를 넘어가면, "이번 주를 보고 있던" 화면은 자동으로 다음 주로 따라감
+// (수동으로 지난주/다음주로 이동해서 보고 있던 경우엔 강제로 안 옮김)
+function checkWeekRollover() {
+  const nowWeek = getMondayStr(new Date());
+  if (nowWeek === liveTrackedWeekStart) return;
+  const wasFollowingLive = (currentWeekStart === liveTrackedWeekStart);
+  liveTrackedWeekStart = nowWeek;
+  if (wasFollowingLive) {
+    currentWeekStart = nowWeek;
+    if (currentMainTab === 'week') renderWeekPlanView();
+  }
+}
+setInterval(checkWeekRollover, 60000); // 1분마다 체크 (라인 모니터처럼 계속 켜둬도 자동으로 주가 넘어가도록)
 
 function changeWeek(deltaWeeks) {
   const cur = parseLocalDate(currentWeekStart);
@@ -3469,12 +3502,12 @@ function changeWeek(deltaWeeks) {
   renderWeekPlanView();
 }
 
-// 모델의 참고정보(세부명/특이사항 등) 조회 - 진행중(models)이든 완료(history)든 상관없이 찾아냄
-// ※ 진행수량 자체는 이제 여기서 안 가져옴 (주간계획은 완전 수동 입력) - 특이사항 뱃지 표시 등 참고용으로만 사용
-function findLiveModelData(model, shipDate, fullName) {
-  const active = models.find(m => m.model === model && m.shipDate === shipDate && (m.fullName||'') === (fullName||''));
+// 모델명+세부모델명으로 참고정보(특이사항 등) 찾기 - 진행중/완료 상관없이, 가장 최근 것 기준
+// ※ 주간계획이 생산현황과 완전히 분리되어 shipDate로 특정 카드를 지목할 수 없으므로 이름 기준 best-effort 조회 (특이사항 뱃지 표시용 참고 정보일 뿐)
+function findLiveModelData(model, fullName) {
+  const active = models.find(m => m.model === model && (m.fullName||'') === (fullName||''));
   if (active) return { plan: active.plan, procSet: active.procSet, noteData: active.noteData||[], isCkd: active.procSet && active.procSet.indexOf('CKD')===0, isCompleted: false };
-  const hist = loadHistory().find(h => h.model === model && h.shipDate === shipDate && (h.fullName||'') === (fullName||''));
+  const hist = loadHistory().find(h => h.model === model && (h.fullName||'') === (fullName||''));
   if (hist) return { plan: hist.plan, procSet: hist.procSet, noteData: hist.noteData||[], isCkd: hist.procSet && hist.procSet.indexOf('CKD')===0, isCompleted: true };
   return null;
 }
@@ -3520,10 +3553,13 @@ function renderWeekPlanView() {
 
   let html = `
     <div class="wp-header">
-      <div class="wp-week-nav">
-        <button onclick="changeWeek(-1)">◀</button>
-        <div class="wp-week-label">${getWeekLabel(currentWeekStart)}</div>
-        <button onclick="changeWeek(1)">▶</button>
+      <div class="wp-header-left">
+        <div class="wp-header-title">주간 계획 대비 실적</div>
+        <div class="wp-week-nav">
+          <button onclick="changeWeek(-1)">◀</button>
+          <div class="wp-week-label">${getWeekLabel(currentWeekStart)}</div>
+          <button onclick="changeWeek(1)">▶</button>
+        </div>
       </div>
       <button class="btn" style="background:var(--green);color:#fff;font-weight:700;" onclick="openWeekPlanAddModal()">+ 모델 추가</button>
     </div>
@@ -3533,7 +3569,7 @@ function renderWeekPlanView() {
   let antPlan=0, antMain=0, antFinal=0, antPack=0;
   let ckdPlan=0, ckdPack=0;
   const rows = entries.map(e => {
-    const live = findLiveModelData(e.model, e.shipDate, e.fullName);
+    const live = findLiveModelData(e.model, e.fullName);
     const isCkd = live ? live.isCkd : !!e.isCkd;
     const p = e.progress || {};
     if (isCkd) {
@@ -3587,7 +3623,6 @@ function renderWeekPlanView() {
   } else {
     rows.forEach(({e, live, isCkd, done}) => {
       const noteCount = live ? (live.noteData||[]).filter(r => r.status !== 'Completed').length : 0;
-      const notFound = !live;
       const unit = isCkd ? 'Site' : '대';
       const fullNameStr = e.fullName ? `<div class="wp-card-fullname">${escapeHtml(e.fullName)}</div>` : '';
       let gaugesHtml = '';
@@ -3621,7 +3656,6 @@ function renderWeekPlanView() {
             <div class="wp-card-model">${escapeHtml(e.model)}${isCkd ? ' <span style="font-size:11px;color:var(--accent2);">(CKD)</span>' : ''}</div>
             ${fullNameStr}
             <div class="wp-card-qty">${e.planQty}${unit}</div>
-            ${notFound ? `<div style="font-size:11px;color:var(--red);">⚠ 원본 모델을 찾을 수 없음</div>` : ''}
             <div class="wp-card-btns">
               <button onclick="editWeekPlanQty('${e.id}')">✏ 목표수정</button>
               <button onclick="carryOverWeekPlan('${e.id}')" title="미달성분을 다음주로 넘깁니다">➡ 다음주 이월</button>
@@ -3641,22 +3675,34 @@ function renderWeekPlanView() {
 
 function openWeekPlanAddModal() {
   startModalEditLock();
-  const sel = document.getElementById('weekPlanModelSelect');
-  // ANT + CKD 둘 다 선택 가능
-  const pickable = models.map(m => ({ model:m.model, shipDate:m.shipDate, fullName:m.fullName||'', plan:m.plan, isCkd: !!(m.procSet && m.procSet.indexOf('CKD')===0) }));
-  if (pickable.length === 0) {
-    sel.innerHTML = '<option value="">생산현황에 등록된 모델이 없습니다</option>';
-  } else {
-    sel.innerHTML = pickable.map((m, i) => {
-      const unit = m.isCkd ? 'Site' : '대';
-      const label = `${m.isCkd?'[CKD] ':''}${m.model}${m.fullName ? ' ('+m.fullName+')' : ''} — 전체계획 ${m.plan}${unit}, 포장기준일 ${m.shipDate||'-'}`;
-      return `<option value="${i}">${escapeHtml(label)}</option>`;
-    }).join('');
-  }
-  sel.dataset.pickable = JSON.stringify(pickable);
+  // 모델명 자동완성 목록: modelFullnames에 등록된 모델명 + 현재/과거 모델에 쓰인 이름 전부 취합
+  const nameSet = new Set(Object.keys(modelFullnames || {}));
+  models.forEach(m => { if (m.model) nameSet.add(m.model); });
+  loadHistory().forEach(h => { if (h.model) nameSet.add(h.model); });
+  const nameDl = document.getElementById('weekPlanModelNameOptions');
+  nameDl.innerHTML = [...nameSet].sort().map(n => `<option value="${escapeHtml(n)}"></option>`).join('');
+
+  document.getElementById('weekPlanModelInput').value = '';
+  document.getElementById('weekPlanFullNameInput').value = '';
+  document.getElementById('weekPlanFullNameOptions').innerHTML = '';
+  document.getElementById('weekPlanTypeAnt').checked = true;
   document.getElementById('weekPlanQtyInput').value = '';
   document.getElementById('weekPlanAddTitle').textContent = '📅 주간계획 모델 추가';
   document.getElementById('weekPlanAddOverlay').classList.add('open');
+}
+
+// 모델명 입력값에 맞는 세부모델명 자동완성 목록 갱신 (기존 모델편집 폼과 동일한 방식)
+function refreshWeekPlanFullNameOptions() {
+  const modelName = document.getElementById('weekPlanModelInput').value.trim();
+  const dl = document.getElementById('weekPlanFullNameOptions');
+  dl.innerHTML = '';
+  if (!modelName) return;
+  const options = modelFullnames[modelName] || [];
+  options.forEach(fn => {
+    const opt = document.createElement('option');
+    opt.value = fn;
+    dl.appendChild(opt);
+  });
 }
 
 function closeWeekPlanAddModal() {
@@ -3665,12 +3711,10 @@ function closeWeekPlanAddModal() {
 }
 
 function submitWeekPlanAdd() {
-  const sel = document.getElementById('weekPlanModelSelect');
-  const idx = sel.value;
-  if (idx === '') { alert('모델을 선택해주세요.'); return; }
-  const pickable = JSON.parse(sel.dataset.pickable || '[]');
-  const picked = pickable[idx];
-  if (!picked) { alert('모델을 선택해주세요.'); return; }
+  const modelName = document.getElementById('weekPlanModelInput').value.trim();
+  if (!modelName) { alert('모델명을 입력해주세요.'); return; }
+  const fullName = document.getElementById('weekPlanFullNameInput').value.trim();
+  const isCkd = document.getElementById('weekPlanTypeCkd').checked;
 
   const qty = parseInt(document.getElementById('weekPlanQtyInput').value) || 0;
   if (qty <= 0) { alert('이번 주 목표 수량을 입력해주세요.'); return; }
@@ -3678,8 +3722,8 @@ function submitWeekPlanAdd() {
   weeklyPlans.push({
     id: 'wp_' + Date.now() + '_' + Math.floor(Math.random()*10000),
     weekStart: currentWeekStart,
-    model: picked.model, shipDate: picked.shipDate, fullName: picked.fullName,
-    isCkd: picked.isCkd,
+    model: modelName, fullName: fullName,
+    isCkd: isCkd,
     planQty: qty,
     progress: { main: 0, final: 0, pack: 0 }, // 완전 수동입력 - 생산현황과 무관
     createdBy: localStorage.getItem('kaa_my_name') || '익명',
@@ -3740,7 +3784,7 @@ function carryOverWeekPlan(id) {
   weeklyPlans.push({
     id: 'wp_' + Date.now() + '_' + Math.floor(Math.random()*10000),
     weekStart: dateKey(nextMon),
-    model: e.model, shipDate: e.shipDate, fullName: e.fullName,
+    model: e.model, fullName: e.fullName,
     isCkd: e.isCkd,
     planQty: remaining,
     progress: { main: 0, final: 0, pack: 0 },
