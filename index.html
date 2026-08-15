@@ -1219,6 +1219,15 @@
   <button class="tab-btn" id="mainTabNote" onclick="switchMainTab('note')">📋 특이사항</button>
   <button class="tab-btn" id="mainTabPerf" onclick="switchMainTab('perf')">📈 계획대비실적</button>
   <div class="tab-spacer"></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-right:16px;font-size:12px;color:var(--text-dim);">
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;" title="생산현황 ↔ 주간계획을 정해진 간격으로 자동 전환합니다 (라인 모니터용)">
+      <input type="checkbox" id="autoSwitchToggle" onchange="toggleAutoSwitch()">
+      ⏱ 자동전환(생산현황↔주간계획)
+    </label>
+    <input type="number" id="autoSwitchInterval" value="15" min="3" max="600" onchange="saveAutoSwitchInterval()"
+      style="width:46px;font-size:12px;padding:2px 4px;background:var(--bg-card2);border:1px solid var(--border);color:var(--text-primary);">
+    <span>초</span>
+  </div>
   <div class="mes-status"><div class="mes-dot" id="syncDot"></div><span id="syncStatus">Google Sheets 연동 중...</span></div>
 </div>
 
@@ -1240,13 +1249,12 @@
       <div class="save-name-title" id="weekPlanAddTitle">📅 주간계획 모델 추가</div>
     </div>
     <div class="save-name-body">
-      <div class="save-name-label">모델 선택 (생산현황에 등록된 ANT 모델 중에서)</div>
+      <div class="save-name-label">모델 선택 (생산현황에 등록된 모델 중에서, ANT/CKD 모두 가능)</div>
       <select class="save-name-input" id="weekPlanModelSelect" style="margin-bottom:12px;"></select>
       <div class="save-name-label">이번 주 목표 수량</div>
       <input class="save-name-input" id="weekPlanQtyInput" type="number" min="1" placeholder="예) 5" style="margin-bottom:6px;" />
       <div style="font-size:12px;color:var(--text-dim);margin-top:6px;line-height:1.5;">
-        💡 등록하는 순간의 누적 수량을 기준으로 삼아, 이후 생산현황에서 수량을 올리면 이번 주 몫만 자동으로 계산됩니다.<br>
-        가능하면 <b>그 주 시작(월요일) 전에</b> 등록해주세요 — 이미 진행한 수량이 있는 상태로 등록하면 그만큼 이번 주 실적에서 빠질 수 있습니다.
+        💡 생산현황 수치와는 무관하게, 이 화면에서 게이지를 눌러 완료수량을 직접 입력해서 관리합니다.
       </div>
     </div>
     <div class="save-name-footer">
@@ -3382,7 +3390,56 @@ async function saveAllPerfRemarks() {
   }
 }
 
-// ══════════════════════════════════════ 주간계획 ══════════════════════════════════════
+// ══════════════════════════ 자동 탭 전환 (라인 모니터 고정 화면용) ══════════════════════════
+let autoSwitchTimer = null;
+const AUTO_SWITCH_TABS = ['prod', 'week']; // 순환할 탭 (생산현황 ↔ 주간계획)
+
+function startAutoSwitch() {
+  stopAutoSwitch();
+  const interval = Math.max(3, parseInt(localStorage.getItem('kaa_autoswitch_interval') || '15')) * 1000;
+  autoSwitchTimer = setInterval(() => {
+    // 팝업/모달이 떠 있으면 그 사이엔 전환하지 않음 (수정 중 화면이 갑자기 넘어가는 것 방지)
+    const modalIds = ['addModal','cellModal','ckdRefOverlay','detailOverlay','historyNoteOverlay',
+      'historyOverlay','myNameOverlay','noteOverlay','peOverlay','saveNameOverlay',
+      'sharedImageAddOverlay','sharedImageViewOverlay','wdModalOverlay','weekPlanAddOverlay'];
+    const anyModalOpen = modalIds.some(id => document.getElementById(id)?.classList.contains('open'));
+    if (anyModalOpen) return;
+    const curIdx = AUTO_SWITCH_TABS.indexOf(currentMainTab);
+    const nextTab = AUTO_SWITCH_TABS[(curIdx >= 0 ? curIdx + 1 : 0) % AUTO_SWITCH_TABS.length];
+    switchMainTab(nextTab);
+  }, interval);
+}
+
+function stopAutoSwitch() {
+  if (autoSwitchTimer) { clearInterval(autoSwitchTimer); autoSwitchTimer = null; }
+}
+
+function toggleAutoSwitch() {
+  const enabled = document.getElementById('autoSwitchToggle').checked;
+  localStorage.setItem('kaa_autoswitch_enabled', enabled ? '1' : '0');
+  if (enabled) startAutoSwitch(); else stopAutoSwitch();
+}
+
+function saveAutoSwitchInterval() {
+  let val = parseInt(document.getElementById('autoSwitchInterval').value) || 15;
+  if (val < 3) val = 3;
+  document.getElementById('autoSwitchInterval').value = val;
+  localStorage.setItem('kaa_autoswitch_interval', String(val));
+  if (autoSwitchTimer) startAutoSwitch(); // 켜져 있으면 새 간격으로 재시작
+}
+
+// 저장된 설정 복원 (라인 모니터가 껐다 켜져도 자동전환이 알아서 다시 켜지도록)
+function initAutoSwitch() {
+  const enabled = localStorage.getItem('kaa_autoswitch_enabled') === '1';
+  const interval = localStorage.getItem('kaa_autoswitch_interval') || '15';
+  document.getElementById('autoSwitchToggle').checked = enabled;
+  document.getElementById('autoSwitchInterval').value = interval;
+  if (enabled) startAutoSwitch();
+}
+
+
+
+// ══════════════════════════════════════ 주간계획 (수동 입력 방식 - 생산현황과 독립적) ══════════════════════════════════════
 
 // 주어진 날짜가 속한 주의 월요일을 YYYY-MM-DD로 반환
 function getMondayStr(date) {
@@ -3399,7 +3456,6 @@ function getWeekLabel(weekStartStr) {
   const mon = parseLocalDate(weekStartStr);
   const month = mon.getMonth() + 1;
   const year  = mon.getFullYear();
-  // 이 월요일이 속한 달의 첫 번째 월요일 찾기
   let firstMon = new Date(year, mon.getMonth(), 1);
   while (firstMon.getDay() !== 1) firstMon.setDate(firstMon.getDate() + 1);
   const weekNum = Math.round((mon - firstMon) / (7*86400000)) + 1;
@@ -3413,13 +3469,13 @@ function changeWeek(deltaWeeks) {
   renderWeekPlanView();
 }
 
-// 모델의 "현재 살아있는" procs 데이터 조회 - 진행중(models)이든 완료(history)든 상관없이 찾아냄
-// (완료 처리된 모델도 주간계획에서 계속 정상적으로 보이도록)
+// 모델의 참고정보(세부명/특이사항 등) 조회 - 진행중(models)이든 완료(history)든 상관없이 찾아냄
+// ※ 진행수량 자체는 이제 여기서 안 가져옴 (주간계획은 완전 수동 입력) - 특이사항 뱃지 표시 등 참고용으로만 사용
 function findLiveModelData(model, shipDate, fullName) {
   const active = models.find(m => m.model === model && m.shipDate === shipDate && (m.fullName||'') === (fullName||''));
-  if (active) return { procs: active.procs||{}, plan: active.plan, procSet: active.procSet, noteData: active.noteData||[], excludedProcs: active.excludedProcs||[], isCompleted: false };
+  if (active) return { plan: active.plan, procSet: active.procSet, noteData: active.noteData||[], isCkd: active.procSet && active.procSet.indexOf('CKD')===0, isCompleted: false };
   const hist = loadHistory().find(h => h.model === model && h.shipDate === shipDate && (h.fullName||'') === (fullName||''));
-  if (hist) return { procs: hist.procs||{}, plan: hist.plan, procSet: hist.procSet, noteData: hist.noteData||[], excludedProcs: hist.excludedProcs||[], isCompleted: true };
+  if (hist) return { plan: hist.plan, procSet: hist.procSet, noteData: hist.noteData||[], isCkd: hist.procSet && hist.procSet.indexOf('CKD')===0, isCompleted: true };
   return null;
 }
 
@@ -3443,13 +3499,14 @@ function weekExpectedRatio(weekStartStr) {
   return Math.min(elapsedWorkdays / totalWorkdays, 1);
 }
 
-function buildGaugeBar(done, planQty, label, isDelayed) {
+function buildGaugeBar(done, planQty, isDelayed, onClick, unit) {
+  unit = unit || '대';
   const pct = planQty > 0 ? Math.min(Math.round(done / planQty * 100), 100) : 0;
   const isDone = done >= planQty && planQty > 0;
   const cls = isDone ? 'done' : (isDelayed ? 'behind' : '');
-  const text = isDone ? '완료' : `${done}/${planQty}대`;
+  const text = isDone ? '완료' : `${done}/${planQty}${unit}`;
   return `
-    <div class="wp-gauge-track">
+    <div class="wp-gauge-track" ${onClick ? `onclick="${onClick}" style="cursor:pointer;" title="클릭해서 완료수량 입력"` : ''}>
       <div class="wp-gauge-fill ${cls}" style="width:${pct}%;"></div>
       <div class="wp-gauge-text">${text}</div>
     </div>
@@ -3472,40 +3529,55 @@ function renderWeekPlanView() {
     </div>
   `;
 
-  // 요약 게이지 (조립/검사/포장 종합)
-  let totalPlan = 0, totalMain = 0, totalFinal = 0, totalPack = 0;
+  // 요약 게이지 - ANT(조립/검사/포장)와 CKD(포장완료 Site)는 단위가 달라 완전히 분리 집계
+  let antPlan=0, antMain=0, antFinal=0, antPack=0;
+  let ckdPlan=0, ckdPack=0;
   const rows = entries.map(e => {
     const live = findLiveModelData(e.model, e.shipDate, e.fullName);
-    const b = e.baseline || {main:0,final:0,pack:0};
-    const done = live ? {
-      main:  Math.max(0, Math.min((live.procs.main  ||0) - b.main,  e.planQty)),
-      final: Math.max(0, Math.min((live.procs.final ||0) - b.final, e.planQty)),
-      pack:  Math.max(0, Math.min((live.procs.pack   ||0) - b.pack,  e.planQty)),
-    } : {main:0,final:0,pack:0};
-    totalPlan  += e.planQty;
-    totalMain  += done.main;
-    totalFinal += done.final;
-    totalPack  += done.pack;
-    return { e, live, done };
+    const isCkd = live ? live.isCkd : !!e.isCkd;
+    const p = e.progress || {};
+    if (isCkd) {
+      const done = Math.min(p.pack || 0, e.planQty);
+      ckdPlan += e.planQty; ckdPack += done;
+      return { e, live, isCkd, done: { pack: done } };
+    } else {
+      const done = {
+        main:  Math.min(p.main  || 0, e.planQty),
+        final: Math.min(p.final || 0, e.planQty),
+        pack:  Math.min(p.pack  || 0, e.planQty),
+      };
+      antPlan += e.planQty; antMain += done.main; antFinal += done.final; antPack += done.pack;
+      return { e, live, isCkd, done };
+    }
   });
 
   html += `
     <div class="wp-summary">
       <div class="wp-summary-cell">
-        <div class="wp-summary-label">총계획 이번 주 전체</div>
-        <div style="font-family:var(--font-mono);font-size:22px;font-weight:700;">${totalPlan}대</div>
+        <div class="wp-summary-label">ANT 총계획 (이번 주)</div>
+        <div style="font-family:var(--font-mono);font-size:22px;font-weight:700;">${antPlan}대</div>
       </div>
       <div class="wp-summary-cell">
         <div class="wp-summary-label">조립 완료</div>
-        ${buildGaugeBar(totalMain, totalPlan, '조립', totalMain < totalPlan*expectedRatio - 0.5)}
+        ${buildGaugeBar(antMain, antPlan, antMain < antPlan*expectedRatio - 0.5)}
       </div>
       <div class="wp-summary-cell">
         <div class="wp-summary-label">검사 완료</div>
-        ${buildGaugeBar(totalFinal, totalPlan, '검사', totalFinal < totalPlan*expectedRatio - 0.5)}
+        ${buildGaugeBar(antFinal, antPlan, antFinal < antPlan*expectedRatio - 0.5)}
       </div>
       <div class="wp-summary-cell">
         <div class="wp-summary-label">포장 완료</div>
-        ${buildGaugeBar(totalPack, totalPlan, '포장', totalPack < totalPlan*expectedRatio - 0.5)}
+        ${buildGaugeBar(antPack, antPlan, antPack < antPlan*expectedRatio - 0.5)}
+      </div>
+    </div>
+    <div class="wp-summary" style="margin-top:-6px;">
+      <div class="wp-summary-cell">
+        <div class="wp-summary-label">CKD 총계획 (이번 주)</div>
+        <div style="font-family:var(--font-mono);font-size:22px;font-weight:700;">${ckdPlan} Site</div>
+      </div>
+      <div class="wp-summary-cell" style="flex:3;">
+        <div class="wp-summary-label">포장 완료</div>
+        ${buildGaugeBar(ckdPack, ckdPlan, ckdPack < ckdPlan*expectedRatio - 0.5, null, 'Site')}
       </div>
     </div>
   `;
@@ -3513,38 +3585,51 @@ function renderWeekPlanView() {
   if (rows.length === 0) {
     html += `<div style="text-align:center;padding:60px;color:var(--text-dim);font-size:16px;background:var(--bg-card);border:1px solid var(--border);">이번 주에 등록된 모델이 없습니다. "+ 모델 추가"로 등록해주세요.</div>`;
   } else {
-    rows.forEach(({e, live, done}) => {
+    rows.forEach(({e, live, isCkd, done}) => {
       const noteCount = live ? (live.noteData||[]).filter(r => r.status !== 'Completed').length : 0;
       const notFound = !live;
+      const unit = isCkd ? 'Site' : '대';
       const fullNameStr = e.fullName ? `<div class="wp-card-fullname">${escapeHtml(e.fullName)}</div>` : '';
+      let gaugesHtml = '';
+      if (isCkd) {
+        gaugesHtml = `
+          <div class="wp-gauge-row">
+            <div class="wp-gauge-row-label">포장 완료</div>
+            ${buildGaugeBar(done.pack, e.planQty, done.pack < e.planQty*expectedRatio - 0.5, `editWeekPlanProgress('${e.id}','pack')`, 'Site')}
+          </div>
+        `;
+      } else {
+        gaugesHtml = `
+          <div class="wp-gauge-row">
+            <div class="wp-gauge-row-label">조립 완료</div>
+            ${buildGaugeBar(done.main, e.planQty, done.main < e.planQty*expectedRatio - 0.5, `editWeekPlanProgress('${e.id}','main')`)}
+          </div>
+          <div class="wp-gauge-row">
+            <div class="wp-gauge-row-label">검사 완료</div>
+            ${buildGaugeBar(done.final, e.planQty, done.final < e.planQty*expectedRatio - 0.5, `editWeekPlanProgress('${e.id}','final')`)}
+          </div>
+          <div class="wp-gauge-row">
+            <div class="wp-gauge-row-label">포장 완료</div>
+            ${buildGaugeBar(done.pack, e.planQty, done.pack < e.planQty*expectedRatio - 0.5, `editWeekPlanProgress('${e.id}','pack')`)}
+          </div>
+        `;
+      }
       html += `
         <div class="wp-card">
           <div class="wp-card-left">
             ${noteCount > 0 ? `<div class="wp-note-badge-inline">📋 ${noteCount}</div>` : ''}
-            <div class="wp-card-model">${escapeHtml(e.model)}</div>
+            <div class="wp-card-model">${escapeHtml(e.model)}${isCkd ? ' <span style="font-size:11px;color:var(--accent2);">(CKD)</span>' : ''}</div>
             ${fullNameStr}
-            <div class="wp-card-qty">${e.planQty}대</div>
+            <div class="wp-card-qty">${e.planQty}${unit}</div>
             ${notFound ? `<div style="font-size:11px;color:var(--red);">⚠ 원본 모델을 찾을 수 없음</div>` : ''}
             <div class="wp-card-btns">
               <button onclick="editWeekPlanQty('${e.id}')">✏ 목표수정</button>
-              <button onclick="rebaselineWeekPlan('${e.id}')" title="현재 누적값으로 기준선을 다시 잡습니다">🔄 기준선보정</button>
               <button onclick="carryOverWeekPlan('${e.id}')" title="미달성분을 다음주로 넘깁니다">➡ 다음주 이월</button>
               <button onclick="deleteWeekPlan('${e.id}')" style="color:var(--red);">🗑 삭제</button>
             </div>
           </div>
           <div class="wp-card-right">
-            <div class="wp-gauge-row">
-              <div class="wp-gauge-row-label">조립 완료</div>
-              ${buildGaugeBar(done.main, e.planQty, '조립', done.main < e.planQty*expectedRatio - 0.5)}
-            </div>
-            <div class="wp-gauge-row">
-              <div class="wp-gauge-row-label">검사 완료</div>
-              ${buildGaugeBar(done.final, e.planQty, '검사', done.final < e.planQty*expectedRatio - 0.5)}
-            </div>
-            <div class="wp-gauge-row">
-              <div class="wp-gauge-row-label">포장 완료</div>
-              ${buildGaugeBar(done.pack, e.planQty, '포장', done.pack < e.planQty*expectedRatio - 0.5)}
-            </div>
+            ${gaugesHtml}
           </div>
         </div>
       `;
@@ -3557,16 +3642,18 @@ function renderWeekPlanView() {
 function openWeekPlanAddModal() {
   startModalEditLock();
   const sel = document.getElementById('weekPlanModelSelect');
-  const antModels = models.filter(m => !(m.procSet && m.procSet.indexOf('CKD') === 0));
-  if (antModels.length === 0) {
-    sel.innerHTML = '<option value="">등록된 ANT 모델이 없습니다</option>';
+  // ANT + CKD 둘 다 선택 가능
+  const pickable = models.map(m => ({ model:m.model, shipDate:m.shipDate, fullName:m.fullName||'', plan:m.plan, isCkd: !!(m.procSet && m.procSet.indexOf('CKD')===0) }));
+  if (pickable.length === 0) {
+    sel.innerHTML = '<option value="">생산현황에 등록된 모델이 없습니다</option>';
   } else {
-    sel.innerHTML = antModels.map((m, i) => {
-      const label = `${m.model}${m.fullName ? ' ('+m.fullName+')' : ''} — 전체계획 ${m.plan}대, 포장기준일 ${m.shipDate||'-'}`;
+    sel.innerHTML = pickable.map((m, i) => {
+      const unit = m.isCkd ? 'Site' : '대';
+      const label = `${m.isCkd?'[CKD] ':''}${m.model}${m.fullName ? ' ('+m.fullName+')' : ''} — 전체계획 ${m.plan}${unit}, 포장기준일 ${m.shipDate||'-'}`;
       return `<option value="${i}">${escapeHtml(label)}</option>`;
     }).join('');
   }
-  sel.dataset.antModels = JSON.stringify(antModels.map(m => ({ model:m.model, shipDate:m.shipDate, fullName:m.fullName||'' })));
+  sel.dataset.pickable = JSON.stringify(pickable);
   document.getElementById('weekPlanQtyInput').value = '';
   document.getElementById('weekPlanAddTitle').textContent = '📅 주간계획 모델 추가';
   document.getElementById('weekPlanAddOverlay').classList.add('open');
@@ -3581,26 +3668,20 @@ function submitWeekPlanAdd() {
   const sel = document.getElementById('weekPlanModelSelect');
   const idx = sel.value;
   if (idx === '') { alert('모델을 선택해주세요.'); return; }
-  const antModels = JSON.parse(sel.dataset.antModels || '[]');
-  const picked = antModels[idx];
+  const pickable = JSON.parse(sel.dataset.pickable || '[]');
+  const picked = pickable[idx];
   if (!picked) { alert('모델을 선택해주세요.'); return; }
 
   const qty = parseInt(document.getElementById('weekPlanQtyInput').value) || 0;
   if (qty <= 0) { alert('이번 주 목표 수량을 입력해주세요.'); return; }
 
-  const live = findLiveModelData(picked.model, picked.shipDate, picked.fullName);
-  const baseline = {
-    main:  (live && live.procs.main)  || 0,
-    final: (live && live.procs.final) || 0,
-    pack:  (live && live.procs.pack)  || 0,
-  };
-
   weeklyPlans.push({
     id: 'wp_' + Date.now() + '_' + Math.floor(Math.random()*10000),
     weekStart: currentWeekStart,
     model: picked.model, shipDate: picked.shipDate, fullName: picked.fullName,
+    isCkd: picked.isCkd,
     planQty: qty,
-    baseline: baseline,
+    progress: { main: 0, final: 0, pack: 0 }, // 완전 수동입력 - 생산현황과 무관
     createdBy: localStorage.getItem('kaa_my_name') || '익명',
     createdAt: new Date().toISOString(),
   });
@@ -3628,34 +3709,31 @@ function editWeekPlanQty(id) {
   renderWeekPlanView();
 }
 
-// 현재 누적값으로 기준선을 다시 잡음 (놓친 수량을 뒤늦게 입력했거나, 등록 타이밍이 늦어서 진행률이 안 맞을 때 보정용)
-function rebaselineWeekPlan(id) {
+// 게이지 클릭 시 해당 공정의 완료수량을 직접 입력 (생산현황과 완전히 무관한 수동 카운트)
+function editWeekPlanProgress(id, procKey) {
   const e = weeklyPlans.find(x => x.id === id);
   if (!e) return;
-  if (!confirm('현재 누적 수량을 새 기준선으로 다시 잡으시겠습니까?\n(지금까지 이번 주에 반영된 진행률이 0으로 리셋됩니다)')) return;
-  const live = findLiveModelData(e.model, e.shipDate, e.fullName);
-  if (!live) { alert('원본 모델을 찾을 수 없어 보정할 수 없습니다.'); return; }
-  e.baseline = { main: live.procs.main||0, final: live.procs.final||0, pack: live.procs.pack||0 };
+  if (!e.progress) e.progress = { main:0, final:0, pack:0 };
+  const labelMap = { main:'조립', final:'검사', pack:'포장' };
+  const unit = e.isCkd ? 'Site' : '대';
+  const val = prompt(`${labelMap[procKey]} 완료 수량을 입력해주세요. (계획 ${e.planQty}${unit})`, e.progress[procKey] || 0);
+  if (val === null) return;
+  const qty = parseInt(val);
+  if (isNaN(qty) || qty < 0) { alert('올바른 수량을 입력해주세요.'); return; }
+  e.progress[procKey] = qty;
   saveWeeklyPlansToServer();
   renderWeekPlanView();
 }
 
-// 미달성분을 다음주로 이월 (남은 수량만큼 새 목표로, 새 기준선은 이번주 종료 시점 누적값)
+// 미달성분을 다음주로 이월 (목표수량 - 수동입력 완료수량 = 남은 수량, 단순 계산)
 function carryOverWeekPlan(id) {
   const e = weeklyPlans.find(x => x.id === id);
   if (!e) return;
-  const live = findLiveModelData(e.model, e.shipDate, e.fullName);
-  if (!live) { alert('원본 모델을 찾을 수 없어 이월할 수 없습니다.'); return; }
-  const b = e.baseline || {main:0,final:0,pack:0};
-  // 3개 공정 중 가장 적게 진행된 것 기준으로 "이번주에 실질적으로 완료된 수량" 판단
-  const doneMin = Math.min(
-    Math.max(0, Math.min((live.procs.main ||0)-b.main,  e.planQty)),
-    Math.max(0, Math.min((live.procs.final||0)-b.final, e.planQty)),
-    Math.max(0, Math.min((live.procs.pack ||0)-b.pack,  e.planQty))
-  );
-  const remaining = e.planQty - doneMin;
+  const p = e.progress || {};
+  const doneMin = e.isCkd ? (p.pack||0) : Math.min(p.main||0, p.final||0, p.pack||0);
+  const remaining = e.planQty - Math.min(doneMin, e.planQty);
   if (remaining <= 0) { alert('이미 목표를 달성해서 이월할 수량이 없습니다.'); return; }
-  if (!confirm(`남은 ${remaining}대를 다음 주 계획으로 이월하시겠습니까?`)) return;
+  if (!confirm(`남은 ${remaining}${e.isCkd?'Site':'대'}를 다음 주 계획으로 이월하시겠습니까?`)) return;
 
   const nextMon = parseLocalDate(currentWeekStart);
   nextMon.setDate(nextMon.getDate() + 7);
@@ -3663,16 +3741,16 @@ function carryOverWeekPlan(id) {
     id: 'wp_' + Date.now() + '_' + Math.floor(Math.random()*10000),
     weekStart: dateKey(nextMon),
     model: e.model, shipDate: e.shipDate, fullName: e.fullName,
+    isCkd: e.isCkd,
     planQty: remaining,
-    baseline: { main: live.procs.main||0, final: live.procs.final||0, pack: live.procs.pack||0 },
+    progress: { main: 0, final: 0, pack: 0 },
     createdBy: localStorage.getItem('kaa_my_name') || '익명',
     createdAt: new Date().toISOString(),
   });
   saveWeeklyPlansToServer();
   renderWeekPlanView();
-  alert(`다음 주(${getWeekLabel(dateKey(nextMon))})로 ${remaining}대 이월 완료했습니다.`);
+  alert(`다음 주(${getWeekLabel(dateKey(nextMon))})로 ${remaining}${e.isCkd?'Site':'대'} 이월 완료했습니다.`);
 }
-
 
 function renderPerfView() {
   const container = document.getElementById('perfContent');
@@ -6378,6 +6456,7 @@ initNotice();
 initSaveInfo();
 initSummary();
 renderSharedImageButtons(); // GS_URL 선언 이후에 호출되어야 함 (자동팝업이 이미지 로드 시 GS_URL을 바로 사용하기 때문)
+initAutoSwitch();
 
 function setSyncStatus(msg, color) {
   const dot = document.getElementById('syncDot');
