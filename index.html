@@ -80,26 +80,23 @@
   .wp-summary-cell { flex:1; padding:10px 16px; border-right:1px solid var(--border); }
   .wp-summary-cell:last-child { border-right:none; }
   .wp-summary-label { font-size:15px; font-weight:700; color:var(--text-secondary); margin-bottom:6px; }
-  .wp-gauge-track { position:relative; height:22px; background:var(--bg-panel); border-radius:2px; overflow:hidden; }
+  .wp-gauge-track { position:relative; height:16px; background:var(--bg-panel); border-radius:2px; overflow:hidden; }
   .wp-gauge-fill { position:absolute; top:0; left:0; height:100%; background:var(--accent2); transition:width .3s; }
-  .wp-gauge-fill.done { background:var(--green); }
+  .wp-gauge-fill.done-soft { background:rgba(0,170,85,.28); }
   .wp-gauge-fill.behind { background:var(--red); }
-  .wp-gauge-text { position:relative; z-index:1; height:100%; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:800; color:var(--text-primary);
-    text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 5px #fff, 0 0 5px #fff; }
+  .wp-gauge-bignum { font-family:var(--font-mono); font-size:26px; font-weight:800; margin-bottom:6px; line-height:1; }
   .wp-card { background:var(--bg-card); border:1px dashed var(--border-bright); border-left:4px solid transparent; border-radius:2px; display:flex; margin-bottom:10px; overflow:hidden; }
   .wp-card.wp-card-delayed { border-left-color:var(--red); }
-  .wp-card.wp-card-done { opacity:.6; }
+  .wp-card.wp-card-done { opacity:.7; }
   .wp-card-left { width:180px; flex-shrink:0; background:var(--bg-card2); padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; position:relative; }
   .wp-card-model { font-family:var(--font-mono); font-size:22px; font-weight:700; color:var(--red); text-align:center; }
   .wp-card-fullname { font-size:13px; color:var(--text-secondary); text-align:center; }
   .wp-card-qty { background:#fde8e8; color:var(--red); font-weight:700; font-size:18px; padding:4px 16px; border-radius:2px; margin:2px 0; }
   .wp-card-btns { display:flex; gap:4px; flex-wrap:wrap; justify-content:center; }
   .wp-card-btns button { font-size:11px; padding:3px 8px; cursor:pointer; border-radius:2px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); }
-  .wp-card-right { flex:1; display:flex; align-items:center; gap:14px; padding:10px 16px; }
+  .wp-card-right { flex:1; display:flex; align-items:center; gap:14px; padding:14px 16px; }
   .wp-gauge-row { flex:1; }
-  .wp-gauge-row-label { font-size:15px; font-weight:700; color:var(--text-secondary); margin-bottom:5px; }
-  .wp-gauge-row .wp-gauge-track { height:22px; }
-  .wp-gauge-chip-done { display:inline-flex; align-items:center; gap:5px; height:26px; padding:0 14px; background:var(--green); color:#fff; font-size:16px; font-weight:800; border-radius:2px; }
+  .wp-gauge-row-label { font-size:17px; font-weight:800; color:var(--text-secondary); margin-bottom:8px; }
   .wp-note-badge-inline { position:absolute; top:6px; right:6px; background:var(--red); color:#fff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 6px; }
   .ts-item { flex:1; padding:10px 16px; border-right:1px solid var(--border); display:flex; align-items:center; gap:10px; }
   .ts-item:last-child { border-right:none; }
@@ -3537,17 +3534,17 @@ function weekExpectedRatio(weekStartStr) {
 function buildGaugeBar(done, planQty, isDelayed, onClick, unit) {
   unit = unit || '대';
   const isDone = done >= planQty && planQty > 0;
-  if (isDone) {
-    // 완료된 공정은 큰 바 대신 작은 칩으로 접어서 표시 (카드가 많을 때 한눈에 안 들어오는 문제 완화)
-    return `<div class="wp-gauge-chip-done" ${onClick ? `onclick="${onClick}" style="cursor:pointer;" title="클릭해서 완료수량 수정"` : ''}>✓ 완료</div>`;
-  }
   const pct = planQty > 0 ? Math.min(Math.round(done / planQty * 100), 100) : 0;
-  const cls = isDelayed ? 'behind' : '';
-  const text = `${done}/${planQty}${unit}`;
+  const numColor = isDone ? 'var(--green)' : (isDelayed ? 'var(--red)' : 'var(--text-primary)');
+  const fillClass = isDone ? 'done-soft' : (isDelayed ? 'behind' : '');
+  const barPct = isDone ? 100 : pct;
+  const numText = isDone ? '완료' : `${done}/${planQty}${unit}`;
+  const clickPart = onClick ? `onclick="${onClick}" title="클릭해서 완료수량 입력"` : '';
+  const cursorStyle = onClick ? 'cursor:pointer;' : '';
   return `
-    <div class="wp-gauge-track" ${onClick ? `onclick="${onClick}" style="cursor:pointer;" title="클릭해서 완료수량 입력"` : ''}>
-      <div class="wp-gauge-fill ${cls}" style="width:${pct}%;"></div>
-      <div class="wp-gauge-text">${text}</div>
+    <div class="wp-gauge-bignum" style="color:${numColor};${cursorStyle}" ${clickPart}>${numText}</div>
+    <div class="wp-gauge-track" style="${cursorStyle}" ${clickPart}>
+      <div class="wp-gauge-fill ${fillClass}" style="width:${barPct}%;"></div>
     </div>
   `;
 }
