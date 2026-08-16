@@ -94,18 +94,13 @@
   .wp-card-qty { background:#fde8e8; color:var(--red); font-weight:800; font-size:21px; padding:3px 14px; border-radius:2px; margin:2px 0; }
   .wp-card-btns { display:flex; gap:4px; flex-wrap:wrap; justify-content:center; }
   .wp-card-btns button { font-size:11px; padding:3px 8px; cursor:pointer; border-radius:2px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); }
-  .wp-card-right { flex:1; display:flex; align-items:stretch; gap:14px; padding:14px 16px; }
-  .wp-gauge-row { flex:1; display:flex; flex-direction:column; justify-content:center; }
+  .wp-card-right { flex:1; display:flex; align-items:center; gap:14px; padding:14px 16px; }
+  .wp-gauge-row { flex:1; }
   .wp-gauge-row-label { font-size:24px; font-weight:800; color:var(--text-secondary); margin-bottom:8px; }
   .wp-note-badge-inline { position:absolute; top:6px; right:6px; background:var(--red); color:#fff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 6px; }
   /* ── 계획/완료 미니 테이블 (완료 = 포장완료 수량 기준) - 카드의 실제 높이를 그대로 따라가고, 가로는 그 비율(약 1.27:1)대로 같이 늘어남 */
-  .wp-mini-table { flex-shrink:0; align-self:stretch; display:flex; flex-direction:column; border-radius:3px; overflow:hidden; background:#fff; border:1px solid var(--border); }
-  .wp-mini-table-head { display:flex; background:var(--navy, #0d1f3c); flex-shrink:0; height:32%; }
-  .wp-mini-table-head div { flex:1; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:800; }
-  .wp-mini-table-head div:first-child { border-right:1px solid rgba(255,255,255,.2); }
-  .wp-mini-table-body { display:flex; flex:1; }
-  .wp-mini-table-body div { flex:1; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:44px; font-weight:800; color:var(--text-primary); }
-  .wp-mini-table-body div:first-child { border-right:1px solid var(--border); }
+  .wp-plan-done-text { font-size:19px; font-weight:800; color:var(--navy, #0d1f3c); background:var(--bg-card2); border-radius:2px; padding:4px 10px; display:inline-block; }
+  .wp-plan-done-text b { color:var(--red); font-family:var(--font-mono); }
   .ts-item { flex:1; padding:10px 16px; border-right:1px solid var(--border); display:flex; align-items:center; gap:10px; }
   .ts-item:last-child { border-right:none; }
   .ts-label { font-size:19px; font-weight:700; color:var(--text-secondary); letter-spacing:1px; text-transform:uppercase; white-space:nowrap; }
@@ -3558,13 +3553,9 @@ function buildGaugeBar(done, planQty, isDelayed, onClick, unit) {
 }
 
 // 계획/완료(포장완료 기준) 미니 테이블 - 요약 스트립과 카드에서 공통으로 사용
-function buildPlanDoneTable(planQty, doneQty) {
-  return `
-    <div class="wp-mini-table">
-      <div class="wp-mini-table-head"><div>계획</div><div>완료</div></div>
-      <div class="wp-mini-table-body"><div>${planQty}</div><div>${doneQty}</div></div>
-    </div>
-  `;
+function buildPlanDoneText(planQty, doneQty, unit) {
+  unit = unit || '대';
+  return `<span class="wp-plan-done-text">계획 <b>${planQty}</b>${unit} · 완료 <b>${doneQty}</b>${unit}</span>`;
 }
 
 function renderWeekPlanView() {
@@ -3620,12 +3611,12 @@ function renderWeekPlanView() {
 
   html += `
     <div class="wp-summary">
-      <div class="wp-summary-cell" style="flex:0 0 320px;border-right:none;">
+      <div class="wp-summary-cell" style="flex:0 0 380px;">
         <div class="wp-summary-label">ANT 총계획 (이번 주)</div>
-        <div style="font-family:var(--font-mono);font-size:34px;font-weight:800;">${antPlan}대</div>
-      </div>
-      <div class="wp-summary-cell" style="flex:0 0 auto;display:flex;align-items:stretch;border-right:none;padding:10px 12px;">
-        ${buildPlanDoneTable(antPlan, antPack)}
+        <div style="display:flex;align-items:baseline;gap:12px;">
+          <div style="font-family:var(--font-mono);font-size:34px;font-weight:800;">${antPlan}대</div>
+          ${buildPlanDoneText(antPlan, antPack)}
+        </div>
       </div>
       <div class="wp-summary-cell">
         <div class="wp-summary-label">조립 완료</div>
@@ -3641,12 +3632,12 @@ function renderWeekPlanView() {
       </div>
     </div>
     <div class="wp-summary" style="margin-top:-6px;">
-      <div class="wp-summary-cell" style="flex:0 0 320px;border-right:none;">
+      <div class="wp-summary-cell" style="flex:0 0 380px;">
         <div class="wp-summary-label">CKD 총계획 (이번 주)</div>
-        <div style="font-family:var(--font-mono);font-size:34px;font-weight:800;">${ckdPlan} Site</div>
-      </div>
-      <div class="wp-summary-cell" style="flex:0 0 auto;display:flex;align-items:stretch;border-right:none;padding:10px 12px;">
-        ${buildPlanDoneTable(ckdPlan, ckdPack)}
+        <div style="display:flex;align-items:baseline;gap:12px;">
+          <div style="font-family:var(--font-mono);font-size:34px;font-weight:800;">${ckdPlan} Site</div>
+          ${buildPlanDoneText(ckdPlan, ckdPack, 'Site')}
+        </div>
       </div>
       <div class="wp-summary-cell" style="flex:1;">
         <div class="wp-summary-label">포장 완료</div>
@@ -3693,6 +3684,7 @@ function renderWeekPlanView() {
             <div class="wp-card-model">${escapeHtml(e.model)}${isCkd ? ' <span style="font-size:11px;color:var(--accent2);">(CKD)</span>' : ''}</div>
             ${fullNameStr}
             <div class="wp-card-qty">${e.planQty}${unit}</div>
+            <div style="margin:2px 0;">${buildPlanDoneText(e.planQty, done.pack, unit)}</div>
             <div class="wp-card-btns">
               <button onclick="editWeekPlanQty('${e.id}')">✏ 목표수정</button>
               <button onclick="carryOverWeekPlan('${e.id}')" title="미달성분을 다음주로 넘깁니다">➡ 다음주 이월</button>
@@ -3700,7 +3692,6 @@ function renderWeekPlanView() {
             </div>
           </div>
           <div class="wp-card-right">
-            ${buildPlanDoneTable(e.planQty, done.pack)}
             ${gaugesHtml}
           </div>
         </div>
@@ -3709,18 +3700,6 @@ function renderWeekPlanView() {
   }
 
   container.innerHTML = html;
-
-  // CSS의 align-self:stretch만으로는 aspect-ratio 계산이 flex 레이아웃과 충돌해서
-  // 옆 요소를 침범하는 문제가 있어, 실제로 렌더링된 높이를 측정한 뒤 가로/세로를 정확한 픽셀로 강제 지정
-  requestAnimationFrame(() => {
-    document.querySelectorAll('#weekPlanContent .wp-mini-table').forEach(mt => {
-      const h = mt.getBoundingClientRect().height;
-      if (h > 0) {
-        mt.style.height = h + 'px';
-        mt.style.width  = Math.round(h * 150 / 118) + 'px';
-      }
-    });
-  });
 }
 
 function openWeekPlanAddModal() {
