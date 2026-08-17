@@ -72,8 +72,12 @@
   /* ── 주간계획 */
   .wp-header { display:flex; align-items:center; justify-content:space-between; background:var(--navy, #0d1f3c); padding:14px 22px; border-radius:2px; margin-bottom:14px; }
   .wp-header-left { display:flex; align-items:center; gap:16px; }
-  .wp-header-title { color:#fff; font-size:24px; font-weight:800; letter-spacing:.3px; }
+  .wp-header-title { color:#fff; font-size:30px; font-weight:800; letter-spacing:.3px; }
+  .wp-header-badge { display:inline-block; font-size:13px; font-weight:800; letter-spacing:.5px; padding:4px 10px; border-radius:3px; margin-right:12px; vertical-align:middle; }
+  .wp-header-badge-week  { background:var(--accent2); color:#fff; }
+  .wp-header-badge-month { background:#e8792a; color:#fff; }
   .wp-week-nav { display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.14); color:#fff; padding:6px 16px; border-radius:2px; }
+  .wp-week-nav.wp-week-nav-month { background:rgba(232,121,42,.28); border:1px solid rgba(232,121,42,.6); }
   .wp-week-nav button { background:rgba(255,255,255,.18); border:none; color:#fff; width:26px; height:26px; border-radius:2px; cursor:pointer; font-size:14px; }
   .wp-week-nav .wp-week-label { font-family:var(--font-mono); font-size:18px; font-weight:700; min-width:110px; text-align:center; }
   .wp-note-badge-inline { position:absolute; top:6px; right:6px; background:var(--red); color:#fff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 6px; z-index:1; }
@@ -1109,7 +1113,7 @@
 <header class="header">
   <div class="header-left">
     <img src="data:image/png;base64,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" style="height:30px;object-fit:contain;" alt="Intellian">
-    <div class="header-title">C1 생산 현황 <span>모니터링</span><span class="ver-badge">Rev15</span><span id="versionMismatchBadge" style="display:none;font-size:12px;font-weight:700;color:var(--red);border:1px solid var(--red);border-radius:2px;padding:1px 6px;margin-left:6px;vertical-align:middle;cursor:pointer;" onclick="requireSynced()" title="클릭하면 상세 안내">⚠ 예전 버전</span><button onclick="promoteThisVersionToOfficial()" title="이 버전을 정식 배포 버전으로 지정 (전체 배포 완료 후 관리자만 사용, 비밀번호 필요)" style="font-size:10px;padding:1px 5px;margin-left:6px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">정식지정</button><button onclick="changeAdminPasswordPrompt()" title="정식지정용 관리자 비밀번호 변경" style="font-size:10px;padding:1px 5px;margin-left:4px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">🔑 비밀번호 변경</button></div>
+    <div class="header-title">C1 생산 현황 <span>모니터링</span><span class="ver-badge">Rev16</span><span id="versionMismatchBadge" style="display:none;font-size:12px;font-weight:700;color:var(--red);border:1px solid var(--red);border-radius:2px;padding:1px 6px;margin-left:6px;vertical-align:middle;cursor:pointer;" onclick="requireSynced()" title="클릭하면 상세 안내">⚠ 예전 버전</span><button onclick="promoteThisVersionToOfficial()" title="이 버전을 정식 배포 버전으로 지정 (전체 배포 완료 후 관리자만 사용, 비밀번호 필요)" style="font-size:10px;padding:1px 5px;margin-left:6px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">정식지정</button><button onclick="changeAdminPasswordPrompt()" title="정식지정용 관리자 비밀번호 변경" style="font-size:10px;padding:1px 5px;margin-left:4px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">🔑 비밀번호 변경</button></div>
   </div>
   <div class="header-right">
     <div style="display:flex;align-items:center;gap:4px;border:1px solid var(--border);border-radius:2px;padding:3px 6px;background:var(--bg-card);">
@@ -1218,18 +1222,11 @@
 <div class="tab-bar">
   <button class="tab-btn active" id="mainTabProd" onclick="switchMainTab('prod')">📊 생산 현황</button>
   <button class="tab-btn" id="mainTabWeek" onclick="switchMainTab('week')">📅 주간 계획</button>
+  <button class="tab-btn" id="mainTabMonth" onclick="switchMainTab('month')">📆 월간 계획</button>
   <button class="tab-btn" id="mainTabNote" onclick="switchMainTab('note')">📋 특이사항</button>
   <button class="tab-btn" id="mainTabPerf" onclick="switchMainTab('perf')">📈 계획대비실적</button>
   <div class="tab-spacer"></div>
-  <div style="display:flex;align-items:center;gap:6px;margin-right:16px;font-size:12px;color:var(--text-dim);">
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;" title="생산현황 ↔ 주간계획을 정해진 간격으로 자동 전환합니다 (라인 모니터용)">
-      <input type="checkbox" id="autoSwitchToggle" onchange="toggleAutoSwitch()">
-      ⏱ 자동전환(생산현황↔주간계획)
-    </label>
-    <input type="number" id="autoSwitchInterval" value="15" min="3" max="600" onchange="saveAutoSwitchInterval()"
-      style="width:46px;font-size:12px;padding:2px 4px;background:var(--bg-card2);border:1px solid var(--border);color:var(--text-primary);">
-    <span>초</span>
-  </div>
+  <button class="btn" onclick="openAutoSwitchSettingsModal()" style="font-size:12px;padding:5px 12px;margin-right:14px;" title="원하는 화면들을 골라서 순서대로 자동 전환합니다 (라인 모니터용)">⏱ 자동전환 설정</button>
   <div class="mes-status"><div class="mes-dot" id="syncDot"></div><span id="syncStatus">Google Sheets 연동 중...</span></div>
 </div>
 
@@ -1242,6 +1239,36 @@
 <!-- 주간계획 뷰 -->
 <div id="weekPlanView" style="display:none; padding:16px 24px;">
   <div id="weekPlanContent"></div>
+</div>
+
+<!-- 월간계획 뷰 (생산현황 실시간 연동, 조회전용) -->
+<div id="monthPlanView" style="display:none; padding:16px 24px;">
+  <div id="monthPlanContent"></div>
+</div>
+
+<!-- 자동전환 설정 모달 -->
+<div class="save-name-overlay" id="autoSwitchSettingsOverlay">
+  <div class="save-name-modal" style="width:min(480px, 92vw);max-width:none;">
+    <div class="save-name-header">
+      <div class="save-name-title">⏱ 자동전환 설정</div>
+    </div>
+    <div class="save-name-body">
+      <label style="display:flex;align-items:center;gap:6px;margin-bottom:16px;font-weight:700;cursor:pointer;font-size:14px;">
+        <input type="checkbox" id="autoSwitchEnabledCheck"> 자동전환 사용
+      </label>
+      <div class="save-name-label">전환할 화면 선택 (체크된 것만 순환) · ▲▼로 순서 조정</div>
+      <div id="autoSwitchOrderList" style="margin-bottom:16px;"></div>
+      <div class="save-name-label">전환 간격</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input class="save-name-input" id="autoSwitchIntervalInput" type="number" min="3" max="600" value="15" style="width:100px;">
+        <span style="color:var(--text-dim);">초</span>
+      </div>
+    </div>
+    <div class="save-name-footer">
+      <button class="save-name-cancel" onclick="closeAutoSwitchSettingsModal()">취소</button>
+      <button class="save-name-confirm" onclick="saveAutoSwitchSettings()">저장</button>
+    </div>
+  </div>
 </div>
 
 <!-- 주간계획: 모델 추가 모달 -->
@@ -1399,6 +1426,13 @@
     <div id="ckdTotalStripWrap"><div class="total-strip">
       <div class="ts-item">
         <div class="ts-label">총 계획</div><div class="ts-sub" style="margin:0 4px;">당월 전체</div><div class="ts-value ts-accent" id="ckdSumTotal" style="margin:0 2px;">0</div><div class="ts-sub">Site</div>
+      </div>
+      <div class="ts-item">
+        <div class="ts-label">수검 완료</div>
+        <div class="ts-value" id="ckdSumInspect" style="margin:0 2px;color:var(--yellow);">0</div>
+        <div class="ts-sub">/</div>
+        <div class="ts-value ts-accent" id="ckdSumTotalInspect" style="margin:0 2px;">0</div>
+        <div class="ts-sub">Site</div>
       </div>
       <div class="ts-item">
         <div class="ts-label">포장 완료</div>
@@ -1825,6 +1859,20 @@ function calcCkdCompletedSites(m) {
   });
   if (!isFinite(completedSites)) completedSites = 0;
   return Math.min(completedSites, siteCount);
+}
+
+// "수입검사"(수검) 공정을 이름으로 찾아서 완료 Site수 계산 (CKD 공정세트마다 ID가 달라도 이름으로 안전하게 찾음)
+function findCkdInspectProc(procSetKey) {
+  const procSet = PROC_SETS[procSetKey] || [];
+  return procSet.find(p => (p.name || '').includes('수입검사') || (p.name || '').includes('수검') || (p.short || '').includes('수입검사') || (p.short || '').includes('수검')) || null;
+}
+function calcCkdInspectSites(m) {
+  const p = findCkdInspectProc(m.procSet);
+  if (!p) return 0;
+  if (m.excludedProcs && m.excludedProcs.includes(p.id)) return 0;
+  const need = p.crateQty || 1;
+  const done = (m.procs && m.procs[p.id]) || 0;
+  return Math.min(Math.floor(done / need), m.plan || 0);
 }
 
 // 모델 1건의 "실적" 계산 (ANT=포장완료 수량, CKD=완료 Site 수)
@@ -2532,7 +2580,7 @@ function updateAll() {
   document.getElementById('sumDonePct').textContent    = donePct + '%';
 
   // ── CKD 총계 스트립 (Site 단위, ANT와 완전히 별도 집계) - 포장기준일이 이번 달인 것만
-  let ckdTotalPlan = 0, ckdTotalDone = 0;
+  let ckdTotalPlan = 0, ckdTotalDone = 0, ckdTotalInspect = 0;
   models.filter(mo => {
     if (!(mo.procSet && mo.procSet.indexOf('CKD') === 0)) return false;
     if (!mo.shipDate) return false;
@@ -2542,6 +2590,7 @@ function updateAll() {
   }).forEach(mo => {
     ckdTotalPlan += mo.plan || 0;
     ckdTotalDone += calcCkdCompletedSites(mo);
+    ckdTotalInspect += calcCkdInspectSites(mo);
   });
   loadHistory().forEach(h => {
     if (!(h.procSet && h.procSet.indexOf('CKD') === 0)) return;
@@ -2549,11 +2598,14 @@ function updateAll() {
     if (ym.year !== curYear || ym.month !== curMonth) return;
     ckdTotalPlan += h.plan || 0;
     ckdTotalDone += calcCkdCompletedSites(h);
+    ckdTotalInspect += calcCkdInspectSites(h);
   });
   const ckdDonePct = ckdTotalPlan > 0 ? Math.round(ckdTotalDone / ckdTotalPlan * 100) : 0;
   const ckdSumTotalEl = document.getElementById('ckdSumTotal');
   if (ckdSumTotalEl) {
     ckdSumTotalEl.textContent = ckdTotalPlan;
+    document.getElementById('ckdSumInspect').textContent      = ckdTotalInspect;
+    document.getElementById('ckdSumTotalInspect').textContent = ckdTotalPlan;
     document.getElementById('ckdSumDone').textContent      = ckdTotalDone;
     document.getElementById('ckdSumTotalPack').textContent = ckdTotalPlan;
     document.getElementById('ckdSumDonePct').textContent   = ckdDonePct + '%';
@@ -3165,6 +3217,7 @@ function switchMainTab(tab) {
   currentMainTab = tab;
   document.getElementById('mainTabProd').classList.toggle('active', tab === 'prod');
   document.getElementById('mainTabWeek').classList.toggle('active', tab === 'week');
+  document.getElementById('mainTabMonth').classList.toggle('active', tab === 'month');
   document.getElementById('mainTabNote').classList.toggle('active', tab === 'note');
   document.getElementById('mainTabPerf').classList.toggle('active', tab === 'perf');
 
@@ -3174,10 +3227,12 @@ function switchMainTab(tab) {
     if (el) el.style.display = tab === 'prod' ? '' : 'none';
   });
 
-  document.getElementById('weekPlanView').style.display = tab === 'week' ? 'block' : 'none';
+  document.getElementById('weekPlanView').style.display  = tab === 'week'  ? 'block' : 'none';
+  document.getElementById('monthPlanView').style.display = tab === 'month' ? 'block' : 'none';
   document.getElementById('allNoteView').style.display = tab === 'note' ? 'block' : 'none';
   document.getElementById('perfView').style.display    = tab === 'perf' ? 'block' : 'none';
   if (tab === 'week') renderWeekPlanView();
+  if (tab === 'month') renderMonthPlanView();
   if (tab === 'note') renderAllNotes();
   if (tab === 'perf') renderPerfView();
 }
@@ -3407,20 +3462,27 @@ async function saveAllPerfRemarks() {
 
 // ══════════════════════════ 자동 탭 전환 (라인 모니터 고정 화면용) ══════════════════════════
 let autoSwitchTimer = null;
-const AUTO_SWITCH_TABS = ['prod', 'week']; // 순환할 탭 (생산현황 ↔ 주간계획)
+const AUTO_SWITCH_TAB_LABELS = { prod:'📊 생산 현황', week:'📅 주간 계획', month:'📆 월간 계획', note:'📋 특이사항', perf:'📈 계획대비실적' };
+// 순서 배열(전체 5개, 사용자가 재배치) + 활성화된 것만 담긴 집합 - 둘 다 로컬저장
+let autoSwitchOrder = JSON.parse(localStorage.getItem('kaa_autoswitch_order') || '["prod","week","month","note","perf"]');
+let autoSwitchEnabledTabs = JSON.parse(localStorage.getItem('kaa_autoswitch_enabled_tabs') || '["prod","week"]');
+// 혹시 저장된 순서 배열에 새로 생긴 탭(month 등)이 빠져있으면 뒤에 보충
+Object.keys(AUTO_SWITCH_TAB_LABELS).forEach(k => { if (!autoSwitchOrder.includes(k)) autoSwitchOrder.push(k); });
 
 function startAutoSwitch() {
   stopAutoSwitch();
+  const activeTabs = autoSwitchOrder.filter(k => autoSwitchEnabledTabs.includes(k));
+  if (activeTabs.length === 0) return;
   const interval = Math.max(3, parseInt(localStorage.getItem('kaa_autoswitch_interval') || '15')) * 1000;
   autoSwitchTimer = setInterval(() => {
     // 팝업/모달이 떠 있으면 그 사이엔 전환하지 않음 (수정 중 화면이 갑자기 넘어가는 것 방지)
     const modalIds = ['addModal','cellModal','ckdRefOverlay','detailOverlay','historyNoteOverlay',
       'historyOverlay','myNameOverlay','noteOverlay','peOverlay','saveNameOverlay',
-      'sharedImageAddOverlay','sharedImageViewOverlay','wdModalOverlay','weekPlanAddOverlay'];
+      'sharedImageAddOverlay','sharedImageViewOverlay','wdModalOverlay','weekPlanAddOverlay','autoSwitchSettingsOverlay'];
     const anyModalOpen = modalIds.some(id => document.getElementById(id)?.classList.contains('open'));
     if (anyModalOpen) return;
-    const curIdx = AUTO_SWITCH_TABS.indexOf(currentMainTab);
-    const nextTab = AUTO_SWITCH_TABS[(curIdx >= 0 ? curIdx + 1 : 0) % AUTO_SWITCH_TABS.length];
+    const curIdx = activeTabs.indexOf(currentMainTab);
+    const nextTab = activeTabs[(curIdx >= 0 ? curIdx + 1 : 0) % activeTabs.length];
     switchMainTab(nextTab);
   }, interval);
 }
@@ -3429,26 +3491,60 @@ function stopAutoSwitch() {
   if (autoSwitchTimer) { clearInterval(autoSwitchTimer); autoSwitchTimer = null; }
 }
 
-function toggleAutoSwitch() {
-  const enabled = document.getElementById('autoSwitchToggle').checked;
-  localStorage.setItem('kaa_autoswitch_enabled', enabled ? '1' : '0');
-  if (enabled) startAutoSwitch(); else stopAutoSwitch();
+function openAutoSwitchSettingsModal() {
+  startModalEditLock();
+  document.getElementById('autoSwitchEnabledCheck').checked = localStorage.getItem('kaa_autoswitch_enabled') === '1';
+  document.getElementById('autoSwitchIntervalInput').value = localStorage.getItem('kaa_autoswitch_interval') || '15';
+  renderAutoSwitchOrderList();
+  document.getElementById('autoSwitchSettingsOverlay').classList.add('open');
 }
 
-function saveAutoSwitchInterval() {
-  let val = parseInt(document.getElementById('autoSwitchInterval').value) || 15;
-  if (val < 3) val = 3;
-  document.getElementById('autoSwitchInterval').value = val;
-  localStorage.setItem('kaa_autoswitch_interval', String(val));
-  if (autoSwitchTimer) startAutoSwitch(); // 켜져 있으면 새 간격으로 재시작
+function closeAutoSwitchSettingsModal() {
+  document.getElementById('autoSwitchSettingsOverlay').classList.remove('open');
+  stopModalEditLock();
+}
+
+function renderAutoSwitchOrderList() {
+  const container = document.getElementById('autoSwitchOrderList');
+  container.innerHTML = autoSwitchOrder.map((key, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg-card2);border-radius:2px;margin-bottom:5px;">
+      <label style="display:flex;align-items:center;gap:7px;flex:1;cursor:pointer;font-size:13.5px;">
+        <input type="checkbox" ${autoSwitchEnabledTabs.includes(key)?'checked':''} onchange="toggleAutoSwitchTabEnabled('${key}')">
+        ${AUTO_SWITCH_TAB_LABELS[key]}
+      </label>
+      <button onclick="moveAutoSwitchTab(${i},-1)" ${i===0?'disabled':''} style="width:26px;height:24px;cursor:pointer;">▲</button>
+      <button onclick="moveAutoSwitchTab(${i},1)" ${i===autoSwitchOrder.length-1?'disabled':''} style="width:26px;height:24px;cursor:pointer;">▼</button>
+    </div>
+  `).join('');
+}
+
+function toggleAutoSwitchTabEnabled(key) {
+  if (autoSwitchEnabledTabs.includes(key)) autoSwitchEnabledTabs = autoSwitchEnabledTabs.filter(k => k !== key);
+  else autoSwitchEnabledTabs.push(key);
+}
+
+function moveAutoSwitchTab(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= autoSwitchOrder.length) return;
+  [autoSwitchOrder[idx], autoSwitchOrder[newIdx]] = [autoSwitchOrder[newIdx], autoSwitchOrder[idx]];
+  renderAutoSwitchOrderList();
+}
+
+function saveAutoSwitchSettings() {
+  const enabled = document.getElementById('autoSwitchEnabledCheck').checked;
+  let interval = parseInt(document.getElementById('autoSwitchIntervalInput').value) || 15;
+  if (interval < 3) interval = 3;
+  localStorage.setItem('kaa_autoswitch_enabled', enabled ? '1' : '0');
+  localStorage.setItem('kaa_autoswitch_interval', String(interval));
+  localStorage.setItem('kaa_autoswitch_order', JSON.stringify(autoSwitchOrder));
+  localStorage.setItem('kaa_autoswitch_enabled_tabs', JSON.stringify(autoSwitchEnabledTabs));
+  closeAutoSwitchSettingsModal();
+  if (enabled && autoSwitchEnabledTabs.length > 0) startAutoSwitch(); else stopAutoSwitch();
 }
 
 // 저장된 설정 복원 (라인 모니터가 껐다 켜져도 자동전환이 알아서 다시 켜지도록)
 function initAutoSwitch() {
   const enabled = localStorage.getItem('kaa_autoswitch_enabled') === '1';
-  const interval = localStorage.getItem('kaa_autoswitch_interval') || '15';
-  document.getElementById('autoSwitchToggle').checked = enabled;
-  document.getElementById('autoSwitchInterval').value = interval;
   if (enabled) startAutoSwitch();
 }
 
@@ -3549,12 +3645,19 @@ const WP_COLOR_PLAN='#1f5f74', WP_COLOR_MAIN='#e8792a', WP_COLOR_FINAL='#1a6b3a'
 
 // 막대그래프 카드 하나 생성 (ANT=4개 막대, CKD=2개 막대)
 function buildBarChartCard(opts) {
-  const { title, sub, badge, isCkd, planQty, main, final, pack, unit, isDelayed, isDone, noteCount, actions } = opts;
-  const maxVal = isCkd ? Math.max(planQty, pack, 1) : Math.max(planQty, main, final, pack, 1);
+  const { title, sub, badge, isCkd, planQty, main, final, pack, inspect, showInspect, unit, isDelayed, isDone, noteCount, actions } = opts;
+  const maxVal = isCkd ? Math.max(planQty, showInspect ? inspect : 0, pack, 1) : Math.max(planQty, main, final, pack, 1);
   let bars, labels;
   if (isCkd) {
-    bars = buildBar('계획', planQty, WP_COLOR_PLAN, maxVal) + buildBar('완료', pack, WP_COLOR_PACK, maxVal, actions.packClick);
-    labels = `<div class="wp-bar-label">계획</div><div class="wp-bar-label">완료</div>`;
+    if (showInspect) {
+      bars = buildBar('계획', planQty, WP_COLOR_PLAN, maxVal)
+           + buildBar('수검', inspect||0, WP_COLOR_FINAL, maxVal, actions.inspectClick)
+           + buildBar('완료', pack, WP_COLOR_PACK, maxVal, actions.packClick);
+      labels = `<div class="wp-bar-label">계획</div><div class="wp-bar-label">수검</div><div class="wp-bar-label">완료</div>`;
+    } else {
+      bars = buildBar('계획', planQty, WP_COLOR_PLAN, maxVal) + buildBar('완료', pack, WP_COLOR_PACK, maxVal, actions.packClick);
+      labels = `<div class="wp-bar-label">계획</div><div class="wp-bar-label">완료</div>`;
+    }
   } else {
     bars = buildBar('계획', planQty, WP_COLOR_PLAN, maxVal)
          + buildBar('조립', main, WP_COLOR_MAIN, maxVal, actions.mainClick)
@@ -3585,6 +3688,7 @@ function renderWeekPlanView() {
   let html = `
     <div class="wp-header">
       <div class="wp-header-left">
+        <span class="wp-header-badge wp-header-badge-week">WEEKLY</span>
         <div class="wp-header-title">주간 계획 대비 실적</div>
         <div class="wp-week-nav">
           <button onclick="changeWeek(-1)">◀</button>
@@ -3598,17 +3702,18 @@ function renderWeekPlanView() {
 
   // 요약 집계 - ANT(조립/검사/포장)와 CKD(포장완료 Site)는 단위가 달라 완전히 분리 집계
   let antPlan=0, antMain=0, antFinal=0, antPack=0;
-  let ckdPlan=0, ckdPack=0;
+  let ckdPlan=0, ckdInspect=0, ckdPack=0;
   const rows = entries.map(e => {
     const live = findLiveModelData(e.model, e.fullName);
     const isCkd = live ? live.isCkd : !!e.isCkd;
     const p = e.progress || {};
     if (isCkd) {
-      const done = Math.min(p.pack || 0, e.planQty);
-      ckdPlan += e.planQty; ckdPack += done;
-      const isDelayed = done < e.planQty*expectedRatio - 0.5;
-      const isDone = done >= e.planQty && e.planQty > 0;
-      return { e, live, isCkd, done: { pack: done }, isDelayed, isDone };
+      const doneInspect = Math.min(p.inspect || 0, e.planQty);
+      const donePack    = Math.min(p.pack    || 0, e.planQty);
+      ckdPlan += e.planQty; ckdInspect += doneInspect; ckdPack += donePack;
+      const isDelayed = donePack < e.planQty*expectedRatio - 0.5;
+      const isDone = donePack >= e.planQty && e.planQty > 0;
+      return { e, live, isCkd, done: { inspect: doneInspect, pack: donePack }, isDelayed, isDone };
     } else {
       const done = {
         main:  Math.min(p.main  || 0, e.planQty),
@@ -3641,8 +3746,8 @@ function renderWeekPlanView() {
     actions: { buttonsHtml: '' },
   });
   html += buildBarChartCard({
-    title: 'CKD 종합', sub: '이번 주 전체', badge: null, isCkd: true,
-    planQty: ckdPlan, main: 0, final: 0, pack: ckdPack, unit: 'Site',
+    title: 'CKD 종합', sub: '이번 주 전체', badge: null, isCkd: true, showInspect: true,
+    planQty: ckdPlan, main: 0, final: 0, pack: ckdPack, inspect: ckdInspect, unit: 'Site',
     isDelayed: false, isDone: false, noteCount: 0,
     actions: { buttonsHtml: '' },
   });
@@ -3662,13 +3767,14 @@ function renderWeekPlanView() {
         <button onclick="deleteWeekPlan('${e.id}')" style="color:var(--red);">🗑 삭제</button>
       `;
       html += buildBarChartCard({
-        title: escapeHtml(e.model), sub: e.fullName ? escapeHtml(e.fullName) : '', badge: null, isCkd,
-        planQty: e.planQty, main: done.main||0, final: done.final||0, pack: done.pack||0, unit,
+        title: escapeHtml(e.model), sub: e.fullName ? escapeHtml(e.fullName) : '', badge: null, isCkd, showInspect: true,
+        planQty: e.planQty, main: done.main||0, final: done.final||0, pack: done.pack||0, inspect: done.inspect||0, unit,
         isDelayed, isDone, noteCount,
         actions: {
-          mainClick:  `editWeekPlanProgress('${e.id}','main')`,
-          finalClick: `editWeekPlanProgress('${e.id}','final')`,
-          packClick:  `editWeekPlanProgress('${e.id}','pack')`,
+          mainClick:    `editWeekPlanProgress('${e.id}','main')`,
+          finalClick:   `editWeekPlanProgress('${e.id}','final')`,
+          packClick:    `editWeekPlanProgress('${e.id}','pack')`,
+          inspectClick: `editWeekPlanProgress('${e.id}','inspect')`,
           buttonsHtml,
         },
       });
@@ -3731,7 +3837,7 @@ function submitWeekPlanAdd() {
     model: modelName, fullName: fullName,
     isCkd: isCkd,
     planQty: qty,
-    progress: { main: 0, final: 0, pack: 0 }, // 완전 수동입력 - 생산현황과 무관
+    progress: { main: 0, final: 0, pack: 0, inspect: 0 }, // 완전 수동입력 - 생산현황과 무관
     createdBy: localStorage.getItem('kaa_my_name') || '익명',
     createdAt: new Date().toISOString(),
   });
@@ -3764,7 +3870,7 @@ function editWeekPlanProgress(id, procKey) {
   const e = weeklyPlans.find(x => x.id === id);
   if (!e) return;
   if (!e.progress) e.progress = { main:0, final:0, pack:0 };
-  const labelMap = { main:'조립', final:'검사', pack:'포장' };
+  const labelMap = { main:'조립', final:'검사', pack:'포장', inspect:'수검' };
   const unit = e.isCkd ? 'Site' : '대';
   const val = prompt(`${labelMap[procKey]} 완료 수량을 입력해주세요. (계획 ${e.planQty}${unit})`, e.progress[procKey] || 0);
   if (val === null) return;
@@ -3793,13 +3899,140 @@ function carryOverWeekPlan(id) {
     model: e.model, fullName: e.fullName,
     isCkd: e.isCkd,
     planQty: remaining,
-    progress: { main: 0, final: 0, pack: 0 },
+    progress: { main: 0, final: 0, pack: 0, inspect: 0 },
     createdBy: localStorage.getItem('kaa_my_name') || '익명',
     createdAt: new Date().toISOString(),
   });
   saveWeeklyPlansToServer();
   renderWeekPlanView();
   alert(`다음 주(${getWeekLabel(dateKey(nextMon))})로 ${remaining}${e.isCkd?'Site':'대'} 이월 완료했습니다.`);
+}
+
+// ══════════════════════════════════════ 월간계획 (생산현황 실시간연동, 조회전용) ══════════════════════════════════════
+let currentMonthPlanDate = new Date(); // 조회 중인 달 (일자는 의미없음, 연/월만 사용)
+
+function changeMonthPlan(delta) {
+  currentMonthPlanDate.setMonth(currentMonthPlanDate.getMonth() + delta);
+  renderMonthPlanView();
+}
+
+function monthExpectedRatio(year, month) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  let totalWorkdays = 0, elapsedWorkdays = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(year, month - 1, d);
+    if (!isCustomWorkday(dt)) continue;
+    totalWorkdays++;
+    if (dt <= today) elapsedWorkdays++;
+  }
+  return totalWorkdays > 0 ? Math.min(elapsedWorkdays / totalWorkdays, 1) : 1;
+}
+
+function renderMonthPlanView() {
+  const container = document.getElementById('monthPlanContent');
+  const year = currentMonthPlanDate.getFullYear();
+  const month = currentMonthPlanDate.getMonth() + 1;
+  const expectedRatio = monthExpectedRatio(year, month);
+
+  // 포장기준일이 이 달인 모델만 (생산현황과 완전히 동일한 원본 데이터)
+  const monthModels = models.filter(m => {
+    if (!m.shipDate) return false;
+    const sd = parseLocalDate(m.shipDate);
+    if (isNaN(sd)) return false;
+    return sd.getFullYear() === year && sd.getMonth() + 1 === month;
+  });
+
+  // 모델명 + 세부모델명이 둘 다 같으면 포장기준일 달라도 하나로 합산
+  const groups = {};
+  monthModels.forEach(m => {
+    const isCkd = !!(m.procSet && m.procSet.indexOf('CKD') === 0);
+    const key = (m.model || '') + '§' + (m.fullName || '');
+    if (!groups[key]) groups[key] = { model: m.model, fullName: m.fullName || '', isCkd, plan: 0, main: 0, final: 0, pack: 0, inspect: 0, noteCount: 0 };
+    const g = groups[key];
+    g.plan += m.plan || 0;
+    if (isCkd) {
+      g.pack    += calcCkdCompletedSites(m);
+      g.inspect += calcCkdInspectSites(m);
+    } else {
+      g.main  += (m.procs && m.procs.main)  || 0;
+      g.final += (m.procs && m.procs.final) || 0;
+      g.pack  += (m.procs && m.procs.pack)  || 0;
+    }
+    g.noteCount += (m.noteData || []).filter(r => r.status !== 'Completed').length;
+  });
+  const groupList = Object.values(groups);
+
+  let antTotalPlan=0, antTotalMain=0, antTotalFinal=0, antTotalPack=0;
+  let ckdTotalPlan=0, ckdTotalPack=0, ckdTotalInspect=0;
+  const rows = groupList.map(g => {
+    let isDelayed, isDone;
+    if (g.isCkd) {
+      ckdTotalPlan += g.plan; ckdTotalPack += g.pack; ckdTotalInspect += g.inspect;
+      isDelayed = g.pack < g.plan*expectedRatio - 0.5;
+      isDone = g.pack >= g.plan && g.plan > 0;
+    } else {
+      antTotalPlan += g.plan; antTotalMain += g.main; antTotalFinal += g.final; antTotalPack += g.pack;
+      isDelayed = [g.main, g.final, g.pack].some(v => v < g.plan*expectedRatio - 0.5);
+      isDone = g.pack >= g.plan && g.plan > 0;
+    }
+    return { g, isDelayed, isDone };
+  });
+  rows.sort((a, b) => {
+    if (a.isDelayed !== b.isDelayed) return a.isDelayed ? -1 : 1;
+    if (a.isDone !== b.isDone) return a.isDone ? 1 : -1;
+    return 0;
+  });
+
+  let html = `
+    <div class="wp-header">
+      <div class="wp-header-left">
+        <span class="wp-header-badge wp-header-badge-month">MONTHLY</span>
+        <div class="wp-header-title">월간 계획 대비 실적</div>
+        <div class="wp-week-nav wp-week-nav-month">
+          <button onclick="changeMonthPlan(-1)">◀</button>
+          <div class="wp-week-label" style="color:#ffb37a;">${year}년 ${month}월</div>
+          <button onclick="changeMonthPlan(1)">▶</button>
+        </div>
+      </div>
+      <div style="color:#fff;font-size:13px;opacity:.85;">📡 생산현황과 실시간 연동 (조회전용) · 같은 모델명+세부모델명은 하나로 합산</div>
+    </div>
+  `;
+
+  html += `
+    <div class="wp-section-title">${year}년 ${month}월 종합</div>
+    <div class="wp-summary-section">
+      <div class="wp-summary-barchart-row">
+  `;
+  html += buildBarChartCard({
+    title: 'ANT 종합', sub: '이번 달 전체', isCkd: false,
+    planQty: antTotalPlan, main: antTotalMain, final: antTotalFinal, pack: antTotalPack, unit: '대',
+    isDelayed: false, isDone: false, noteCount: 0, actions: { buttonsHtml: '' },
+  });
+  html += buildBarChartCard({
+    title: 'CKD 종합', sub: '이번 달 전체', isCkd: true, showInspect: true,
+    planQty: ckdTotalPlan, main: 0, final: 0, pack: ckdTotalPack, inspect: ckdTotalInspect, unit: 'Site',
+    isDelayed: false, isDone: false, noteCount: 0, actions: { buttonsHtml: '' },
+  });
+  html += `</div></div>`;
+
+  html += `<div class="wp-section-title">모델별 실적</div>`;
+  html += `<div class="wp-barchart-grid">`;
+  if (rows.length === 0) {
+    html += `<div style="text-align:center;padding:60px;color:var(--text-dim);font-size:16px;background:var(--bg-card);border:1px solid var(--border);width:100%;">이번 달 포장기준일로 등록된 모델이 없습니다.</div>`;
+  } else {
+    rows.forEach(({g, isDelayed, isDone}) => {
+      html += buildBarChartCard({
+        title: escapeHtml(g.model), sub: g.fullName ? escapeHtml(g.fullName) : '', isCkd: g.isCkd, showInspect: true,
+        planQty: g.plan, main: g.main, final: g.final, pack: g.pack, inspect: g.inspect||0, unit: g.isCkd ? 'Site' : '대',
+        isDelayed, isDone, noteCount: g.noteCount,
+        actions: { buttonsHtml: '' },
+      });
+    });
+  }
+  html += `</div>`;
+
+  container.innerHTML = html;
 }
 
 function renderPerfView() {
