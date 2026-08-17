@@ -4019,16 +4019,16 @@ function renderPerfMiniSummary(title, groups, gradId) {
   html += `
     <div style="flex:0 0 62%;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
       <div style="background:#fff;border:1px solid var(--border);border-radius:5px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
-        <div style="font-size:15px;color:var(--text-dim);margin-bottom:5px;font-weight:800;">총 계획</div>
-        <div style="font-family:var(--font-mono);font-size:36px;font-weight:800;color:var(--text-primary);line-height:1;">${totalPlan}<span style="font-size:14px;color:var(--text-dim);margin-left:3px;">${unitLabel}</span></div>
+        <div style="font-size:26px;color:var(--text-dim);margin-bottom:6px;font-weight:800;">총 계획</div>
+        <div style="font-family:var(--font-mono);font-size:60px;font-weight:800;color:var(--text-primary);line-height:1;">${totalPlan}<span style="font-size:22px;color:var(--text-dim);margin-left:4px;">${unitLabel}</span></div>
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:5px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
-        <div style="font-size:15px;color:var(--text-dim);margin-bottom:5px;font-weight:800;">총 실적</div>
-        <div style="font-family:var(--font-mono);font-size:36px;font-weight:800;color:var(--accent2);line-height:1;">${totalActual}<span style="font-size:14px;color:var(--text-dim);margin-left:3px;">${unitLabel}</span></div>
+        <div style="font-size:26px;color:var(--text-dim);margin-bottom:6px;font-weight:800;">총 실적</div>
+        <div style="font-family:var(--font-mono);font-size:60px;font-weight:800;color:var(--accent2);line-height:1;">${totalActual}<span style="font-size:22px;color:var(--text-dim);margin-left:4px;">${unitLabel}</span></div>
       </div>
       <div style="background:#eaf3fb;border:2px solid var(--accent2);border-radius:5px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
-        <div style="font-size:15px;color:var(--accent2);margin-bottom:5px;font-weight:800;">달성률</div>
-        <div style="font-family:var(--font-mono);font-size:36px;font-weight:800;color:${rateColor};line-height:1;">${totalRate}%</div>
+        <div style="font-size:26px;color:var(--accent2);margin-bottom:6px;font-weight:800;">달성률</div>
+        <div style="font-family:var(--font-mono);font-size:60px;font-weight:800;color:${rateColor};line-height:1;">${totalRate}%</div>
       </div>
     </div>
     <div style="flex:1;background:#fff;border:1px solid var(--border);border-radius:5px;padding:4px;overflow:hidden;min-width:0;">
