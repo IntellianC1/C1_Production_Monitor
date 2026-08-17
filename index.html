@@ -4014,25 +4014,25 @@ function renderPerfMiniSummary(title, groups, gradId) {
   const unitLabel = modelKeys.length > 0 ? groups[modelKeys[0]].unit : (title.indexOf('CKD') >= 0 ? 'Site' : '대');
   const rateColor = totalRate>=100?'var(--green)':totalRate>=70?'var(--yellow)':'var(--red)';
 
-  let html = `<div style="font-size:15px;font-weight:800;color:var(--text-primary);margin-bottom:6px;">${title}</div>`;
-  html += `<div style="display:flex;gap:10px;align-items:stretch;height:calc(100% - 25px);">`;
+  let html = `<div style="font-size:16px;font-weight:800;color:var(--text-primary);margin-bottom:6px;">${title}</div>`;
+  html += `<div style="display:flex;gap:10px;align-items:stretch;height:calc(100% - 26px);">`;
   html += `
-    <div style="flex:0 0 260px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+    <div style="flex:0 0 62%;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
       <div style="background:#fff;border:1px solid var(--border);border-radius:5px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;font-weight:800;">총 계획</div>
-        <div style="font-family:var(--font-mono);font-size:20px;font-weight:800;color:var(--text-primary);">${totalPlan}<span style="font-size:10px;color:var(--text-dim);margin-left:2px;">${unitLabel}</span></div>
+        <div style="font-size:15px;color:var(--text-dim);margin-bottom:5px;font-weight:800;">총 계획</div>
+        <div style="font-family:var(--font-mono);font-size:36px;font-weight:800;color:var(--text-primary);line-height:1;">${totalPlan}<span style="font-size:14px;color:var(--text-dim);margin-left:3px;">${unitLabel}</span></div>
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:5px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:4px;font-weight:800;">총 실적</div>
-        <div style="font-family:var(--font-mono);font-size:20px;font-weight:800;color:var(--accent2);">${totalActual}<span style="font-size:10px;color:var(--text-dim);margin-left:2px;">${unitLabel}</span></div>
+        <div style="font-size:15px;color:var(--text-dim);margin-bottom:5px;font-weight:800;">총 실적</div>
+        <div style="font-family:var(--font-mono);font-size:36px;font-weight:800;color:var(--accent2);line-height:1;">${totalActual}<span style="font-size:14px;color:var(--text-dim);margin-left:3px;">${unitLabel}</span></div>
       </div>
       <div style="background:#eaf3fb;border:2px solid var(--accent2);border-radius:5px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
-        <div style="font-size:11px;color:var(--accent2);margin-bottom:4px;font-weight:800;">달성률</div>
-        <div style="font-family:var(--font-mono);font-size:20px;font-weight:800;color:${rateColor};">${totalRate}%</div>
+        <div style="font-size:15px;color:var(--accent2);margin-bottom:5px;font-weight:800;">달성률</div>
+        <div style="font-family:var(--font-mono);font-size:36px;font-weight:800;color:${rateColor};line-height:1;">${totalRate}%</div>
       </div>
     </div>
     <div style="flex:1;background:#fff;border:1px solid var(--border);border-radius:5px;padding:4px;overflow:hidden;min-width:0;">
-      ${modelKeys.length > 0 ? renderModelBarSvg(modelKeys, groups, gradId, { H:118, padT:14, padB:24, wrapPad:2, wrapMB:0, legendFS:10, legendMT:2, groupW:100, barW:22 }) : '<div style="text-align:center;color:var(--text-dim);padding:20px 0;font-size:12px;">해당 월 데이터가 없습니다</div>'}
+      ${modelKeys.length > 0 ? renderModelBarSvg(modelKeys, groups, gradId, { H:130, padT:16, padB:40, wrapPad:2, wrapMB:0, legendFS:10, legendMT:2, groupW:100, barW:22 }) : '<div style="text-align:center;color:var(--text-dim);padding:20px 0;font-size:12px;">해당 월 데이터가 없습니다</div>'}
     </div>
   `;
   html += `</div>`;
@@ -4387,8 +4387,8 @@ function renderModelBarSvg(modelKeys, groups, gradId, opts) {
         ${g.plan>0 ? `<text x="${planX+barW/2}" y="${planY-6}" font-size="12" fill="var(--text-dim)" text-anchor="middle" font-family="var(--font-mono)">${g.plan}</text>` : ''}
         <rect x="${actualX}" y="${actualY}" width="${barW}" height="${Math.max(actualH,1.5)}" rx="4" fill="url(#${gradId})"/>
         ${g.actual>0 ? `<text x="${actualX+barW/2}" y="${actualY-6}" font-size="12" fill="var(--accent2)" font-weight="700" text-anchor="middle" font-family="var(--font-mono)">${g.actual}</text>` : ''}
-        <text x="${cx}" y="${H-30}" font-size="14" font-weight="700" fill="#cc3377" text-anchor="middle" font-family="var(--font-mono)">${escapeSvgText(k)}</text>
-        <text x="${cx}" y="${H-12}" font-size="12" font-weight="700" fill="${rateColor}" text-anchor="middle" font-family="var(--font-mono)">${rate}%</text>
+        <text x="${cx}" y="${H-padB+16}" font-size="12" font-weight="700" fill="#cc3377" text-anchor="middle" font-family="var(--font-mono)">${escapeSvgText(k)}</text>
+        <text x="${cx}" y="${H-padB+32}" font-size="11" font-weight="700" fill="${rateColor}" text-anchor="middle" font-family="var(--font-mono)">${rate}%</text>
       </g>`;
   });
 
