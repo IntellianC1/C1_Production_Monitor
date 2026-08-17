@@ -532,6 +532,9 @@
     padding:0 4px; user-select:none; line-height:1;
   }
   .drag-handle:hover { color:var(--accent); }
+  .wp-bar-card[draggable="true"] { cursor:grab; }
+  .wp-bar-card.drag-over { border:2px dashed var(--accent) !important; background:var(--accent-dim) !important; }
+  .wp-bar-card.dragging { opacity:.4; transform:scale(.97); }
 
   /* ─ 공정 특이사항 ─ */
   .proc-issue-cell {
@@ -1113,7 +1116,7 @@
 <header class="header">
   <div class="header-left">
     <img src="data:image/png;base64,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" style="height:30px;object-fit:contain;" alt="Intellian">
-    <div class="header-title">C1 생산 현황 <span>모니터링</span><span class="ver-badge">Rev16</span><span id="versionMismatchBadge" style="display:none;font-size:12px;font-weight:700;color:var(--red);border:1px solid var(--red);border-radius:2px;padding:1px 6px;margin-left:6px;vertical-align:middle;cursor:pointer;" onclick="requireSynced()" title="클릭하면 상세 안내">⚠ 예전 버전</span><button onclick="promoteThisVersionToOfficial()" title="이 버전을 정식 배포 버전으로 지정 (전체 배포 완료 후 관리자만 사용, 비밀번호 필요)" style="font-size:10px;padding:1px 5px;margin-left:6px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">정식지정</button><button onclick="changeAdminPasswordPrompt()" title="정식지정용 관리자 비밀번호 변경" style="font-size:10px;padding:1px 5px;margin-left:4px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">🔑 비밀번호 변경</button></div>
+    <div class="header-title">C1 생산 현황 <span>모니터링</span><span class="ver-badge">Rev17</span><span id="versionMismatchBadge" style="display:none;font-size:12px;font-weight:700;color:var(--red);border:1px solid var(--red);border-radius:2px;padding:1px 6px;margin-left:6px;vertical-align:middle;cursor:pointer;" onclick="requireSynced()" title="클릭하면 상세 안내">⚠ 예전 버전</span><button onclick="promoteThisVersionToOfficial()" title="이 버전을 정식 배포 버전으로 지정 (전체 배포 완료 후 관리자만 사용, 비밀번호 필요)" style="font-size:10px;padding:1px 5px;margin-left:6px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">정식지정</button><button onclick="changeAdminPasswordPrompt()" title="정식지정용 관리자 비밀번호 변경" style="font-size:10px;padding:1px 5px;margin-left:4px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">🔑 비밀번호 변경</button></div>
   </div>
   <div class="header-right">
     <div style="display:flex;align-items:center;gap:4px;border:1px solid var(--border);border-radius:2px;padding:3px 6px;background:var(--bg-card);">
@@ -1711,6 +1714,7 @@ let modelFullnames = JSON.parse(localStorage.getItem('kaa_model_fullnames') || '
 // 계획대비실적 탭 상태
 let perfYear  = new Date().getFullYear();
 let weeklyPlans = JSON.parse(localStorage.getItem('kaa_weekly_plans') || '[]');
+let monthCardOrder = JSON.parse(localStorage.getItem('kaa_month_card_order') || '{}'); // { "2026-08": ["모델§세부명", ...] } - 드래그로 정한 월간계획 카드 순서
 let currentWeekStart = getMondayStr(new Date());
 let liveTrackedWeekStart = currentWeekStart; // 사용자가 수동으로 다른 주로 이동하지 않은 이상, 실제 날짜가 넘어가면 이 값을 따라 자동 전환됨
 let weekPlanEditingId = null; // 기준선 보정용 편집 대상 id
@@ -2066,18 +2070,28 @@ if (localStorage.getItem('kaa_data_ver') !== DATA_VERSION) {
   localStorage.setItem('kaa_data_ver', DATA_VERSION);
 }
 // ── 화면 확대/축소 (크롬 자체 줌과 별개로 이 페이지 전용, 1% 단위 미세조정)
+let currentMainTab = 'prod';
+function getZoomStorageKey(tab) { return 'kaa_page_zoom_' + (tab || currentMainTab || 'prod'); }
+
 function setPageZoom(val) {
   val = Math.max(50, Math.min(200, val || 100));
   document.body.style.zoom = val + '%';
   const inp = document.getElementById('pageZoomInput');
   if (inp) inp.value = val;
-  localStorage.setItem('kaa_page_zoom', val);
+  localStorage.setItem(getZoomStorageKey(currentMainTab), val);
 }
 function changePageZoom(delta) {
   const cur = parseInt(document.getElementById('pageZoomInput')?.value) || 100;
   setPageZoom(cur + delta);
 }
-setPageZoom(parseInt(localStorage.getItem('kaa_page_zoom')) || 100);
+// 탭 전환 시, 그 탭에 저장해둔 확대율을 불러와서 적용 (탭마다 독립적으로 유지, 새로고침해도 유지됨 - PC별 로컬저장이라 다른 PC와는 무관)
+function applyZoomForCurrentTab() {
+  const val = parseInt(localStorage.getItem(getZoomStorageKey(currentMainTab))) || 100;
+  document.body.style.zoom = val + '%';
+  const inp = document.getElementById('pageZoomInput');
+  if (inp) inp.value = val;
+}
+applyZoomForCurrentTab();
 
 let lastSaveTime = 0; // 마지막 "메인 저장" 시각 (💾 저장 버튼 - 90초 차단)
 let lastInstantSaveTime = 0; // 마지막 "즉시저장" 시각 (모델 삭제/완료, 공정수량 등 - 짧은 차단만)
@@ -3211,7 +3225,6 @@ function saveSummaryToLocal(data) {
 
 
 // ── 메인 탭 전환 (생산현황 / 특이사항)
-let currentMainTab = 'prod';
 
 function switchMainTab(tab) {
   currentMainTab = tab;
@@ -3235,6 +3248,7 @@ function switchMainTab(tab) {
   if (tab === 'month') renderMonthPlanView();
   if (tab === 'note') renderAllNotes();
   if (tab === 'perf') renderPerfView();
+  applyZoomForCurrentTab();
 }
 
 function renderAllNotes() {
@@ -3613,6 +3627,53 @@ function saveWeeklyPlansToServer() {
   gsPost('save_weekly_plans', weeklyPlans).catch(e => console.error('save_weekly_plans 실패:', e));
 }
 
+function saveMonthCardOrderToServer() {
+  localStorage.setItem('kaa_month_card_order', JSON.stringify(monthCardOrder));
+  gsPost('save_month_card_order', monthCardOrder).catch(e => console.error('save_month_card_order 실패:', e));
+}
+
+// 막대그래프 카드 드래그 순서변경 공통 헬퍼 (주간계획/월간계획 둘 다 재사용)
+// gridId: 카드들이 들어있는 grid 컨테이너 id, onReorder: 새 순서(카드 key 배열)를 받아 저장하는 콜백
+function enableBarCardDrag(gridId, onReorder) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  let dragKey = null;
+  grid.querySelectorAll('.wp-bar-card[data-card-key]').forEach(card => {
+    card.setAttribute('draggable', 'true');
+    card.addEventListener('dragstart', function(e) {
+      dragKey = card.dataset.cardKey;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', function() {
+      card.classList.remove('dragging');
+      grid.querySelectorAll('.wp-bar-card').forEach(c => c.classList.remove('drag-over'));
+    });
+    card.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      grid.querySelectorAll('.wp-bar-card').forEach(c => c.classList.remove('drag-over'));
+      card.classList.add('drag-over');
+    });
+    card.addEventListener('dragleave', function() { card.classList.remove('drag-over'); });
+    card.addEventListener('drop', function(e) {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      const targetKey = card.dataset.cardKey;
+      if (!dragKey || dragKey === targetKey) return;
+      const allCards = Array.from(grid.querySelectorAll('.wp-bar-card[data-card-key]'));
+      const dragEl = allCards.find(c => c.dataset.cardKey === dragKey);
+      const targetEl = allCards.find(c => c.dataset.cardKey === targetKey);
+      if (!dragEl || !targetEl) return;
+      const dragIdx = allCards.indexOf(dragEl), targetIdx = allCards.indexOf(targetEl);
+      if (dragIdx < targetIdx) targetEl.after(dragEl); else targetEl.before(dragEl);
+      dragKey = null;
+      const newOrder = Array.from(grid.querySelectorAll('.wp-bar-card[data-card-key]')).map(c => c.dataset.cardKey);
+      onReorder(newOrder);
+    });
+  });
+}
+
 // 그 주(월~금 기준)의 워크데이 경과 비율로 "지금쯤 이 정도는 진행됐어야 함" 기대치 계산
 function weekExpectedRatio(weekStartStr) {
   const mon = parseLocalDate(weekStartStr);
@@ -3645,7 +3706,7 @@ const WP_COLOR_PLAN='#1f5f74', WP_COLOR_MAIN='#e8792a', WP_COLOR_FINAL='#1a6b3a'
 
 // 막대그래프 카드 하나 생성 (ANT=4개 막대, CKD=2개 막대)
 function buildBarChartCard(opts) {
-  const { title, sub, badge, isCkd, planQty, main, final, pack, inspect, showInspect, unit, isDelayed, isDone, noteCount, actions } = opts;
+  const { title, sub, badge, isCkd, planQty, main, final, pack, inspect, showInspect, unit, isDelayed, isDone, noteCount, actions, cardKey } = opts;
   const maxVal = isCkd ? Math.max(planQty, showInspect ? inspect : 0, pack, 1) : Math.max(planQty, main, final, pack, 1);
   let bars, labels;
   if (isCkd) {
@@ -3666,7 +3727,7 @@ function buildBarChartCard(opts) {
     labels = `<div class="wp-bar-label">계획</div><div class="wp-bar-label">조립</div><div class="wp-bar-label">검사</div><div class="wp-bar-label">포장</div>`;
   }
   return `
-    <div class="wp-bar-card ${isDelayed?'wp-card-delayed':''} ${isDone?'wp-card-done':''}">
+    <div class="wp-bar-card ${isDelayed?'wp-card-delayed':''} ${isDone?'wp-card-done':''}" ${cardKey ? `data-card-key="${cardKey.replace(/"/g,'&quot;')}"` : ''}>
       ${noteCount > 0 ? `<div class="wp-note-badge-inline">📋 ${noteCount}</div>` : ''}
       <div class="wp-bar-chart">${bars}</div>
       <div class="wp-bar-labels">${labels}</div>
@@ -3726,12 +3787,18 @@ function renderWeekPlanView() {
       return { e, live, isCkd, done, isDelayed, isDone };
     }
   });
-  // 지연 카드를 맨 앞으로, 완료 카드를 맨 뒤로 - 카드가 많아도 신경 써야 할 것부터 한눈에 보이게
-  rows.sort((a, b) => {
-    if (a.isDelayed !== b.isDelayed) return a.isDelayed ? -1 : 1;
-    if (a.isDone !== b.isDone) return a.isDone ? 1 : -1;
-    return 0;
-  });
+  // 사용자가 드래그로 직접 순서를 정한 적 있으면(sortOrder 있음) 그 순서를 그대로 존중,
+  // 아직 한 번도 안 정했으면 기존처럼 지연 카드를 맨 앞으로, 완료 카드를 맨 뒤로
+  const anyManualOrder = rows.some(r => r.e.sortOrder !== undefined);
+  if (anyManualOrder) {
+    rows.sort((a, b) => (a.e.sortOrder ?? 9999) - (b.e.sortOrder ?? 9999));
+  } else {
+    rows.sort((a, b) => {
+      if (a.isDelayed !== b.isDelayed) return a.isDelayed ? -1 : 1;
+      if (a.isDone !== b.isDone) return a.isDone ? 1 : -1;
+      return 0;
+    });
+  }
 
   // 요약도 동일한 막대그래프 카드 형태로 (ANT 종합 1개 + CKD 종합 1개) - 모델별 카드와 확실히 구분되도록 제목+배경 강조
   html += `
@@ -3769,7 +3836,7 @@ function renderWeekPlanView() {
       html += buildBarChartCard({
         title: escapeHtml(e.model), sub: e.fullName ? escapeHtml(e.fullName) : '', badge: null, isCkd, showInspect: true,
         planQty: e.planQty, main: done.main||0, final: done.final||0, pack: done.pack||0, inspect: done.inspect||0, unit,
-        isDelayed, isDone, noteCount,
+        isDelayed, isDone, noteCount, cardKey: e.id,
         actions: {
           mainClick:    `editWeekPlanProgress('${e.id}','main')`,
           finalClick:   `editWeekPlanProgress('${e.id}','final')`,
@@ -3783,6 +3850,15 @@ function renderWeekPlanView() {
   html += `</div>`;
 
   container.innerHTML = html;
+
+  // 드래그로 순서 바꾸면 sortOrder를 다시 매겨서 저장 (다른 PC에도 동기화됨)
+  enableBarCardDrag('weekPlanContent', (newOrderIds) => {
+    newOrderIds.forEach((id, idx) => {
+      const found = weeklyPlans.find(x => x.id === id);
+      if (found) found.sortOrder = idx;
+    });
+    saveWeeklyPlansToServer();
+  });
 }
 
 function openWeekPlanAddModal() {
@@ -3982,7 +4058,7 @@ function renderMonthPlanView() {
   monthModels.forEach(m => {
     const isCkd = !!(m.procSet && m.procSet.indexOf('CKD') === 0);
     const key = (m.model || '') + '§' + (m.fullName || '');
-    if (!groups[key]) groups[key] = { model: m.model, fullName: m.fullName || '', isCkd, plan: 0, main: 0, final: 0, pack: 0, inspect: 0, noteCount: 0 };
+    if (!groups[key]) groups[key] = { key, model: m.model, fullName: m.fullName || '', isCkd, plan: 0, main: 0, final: 0, pack: 0, inspect: 0, noteCount: 0 };
     const g = groups[key];
     g.plan += m.plan || 0;
     if (isCkd) {
@@ -4012,11 +4088,23 @@ function renderMonthPlanView() {
     }
     return { g, isDelayed, isDone };
   });
-  rows.sort((a, b) => {
-    if (a.isDelayed !== b.isDelayed) return a.isDelayed ? -1 : 1;
-    if (a.isDone !== b.isDone) return a.isDone ? 1 : -1;
-    return 0;
-  });
+  // 드래그로 저장해둔 순서가 있으면 그 순서를 그대로 존중, 없으면 지연 카드를 맨 앞으로
+  const monthKey = `${year}-${String(month).padStart(2,'0')}`;
+  const savedOrder = monthCardOrder[monthKey];
+  if (savedOrder && savedOrder.length > 0) {
+    const orderIdx = {};
+    savedOrder.forEach((k, i) => { orderIdx[k] = i; });
+    rows.sort((a, b) => {
+      const ai = orderIdx[a.g.key] ?? 9999, bi = orderIdx[b.g.key] ?? 9999;
+      return ai - bi;
+    });
+  } else {
+    rows.sort((a, b) => {
+      if (a.isDelayed !== b.isDelayed) return a.isDelayed ? -1 : 1;
+      if (a.isDone !== b.isDone) return a.isDone ? 1 : -1;
+      return 0;
+    });
+  }
 
   let html = `
     <div class="wp-header">
@@ -4036,26 +4124,29 @@ function renderMonthPlanView() {
   html += `
     <div class="wp-section-title">${year}년 ${month}월 종합</div>
     <div class="wp-summary-section">
+      <div style="display:flex;gap:20px;align-items:stretch;">
+        <div style="display:flex;gap:20px;flex-shrink:0;">
   `;
   const perfData = computePerf(year, month);
-  html += `<div style="display:flex;gap:20px;align-items:stretch;margin-bottom:16px;">`;
   html += buildBarChartCard({
     title: 'ANT 종합', sub: '이번 달 전체', isCkd: false,
     planQty: antTotalPlan, main: antTotalMain, final: antTotalFinal, pack: antTotalPack, unit: '대',
     isDelayed: false, isDone: false, noteCount: 0, actions: { buttonsHtml: '' },
   });
-  html += `<div style="flex:1;background:#fff;border:1px dashed var(--border-bright);border-radius:4px;padding:16px;">${renderPerfMiniSummary('계획대비실적', perfData.ant, 'perfBarGradAntMonth')}</div>`;
-  html += `</div>`;
-
-  html += `<div style="display:flex;gap:20px;align-items:stretch;">`;
   html += buildBarChartCard({
     title: 'CKD 종합', sub: '이번 달 전체', isCkd: true, showInspect: true,
     planQty: ckdTotalPlan, main: 0, final: 0, pack: ckdTotalPack, inspect: ckdTotalInspect, unit: 'Site',
     isDelayed: false, isDone: false, noteCount: 0, actions: { buttonsHtml: '' },
   });
-  html += `<div style="flex:1;background:#fff;border:1px dashed var(--border-bright);border-radius:4px;padding:16px;">${renderPerfMiniSummary('계획대비실적', perfData.ckd, 'perfBarGradCkdMonth')}</div>`;
-  html += `</div>`;
-  html += `</div>`;
+  html += `
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:14px;min-width:0;">
+          <div style="flex:1;background:#fff;border:1px dashed var(--border-bright);border-radius:4px;padding:14px;">${renderPerfMiniSummary('ANT 계획대비실적', perfData.ant, 'perfBarGradAntMonth')}</div>
+          <div style="flex:1;background:#fff;border:1px dashed var(--border-bright);border-radius:4px;padding:14px;">${renderPerfMiniSummary('CKD 계획대비실적', perfData.ckd, 'perfBarGradCkdMonth')}</div>
+        </div>
+      </div>
+    </div>
+  `;
 
   html += `<div class="wp-section-title">모델별 실적</div>`;
   html += `<div class="wp-barchart-grid">`;
@@ -4066,7 +4157,7 @@ function renderMonthPlanView() {
       html += buildBarChartCard({
         title: escapeHtml(g.model), sub: g.fullName ? escapeHtml(g.fullName) : '', isCkd: g.isCkd, showInspect: true,
         planQty: g.plan, main: g.main, final: g.final, pack: g.pack, inspect: g.inspect||0, unit: g.isCkd ? 'Site' : '대',
-        isDelayed, isDone, noteCount: g.noteCount,
+        isDelayed, isDone, noteCount: g.noteCount, cardKey: g.key,
         actions: { buttonsHtml: '' },
       });
     });
@@ -4074,6 +4165,12 @@ function renderMonthPlanView() {
   html += `</div>`;
 
   container.innerHTML = html;
+
+  // 드래그로 순서 바꾸면 이 달(year-month) 기준으로 저장 (다른 PC에도 동기화됨)
+  enableBarCardDrag('monthPlanContent', (newOrderKeys) => {
+    monthCardOrder[monthKey] = newOrderKeys;
+    saveMonthCardOrderToServer();
+  });
 }
 
 function renderPerfView() {
@@ -7137,6 +7234,15 @@ async function gsLoad() {
         localStorage.setItem('kaa_weekly_plans', JSON.stringify(weeklyPlans));
       }
       if (currentMainTab === 'week') renderWeekPlanView();
+    }
+
+    // ── monthCardOrder: 월간계획 카드 드래그 순서 (다른 PC에서 바꾼 순서도 반영)
+    if (d.monthCardOrder && typeof d.monthCardOrder === 'object') {
+      if (JSON.stringify(d.monthCardOrder) !== JSON.stringify(monthCardOrder)) {
+        monthCardOrder = d.monthCardOrder;
+        localStorage.setItem('kaa_month_card_order', JSON.stringify(monthCardOrder));
+      }
+      if (currentMainTab === 'month') renderMonthPlanView();
     }
 
     isFirstLoad = false;
