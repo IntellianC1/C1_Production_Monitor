@@ -76,31 +76,27 @@
   .wp-week-nav { display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.14); color:#fff; padding:6px 16px; border-radius:2px; }
   .wp-week-nav button { background:rgba(255,255,255,.18); border:none; color:#fff; width:26px; height:26px; border-radius:2px; cursor:pointer; font-size:14px; }
   .wp-week-nav .wp-week-label { font-family:var(--font-mono); font-size:18px; font-weight:700; min-width:110px; text-align:center; }
-  .wp-summary { display:flex; background:var(--bg-card); border:1px solid var(--border); margin-bottom:16px; }
-  .wp-summary-cell { flex:1; padding:10px 16px; border-right:1px solid var(--border); }
-  .wp-summary-cell:last-child { border-right:none; }
-  .wp-summary-label { font-size:26px; font-weight:800; color:var(--text-secondary); margin-bottom:6px; }
-  .wp-gauge-track { position:relative; height:16px; background:var(--bg-panel); border-radius:2px; overflow:hidden; }
-  .wp-gauge-fill { position:absolute; top:0; left:0; height:100%; background:var(--accent2); transition:width .3s; }
-  .wp-gauge-fill.done-soft { background:rgba(0,170,85,.28); }
-  .wp-gauge-fill.behind { background:var(--red); }
-  .wp-gauge-bignum { font-family:var(--font-mono); font-size:26px; font-weight:800; margin-bottom:6px; line-height:1; }
-  .wp-card { background:var(--bg-card); border:1px dashed var(--border-bright); border-left:4px solid transparent; border-radius:2px; display:flex; margin-bottom:10px; overflow:hidden; }
-  .wp-card.wp-card-delayed { border-left-color:var(--red); }
-  .wp-card.wp-card-done { opacity:.7; }
-  .wp-card-left { width:180px; flex-shrink:0; background:var(--bg-card2); padding:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; position:relative; }
-  .wp-card-model { font-family:var(--font-mono); font-size:26px; font-weight:800; color:var(--red); text-align:center; line-height:1.15; word-break:break-word; }
-  .wp-card-fullname { font-size:12px; color:var(--text-secondary); text-align:center; }
-  .wp-card-qty { background:#fde8e8; color:var(--red); font-weight:800; font-size:21px; padding:3px 14px; border-radius:2px; margin:2px 0; }
-  .wp-card-btns { display:flex; gap:4px; flex-wrap:wrap; justify-content:center; }
-  .wp-card-btns button { font-size:11px; padding:3px 8px; cursor:pointer; border-radius:2px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); }
-  .wp-card-right { flex:1; display:flex; align-items:center; gap:14px; padding:14px 16px; }
-  .wp-gauge-row { flex:1; }
-  .wp-gauge-row-label { font-size:24px; font-weight:800; color:var(--text-secondary); margin-bottom:8px; }
-  .wp-note-badge-inline { position:absolute; top:6px; right:6px; background:var(--red); color:#fff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 6px; }
-  /* ── 계획/완료 미니 테이블 (완료 = 포장완료 수량 기준) - 카드의 실제 높이를 그대로 따라가고, 가로는 그 비율(약 1.27:1)대로 같이 늘어남 */
-  .wp-plan-done-text { font-size:19px; font-weight:800; color:var(--navy, #0d1f3c); background:var(--bg-card2); border-radius:2px; padding:4px 10px; display:inline-block; }
-  .wp-plan-done-text b { color:var(--red); font-family:var(--font-mono); }
+  .wp-note-badge-inline { position:absolute; top:6px; right:6px; background:var(--red); color:#fff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 6px; z-index:1; }
+
+  /* ── 막대그래프 카드 (계획/조립/검사/포장을 세로 막대로 한눈에 비교) */
+  .wp-summary-barchart-row { display:flex; gap:16px; margin-bottom:16px; }
+  .wp-barchart-grid { display:flex; flex-wrap:wrap; gap:14px; }
+  .wp-bar-card { position:relative; width:210px; background:var(--bg-card); border:1px dashed var(--border-bright); border-left:4px solid transparent; border-radius:3px; padding:14px 12px 10px; }
+  .wp-bar-card.wp-card-delayed { border-left-color:var(--red); }
+  .wp-bar-card.wp-card-done { opacity:.72; }
+  .wp-bar-chart { display:flex; align-items:flex-end; justify-content:space-around; height:150px; border-bottom:2px solid var(--text-secondary); }
+  .wp-bar-col { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; width:23%; }
+  .wp-bar-value { font-family:var(--font-mono); font-size:16px; font-weight:800; margin-bottom:4px; color:var(--text-primary); }
+  .wp-bar { width:68%; border-radius:2px 2px 0 0; transition:height .3s; min-height:2px; }
+  .wp-bar-col[onclick] { cursor:pointer; }
+  .wp-bar-labels { display:flex; justify-content:space-around; margin-top:6px; }
+  .wp-bar-label { width:23%; text-align:center; font-size:13px; font-weight:800; color:var(--text-secondary); }
+  .wp-bar-card-info { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); text-align:center; }
+  .wp-card-model { font-family:var(--font-mono); font-weight:800; color:var(--red); text-align:center; line-height:1.15; word-break:break-word; }
+  .wp-card-fullname { font-size:11px; color:var(--text-secondary); text-align:center; margin-top:2px; }
+  .wp-card-qty { display:inline-block; background:#fde8e8; color:var(--red); font-weight:800; border-radius:2px; margin:5px 0; }
+  .wp-card-btns { display:flex; gap:4px; flex-wrap:wrap; justify-content:center; margin-top:6px; }
+  .wp-card-btns button { font-size:10.5px; padding:3px 6px; cursor:pointer; border-radius:2px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); }
   .ts-item { flex:1; padding:10px 16px; border-right:1px solid var(--border); display:flex; align-items:center; gap:10px; }
   .ts-item:last-child { border-right:none; }
   .ts-label { font-size:19px; font-weight:700; color:var(--text-secondary); letter-spacing:1px; text-transform:uppercase; white-space:nowrap; }
@@ -3534,28 +3530,49 @@ function weekExpectedRatio(weekStartStr) {
   return Math.min(elapsedWorkdays / totalWorkdays, 1);
 }
 
-function buildGaugeBar(done, planQty, isDelayed, onClick, unit) {
-  unit = unit || '대';
-  const isDone = done >= planQty && planQty > 0;
-  const pct = planQty > 0 ? Math.min(Math.round(done / planQty * 100), 100) : 0;
-  const numColor = isDone ? 'var(--green)' : (isDelayed ? 'var(--red)' : 'var(--text-primary)');
-  const fillClass = isDone ? 'done-soft' : (isDelayed ? 'behind' : '');
-  const barPct = isDone ? 100 : pct;
-  const numText = isDone ? '완료' : `${done}/${planQty}${unit}`;
+// 막대 하나 (값 + 색깔 막대 + 라벨). maxVal 대비 높이(%)로 표현
+function buildBar(label, value, color, maxVal, onClick) {
+  const pct = maxVal > 0 ? Math.max(Math.round(value / maxVal * 100), value > 0 ? 4 : 0) : 0;
   const clickPart = onClick ? `onclick="${onClick}" title="클릭해서 완료수량 입력"` : '';
   const cursorStyle = onClick ? 'cursor:pointer;' : '';
   return `
-    <div class="wp-gauge-bignum" style="color:${numColor};${cursorStyle}" ${clickPart}>${numText}</div>
-    <div class="wp-gauge-track" style="${cursorStyle}" ${clickPart}>
-      <div class="wp-gauge-fill ${fillClass}" style="width:${barPct}%;"></div>
+    <div class="wp-bar-col" ${clickPart} style="${cursorStyle}">
+      <div class="wp-bar-value">${value}</div>
+      <div class="wp-bar" style="height:${pct}%;background:${color};"></div>
     </div>
   `;
 }
 
-// 계획/완료(포장완료 기준) 미니 테이블 - 요약 스트립과 카드에서 공통으로 사용
-function buildPlanDoneText(planQty, doneQty, unit) {
-  unit = unit || '대';
-  return `<span class="wp-plan-done-text">계획 <b>${planQty}</b>${unit} · 완료 <b>${doneQty}</b>${unit}</span>`;
+const WP_COLOR_PLAN='#1f5f74', WP_COLOR_MAIN='#e8792a', WP_COLOR_FINAL='#1a6b3a', WP_COLOR_PACK='#29a8e0';
+
+// 막대그래프 카드 하나 생성 (ANT=4개 막대, CKD=2개 막대)
+function buildBarChartCard(opts) {
+  const { title, sub, badge, isCkd, planQty, main, final, pack, unit, isDelayed, isDone, noteCount, actions } = opts;
+  const maxVal = isCkd ? Math.max(planQty, pack, 1) : Math.max(planQty, main, final, pack, 1);
+  let bars, labels;
+  if (isCkd) {
+    bars = buildBar('계획', planQty, WP_COLOR_PLAN, maxVal) + buildBar('완료', pack, WP_COLOR_PACK, maxVal, actions.packClick);
+    labels = `<div class="wp-bar-label">계획</div><div class="wp-bar-label">완료</div>`;
+  } else {
+    bars = buildBar('계획', planQty, WP_COLOR_PLAN, maxVal)
+         + buildBar('조립', main, WP_COLOR_MAIN, maxVal, actions.mainClick)
+         + buildBar('검사', final, WP_COLOR_FINAL, maxVal, actions.finalClick)
+         + buildBar('포장', pack, WP_COLOR_PACK, maxVal, actions.packClick);
+    labels = `<div class="wp-bar-label">계획</div><div class="wp-bar-label">조립</div><div class="wp-bar-label">검사</div><div class="wp-bar-label">포장</div>`;
+  }
+  return `
+    <div class="wp-bar-card ${isDelayed?'wp-card-delayed':''} ${isDone?'wp-card-done':''}">
+      ${noteCount > 0 ? `<div class="wp-note-badge-inline">📋 ${noteCount}</div>` : ''}
+      <div class="wp-bar-chart">${bars}</div>
+      <div class="wp-bar-labels">${labels}</div>
+      <div class="wp-bar-card-info">
+        <div class="wp-card-model" style="font-size:19px;">${title}${isCkd ? ' <span style="font-size:10px;color:var(--accent2);">(CKD)</span>' : ''}</div>
+        ${sub ? `<div class="wp-card-fullname">${sub}</div>` : ''}
+        <div class="wp-card-qty" style="font-size:15px;padding:2px 10px;">${planQty}${unit}</div>
+        <div class="wp-card-btns">${actions.buttonsHtml}</div>
+      </div>
+    </div>
+  `;
 }
 
 function renderWeekPlanView() {
@@ -3577,7 +3594,7 @@ function renderWeekPlanView() {
     </div>
   `;
 
-  // 요약 게이지 - ANT(조립/검사/포장)와 CKD(포장완료 Site)는 단위가 달라 완전히 분리 집계
+  // 요약 집계 - ANT(조립/검사/포장)와 CKD(포장완료 Site)는 단위가 달라 완전히 분리 집계
   let antPlan=0, antMain=0, antFinal=0, antPack=0;
   let ckdPlan=0, ckdPack=0;
   const rows = entries.map(e => {
@@ -3602,102 +3619,55 @@ function renderWeekPlanView() {
       return { e, live, isCkd, done, isDelayed, isDone };
     }
   });
-  // 지연 카드를 맨 위로, 완료 카드를 맨 아래로 - 카드가 많아도 신경 써야 할 것부터 한눈에 보이게
+  // 지연 카드를 맨 앞으로, 완료 카드를 맨 뒤로 - 카드가 많아도 신경 써야 할 것부터 한눈에 보이게
   rows.sort((a, b) => {
     if (a.isDelayed !== b.isDelayed) return a.isDelayed ? -1 : 1;
     if (a.isDone !== b.isDone) return a.isDone ? 1 : -1;
     return 0;
   });
 
-  html += `
-    <div class="wp-summary">
-      <div class="wp-summary-cell" style="flex:0 0 380px;">
-        <div class="wp-summary-label">ANT 총계획 (이번 주)</div>
-        <div style="display:flex;align-items:baseline;gap:12px;">
-          <div style="font-family:var(--font-mono);font-size:34px;font-weight:800;">${antPlan}대</div>
-          ${buildPlanDoneText(antPlan, antPack)}
-        </div>
-      </div>
-      <div class="wp-summary-cell">
-        <div class="wp-summary-label">조립 완료</div>
-        ${buildGaugeBar(antMain, antPlan, antMain < antPlan*expectedRatio - 0.5)}
-      </div>
-      <div class="wp-summary-cell">
-        <div class="wp-summary-label">검사 완료</div>
-        ${buildGaugeBar(antFinal, antPlan, antFinal < antPlan*expectedRatio - 0.5)}
-      </div>
-      <div class="wp-summary-cell">
-        <div class="wp-summary-label">포장 완료</div>
-        ${buildGaugeBar(antPack, antPlan, antPack < antPlan*expectedRatio - 0.5)}
-      </div>
-    </div>
-    <div class="wp-summary" style="margin-top:-6px;">
-      <div class="wp-summary-cell" style="flex:0 0 380px;">
-        <div class="wp-summary-label">CKD 총계획 (이번 주)</div>
-        <div style="display:flex;align-items:baseline;gap:12px;">
-          <div style="font-family:var(--font-mono);font-size:34px;font-weight:800;">${ckdPlan} Site</div>
-          ${buildPlanDoneText(ckdPlan, ckdPack, 'Site')}
-        </div>
-      </div>
-      <div class="wp-summary-cell" style="flex:1;">
-        <div class="wp-summary-label">포장 완료</div>
-        ${buildGaugeBar(ckdPack, ckdPlan, ckdPack < ckdPlan*expectedRatio - 0.5, null, 'Site')}
-      </div>
-    </div>
-  `;
+  // 요약도 동일한 막대그래프 카드 형태로 (ANT 종합 1개 + CKD 종합 1개)
+  html += `<div class="wp-summary-barchart-row">`;
+  html += buildBarChartCard({
+    title: 'ANT 종합', sub: '이번 주 전체', badge: null, isCkd: false,
+    planQty: antPlan, main: antMain, final: antFinal, pack: antPack, unit: '대',
+    isDelayed: false, isDone: false, noteCount: 0,
+    actions: { buttonsHtml: '' },
+  });
+  html += buildBarChartCard({
+    title: 'CKD 종합', sub: '이번 주 전체', badge: null, isCkd: true,
+    planQty: ckdPlan, main: 0, final: 0, pack: ckdPack, unit: 'Site',
+    isDelayed: false, isDone: false, noteCount: 0,
+    actions: { buttonsHtml: '' },
+  });
+  html += `</div>`;
 
+  html += `<div class="wp-barchart-grid">`;
   if (rows.length === 0) {
-    html += `<div style="text-align:center;padding:60px;color:var(--text-dim);font-size:16px;background:var(--bg-card);border:1px solid var(--border);">이번 주에 등록된 모델이 없습니다. "+ 모델 추가"로 등록해주세요.</div>`;
+    html += `<div style="text-align:center;padding:60px;color:var(--text-dim);font-size:16px;background:var(--bg-card);border:1px solid var(--border);width:100%;">이번 주에 등록된 모델이 없습니다. "+ 모델 추가"로 등록해주세요.</div>`;
   } else {
     rows.forEach(({e, live, isCkd, done, isDelayed, isDone}) => {
       const noteCount = live ? (live.noteData||[]).filter(r => r.status !== 'Completed').length : 0;
       const unit = isCkd ? 'Site' : '대';
-      const fullNameStr = e.fullName ? `<div class="wp-card-fullname">${escapeHtml(e.fullName)}</div>` : '';
-      let gaugesHtml = '';
-      if (isCkd) {
-        gaugesHtml = `
-          <div class="wp-gauge-row">
-            <div class="wp-gauge-row-label">포장 완료</div>
-            ${buildGaugeBar(done.pack, e.planQty, done.pack < e.planQty*expectedRatio - 0.5, `editWeekPlanProgress('${e.id}','pack')`, 'Site')}
-          </div>
-        `;
-      } else {
-        gaugesHtml = `
-          <div class="wp-gauge-row">
-            <div class="wp-gauge-row-label">조립 완료</div>
-            ${buildGaugeBar(done.main, e.planQty, done.main < e.planQty*expectedRatio - 0.5, `editWeekPlanProgress('${e.id}','main')`)}
-          </div>
-          <div class="wp-gauge-row">
-            <div class="wp-gauge-row-label">검사 완료</div>
-            ${buildGaugeBar(done.final, e.planQty, done.final < e.planQty*expectedRatio - 0.5, `editWeekPlanProgress('${e.id}','final')`)}
-          </div>
-          <div class="wp-gauge-row">
-            <div class="wp-gauge-row-label">포장 완료</div>
-            ${buildGaugeBar(done.pack, e.planQty, done.pack < e.planQty*expectedRatio - 0.5, `editWeekPlanProgress('${e.id}','pack')`)}
-          </div>
-        `;
-      }
-      html += `
-        <div class="wp-card ${isDelayed?'wp-card-delayed':''} ${isDone?'wp-card-done':''}">
-          <div class="wp-card-left">
-            ${noteCount > 0 ? `<div class="wp-note-badge-inline">📋 ${noteCount}</div>` : ''}
-            <div class="wp-card-model">${escapeHtml(e.model)}${isCkd ? ' <span style="font-size:11px;color:var(--accent2);">(CKD)</span>' : ''}</div>
-            ${fullNameStr}
-            <div class="wp-card-qty">${e.planQty}${unit}</div>
-            <div style="margin:2px 0;">${buildPlanDoneText(e.planQty, done.pack, unit)}</div>
-            <div class="wp-card-btns">
-              <button onclick="editWeekPlanQty('${e.id}')">✏ 목표수정</button>
-              <button onclick="carryOverWeekPlan('${e.id}')" title="미달성분을 다음주로 넘깁니다">➡ 다음주 이월</button>
-              <button onclick="deleteWeekPlan('${e.id}')" style="color:var(--red);">🗑 삭제</button>
-            </div>
-          </div>
-          <div class="wp-card-right">
-            ${gaugesHtml}
-          </div>
-        </div>
+      const buttonsHtml = `
+        <button onclick="editWeekPlanQty('${e.id}')">✏ 목표수정</button>
+        <button onclick="carryOverWeekPlan('${e.id}')" title="미달성분을 다음주로 넘깁니다">➡ 이월</button>
+        <button onclick="deleteWeekPlan('${e.id}')" style="color:var(--red);">🗑 삭제</button>
       `;
+      html += buildBarChartCard({
+        title: escapeHtml(e.model), sub: e.fullName ? escapeHtml(e.fullName) : '', badge: null, isCkd,
+        planQty: e.planQty, main: done.main||0, final: done.final||0, pack: done.pack||0, unit,
+        isDelayed, isDone, noteCount,
+        actions: {
+          mainClick:  `editWeekPlanProgress('${e.id}','main')`,
+          finalClick: `editWeekPlanProgress('${e.id}','final')`,
+          packClick:  `editWeekPlanProgress('${e.id}','pack')`,
+          buttonsHtml,
+        },
+      });
     });
   }
+  html += `</div>`;
 
   container.innerHTML = html;
 }
