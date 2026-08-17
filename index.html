@@ -3929,6 +3929,40 @@ function monthExpectedRatio(year, month) {
   return totalWorkdays > 0 ? Math.min(elapsedWorkdays / totalWorkdays, 1) : 1;
 }
 
+// 계획대비실적의 "요약 3박스 + 모델별 비교막대"만 축소 재사용 (상세표는 제외) - 월간계획 요약칸에 삽입용, 글자 큼직하게
+function renderPerfMiniSummary(title, groups, gradId) {
+  const modelKeys = Object.keys(groups).sort();
+  let totalPlan = 0, totalActual = 0;
+  modelKeys.forEach(k => { totalPlan += groups[k].plan; totalActual += groups[k].actual; });
+  const totalRate = totalPlan > 0 ? Math.round((totalActual / totalPlan) * 100) : 0;
+  const unitLabel = modelKeys.length > 0 ? groups[modelKeys[0]].unit : (title.indexOf('CKD') >= 0 ? 'Site' : '대');
+  const rateColor = totalRate>=100?'var(--green)':totalRate>=70?'var(--yellow)':'var(--red)';
+
+  let html = `<div style="font-size:19px;font-weight:800;color:var(--text-primary);margin-bottom:10px;">${title}</div>`;
+  html += `<div style="display:flex;gap:14px;align-items:stretch;">`;
+  html += `
+    <div style="flex:0 0 420px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+      <div style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:14px 8px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
+        <div style="font-size:16px;color:var(--text-dim);margin-bottom:8px;font-weight:800;">총 계획</div>
+        <div style="font-family:var(--font-mono);font-size:40px;font-weight:800;color:var(--text-primary);">${totalPlan}<span style="font-size:15px;color:var(--text-dim);margin-left:3px;">${unitLabel}</span></div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:14px 8px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
+        <div style="font-size:16px;color:var(--text-dim);margin-bottom:8px;font-weight:800;">총 실적</div>
+        <div style="font-family:var(--font-mono);font-size:40px;font-weight:800;color:var(--accent2);">${totalActual}<span style="font-size:15px;color:var(--text-dim);margin-left:3px;">${unitLabel}</span></div>
+      </div>
+      <div style="background:#eaf3fb;border:2px solid var(--accent2);border-radius:6px;padding:14px 8px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
+        <div style="font-size:16px;color:var(--accent2);margin-bottom:8px;font-weight:800;">달성률</div>
+        <div style="font-family:var(--font-mono);font-size:40px;font-weight:800;color:${rateColor};">${totalRate}%</div>
+      </div>
+    </div>
+    <div style="flex:1;background:#fff;border:1px solid var(--border);border-radius:6px;padding:10px;overflow-x:auto;">
+      ${modelKeys.length > 0 ? renderModelBarSvg(modelKeys, groups, gradId) : '<div style="text-align:center;color:var(--text-dim);padding:40px 0;font-size:15px;">해당 월 데이터가 없습니다</div>'}
+    </div>
+  `;
+  html += `</div>`;
+  return html;
+}
+
 function renderMonthPlanView() {
   const container = document.getElementById('monthPlanContent');
   const year = currentMonthPlanDate.getFullYear();
@@ -4015,6 +4049,17 @@ function renderMonthPlanView() {
     isDelayed: false, isDone: false, noteCount: 0, actions: { buttonsHtml: '' },
   });
   html += `</div></div>`;
+
+  // 계획대비실적 시트의 요약(총계획/총실적/달성률 + 모델별 비교막대)을 그대로 가져와서 같이 표시
+  const perfData = computePerf(year, month);
+  html += `
+    <div class="wp-section-title">${year}년 ${month}월 계획대비실적</div>
+    <div class="wp-summary-section">
+      ${renderPerfMiniSummary('★ ANT (안테나)', perfData.ant, 'perfBarGradAntMonth')}
+      <div style="height:16px;"></div>
+      ${renderPerfMiniSummary('📦 CKD (미국공장 포장출하)', perfData.ckd, 'perfBarGradCkdMonth')}
+    </div>
+  `;
 
   html += `<div class="wp-section-title">모델별 실적</div>`;
   html += `<div class="wp-barchart-grid">`;
