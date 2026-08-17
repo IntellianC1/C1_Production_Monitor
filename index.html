@@ -4036,30 +4036,26 @@ function renderMonthPlanView() {
   html += `
     <div class="wp-section-title">${year}년 ${month}월 종합</div>
     <div class="wp-summary-section">
-      <div class="wp-summary-barchart-row">
   `;
+  const perfData = computePerf(year, month);
+  html += `<div style="display:flex;gap:20px;align-items:stretch;margin-bottom:16px;">`;
   html += buildBarChartCard({
     title: 'ANT 종합', sub: '이번 달 전체', isCkd: false,
     planQty: antTotalPlan, main: antTotalMain, final: antTotalFinal, pack: antTotalPack, unit: '대',
     isDelayed: false, isDone: false, noteCount: 0, actions: { buttonsHtml: '' },
   });
+  html += `<div style="flex:1;background:#fff;border:1px dashed var(--border-bright);border-radius:4px;padding:16px;">${renderPerfMiniSummary('계획대비실적', perfData.ant, 'perfBarGradAntMonth')}</div>`;
+  html += `</div>`;
+
+  html += `<div style="display:flex;gap:20px;align-items:stretch;">`;
   html += buildBarChartCard({
     title: 'CKD 종합', sub: '이번 달 전체', isCkd: true, showInspect: true,
     planQty: ckdTotalPlan, main: 0, final: 0, pack: ckdTotalPack, inspect: ckdTotalInspect, unit: 'Site',
     isDelayed: false, isDone: false, noteCount: 0, actions: { buttonsHtml: '' },
   });
-  html += `</div></div>`;
-
-  // 계획대비실적 시트의 요약(총계획/총실적/달성률 + 모델별 비교막대)을 그대로 가져와서 같이 표시
-  const perfData = computePerf(year, month);
-  html += `
-    <div class="wp-section-title">${year}년 ${month}월 계획대비실적</div>
-    <div class="wp-summary-section">
-      ${renderPerfMiniSummary('★ ANT (안테나)', perfData.ant, 'perfBarGradAntMonth')}
-      <div style="height:16px;"></div>
-      ${renderPerfMiniSummary('📦 CKD (미국공장 포장출하)', perfData.ckd, 'perfBarGradCkdMonth')}
-    </div>
-  `;
+  html += `<div style="flex:1;background:#fff;border:1px dashed var(--border-bright);border-radius:4px;padding:16px;">${renderPerfMiniSummary('계획대비실적', perfData.ckd, 'perfBarGradCkdMonth')}</div>`;
+  html += `</div>`;
+  html += `</div>`;
 
   html += `<div class="wp-section-title">모델별 실적</div>`;
   html += `<div class="wp-barchart-grid">`;
