@@ -6766,11 +6766,27 @@ function renderPeBody(tab) {
     const name  = inpN.value.trim();
     const short = inpS.value.trim() || name.slice(0, 8);
     if (!name) { alert('공정명을 입력해주세요.'); return; }
-    // 중복 없는 id 생성
-    const allIds = Object.values(peDraft).flat().map(p=>p.id);
-    let base = name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,8) || 'proc';
-    let id = base, n = 2;
-    while (allIds.includes(id)) { id = base + n++; }
+
+    // 다른 공정세트에 이미 같은 이름의 공정이 있으면 새 ID를 만들지 않고 그 ID를 그대로 재사용
+    // (그래야 공통 매트릭스에서 같은 공정 컬럼으로 합쳐짐 - 예: GWSE에 KAA와 똑같은 "Final Inspection"을 추가해도
+    //  컬럼이 중복 생성되지 않고 기존 9번 컬럼을 그대로 공유하게 됨)
+    const allProcsEverywhere = Object.values(peDraft).flat();
+    const existing = allProcsEverywhere.find(p => p.name.trim().toLowerCase() === name.toLowerCase());
+
+    let id;
+    if (existing) {
+      if (peDraft[tab].some(p => p.id === existing.id)) {
+        alert('이미 이 공정세트에 같은 이름의 공정이 있습니다.');
+        return;
+      }
+      id = existing.id;
+    } else {
+      const allIds = allProcsEverywhere.map(p=>p.id);
+      let base = name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,8) || 'proc';
+      id = base;
+      let n = 2;
+      while (allIds.includes(id)) { id = base + n++; }
+    }
     peDraft[tab].push({ id, name, short });
     renderPeBody(tab);
     inpN.value = ''; inpS.value = '';
