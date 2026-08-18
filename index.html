@@ -88,7 +88,7 @@
   .wp-summary-barchart-row { display:flex; gap:20px; margin-bottom:0; }
   .wp-barchart-grid { display:flex; flex-wrap:wrap; gap:20px; }
   .wp-bar-card { position:relative; width:320px; background:var(--bg-card); border:1px dashed var(--border-bright); border-left:6px solid transparent; border-radius:4px; padding:22px 20px 16px; }
-  .wp-bar-card.wp-card-delayed { border-left-color:var(--red); }
+  .wp-bar-card.wp-card-delayed { border-left-color:var(--text-primary); }
   .wp-bar-card.wp-card-done { border:2px solid var(--green); border-left:6px solid var(--green); }
   .wp-bar-chart { display:flex; align-items:flex-end; justify-content:space-around; height:260px; border-bottom:3px solid var(--text-secondary); }
   .wp-bar-col { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; width:23%; }
@@ -98,9 +98,9 @@
   .wp-bar-labels { display:flex; justify-content:space-around; margin-top:10px; }
   .wp-bar-label { width:23%; text-align:center; font-size:18px; font-weight:800; color:var(--text-secondary); }
   .wp-bar-card-info { margin-top:16px; padding-top:14px; border-top:1px solid var(--border); text-align:center; }
-  .wp-card-model { font-family:var(--font-mono); font-weight:800; color:var(--red); text-align:center; line-height:1.15; word-break:break-word; font-size:26px !important; }
+  .wp-card-model { font-family:var(--font-mono); font-weight:800; color:var(--orange); text-align:center; line-height:1.15; word-break:break-word; font-size:26px !important; }
   .wp-card-fullname { font-size:14px; color:var(--text-secondary); text-align:center; margin-top:3px; }
-  .wp-card-qty { display:inline-block; background:#fde8e8; color:var(--red); font-weight:800; border-radius:2px; margin:8px 0; font-size:19px !important; padding:4px 14px !important; }
+  .wp-card-qty { display:inline-block; background:rgba(255,140,0,.1); color:var(--orange); font-weight:800; border-radius:2px; margin:8px 0; font-size:19px !important; padding:4px 14px !important; }
   .wp-card-btns { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:10px; }
   .wp-card-btns button { font-size:13px; padding:5px 10px; cursor:pointer; border-radius:2px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-secondary); }
   .ts-item { flex:1; padding:10px 16px; border-right:1px solid var(--border); display:flex; align-items:center; gap:10px; }
@@ -1116,7 +1116,7 @@
 <header class="header">
   <div class="header-left">
     <img src="data:image/png;base64,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" style="height:30px;object-fit:contain;" alt="Intellian">
-    <div class="header-title">C1 생산 현황 <span>모니터링</span><span class="ver-badge">Rev18</span><span id="versionMismatchBadge" style="display:none;font-size:12px;font-weight:700;color:var(--red);border:1px solid var(--red);border-radius:2px;padding:1px 6px;margin-left:6px;vertical-align:middle;cursor:pointer;" onclick="requireSynced()" title="클릭하면 상세 안내">⚠ 예전 버전</span><button onclick="promoteThisVersionToOfficial()" title="이 버전을 정식 배포 버전으로 지정 (전체 배포 완료 후 관리자만 사용, 비밀번호 필요)" style="font-size:10px;padding:1px 5px;margin-left:6px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">정식지정</button><button onclick="changeAdminPasswordPrompt()" title="정식지정용 관리자 비밀번호 변경" style="font-size:10px;padding:1px 5px;margin-left:4px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">🔑 비밀번호 변경</button></div>
+    <div class="header-title">C1 생산 현황 <span>모니터링</span><span class="ver-badge">Rev19</span><span id="versionMismatchBadge" style="display:none;font-size:12px;font-weight:700;color:var(--red);border:1px solid var(--red);border-radius:2px;padding:1px 6px;margin-left:6px;vertical-align:middle;cursor:pointer;" onclick="requireSynced()" title="클릭하면 상세 안내">⚠ 예전 버전</span><button onclick="promoteThisVersionToOfficial()" title="이 버전을 정식 배포 버전으로 지정 (전체 배포 완료 후 관리자만 사용, 비밀번호 필요)" style="font-size:10px;padding:1px 5px;margin-left:6px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">정식지정</button><button onclick="changeAdminPasswordPrompt()" title="정식지정용 관리자 비밀번호 변경" style="font-size:10px;padding:1px 5px;margin-left:4px;cursor:pointer;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:2px;vertical-align:middle;">🔑 비밀번호 변경</button></div>
   </div>
   <div class="header-right">
     <div style="display:flex;align-items:center;gap:4px;border:1px solid var(--border);border-radius:2px;padding:3px 6px;background:var(--bg-card);">
@@ -1607,6 +1607,16 @@
           <div class="mc-color-dot" data-color="yellow"  style="background:#fffde7;" title="노랑"  onclick="selectCardColor('yellow')"></div>
           <div class="mc-color-dot" data-color="pink"    style="background:#fde8f0;" title="핑크"  onclick="selectCardColor('pink')"></div>
           <div class="mc-color-dot" data-color="purple"  style="background:#f0e8fd;" title="보라"  onclick="selectCardColor('purple')"></div>
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:8px;">
+        <div class="form-label">D-DAY 텍스트 색상</div>
+        <div class="mc-color-picker" id="ddayColorPicker">
+          <div class="mc-color-dot" data-color="default" style="background:var(--text-primary);" title="기본(검정)" onclick="selectDdayColor('default')"></div>
+          <div class="mc-color-dot" data-color="pink"    style="background:#ff66aa;"     title="핑크" onclick="selectDdayColor('pink')"></div>
+          <div class="mc-color-dot" data-color="yellow"  style="background:var(--yellow);" title="노랑" onclick="selectDdayColor('yellow')"></div>
+          <div class="mc-color-dot" data-color="green"   style="background:var(--green);"  title="초록" onclick="selectDdayColor('green')"></div>
+          <div class="mc-color-dot" data-color="red"     style="background:var(--red);"    title="빨강" onclick="selectDdayColor('red')"></div>
         </div>
       </div>
     </div>
@@ -2223,22 +2233,19 @@ function renderModelCards() {
     if (packPct === 100)       barColor = 'var(--accent)';
     else if (weightedPct > 0)  barColor = 'var(--green)';
 
-    // D-day 계산
+    // D-day 계산 (색상은 더 이상 자동 지정하지 않음 - 기본 검정, 모델편집에서 지정한 색이 있으면 그 색)
     const ddayNum   = m.shipDate ? calcDday(m.shipDate) : null;
     let ddayText    = '미설정';
-    let ddayColor   = 'var(--text-dim)';
     let ddayDateStr = '-';
+    const ddayColor = (m.ddayColor && m.ddayColor !== 'default') ? DDAY_COLOR_MAP[m.ddayColor] : 'var(--text-primary)';
 
     if (ddayNum !== null) {
       if (ddayNum > 0) {
         ddayText  = `D-${ddayNum}`;
-        ddayColor = ddayNum <= 5 ? '#ff66aa' : ddayNum <= 10 ? 'var(--yellow)' : 'var(--green)';
       } else if (ddayNum === 0) {
         ddayText  = 'D-DAY';
-        ddayColor = 'var(--red)';
       } else {
         ddayText  = `D+${Math.abs(ddayNum)}`;
-        ddayColor = 'var(--red)';
       }
       // 날짜 표시
       const sd = parseLocalDate(m.shipDate);
@@ -2318,7 +2325,7 @@ function renderModelCards() {
       <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
         <div style="display:flex;gap:6px;margin-bottom:5px;">
           <button class="mc-action-btn mc-btn-edit" onclick="openEditModal(${mi})" style="flex:1;">✏ 편집</button>
-          <button class="mc-action-btn" style="flex:1;position:relative;${noteCount>0?'background:rgba(221,17,51,.1);color:var(--red);border:1px solid rgba(221,17,51,.4);font-weight:700;':'background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(204,136,0,.3);'}" onclick="openNoteModal(${mi})">📋 특이사항${noteCount>0?`<span style="position:absolute;top:-7px;right:-7px;background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:9px;min-width:17px;height:17px;display:flex;align-items:center;justify-content:center;padding:0 4px;">${noteCount}</span>`:''}</button>
+          <button class="mc-action-btn" style="flex:1;position:relative;${noteCount>0?'background:rgba(255,140,0,.12);color:var(--orange);border:1px solid rgba(255,140,0,.5);font-weight:700;':'background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(204,136,0,.3);'}" onclick="openNoteModal(${mi})">📋 특이사항${noteCount>0?`<span style="position:absolute;top:-7px;right:-7px;background:var(--orange);color:#fff;font-size:11px;font-weight:700;border-radius:9px;min-width:17px;height:17px;display:flex;align-items:center;justify-content:center;padding:0 4px;">${noteCount}</span>`:''}</button>
         </div>
         <div style="display:flex;gap:6px;">
           <button class="mc-action-btn mc-btn-del" onclick="deleteModel(${mi})" style="flex:1;">🗑 삭제</button>
@@ -2412,7 +2419,7 @@ function renderCkdCards() {
       <div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
         <div style="display:flex;gap:6px;margin-bottom:5px;">
           <button class="mc-action-btn mc-btn-edit" onclick="openEditModal(${mi})" style="flex:1;">✏ 편집</button>
-          <button class="mc-action-btn" style="flex:1;position:relative;${noteCount>0?'background:rgba(221,17,51,.1);color:var(--red);border:1px solid rgba(221,17,51,.4);font-weight:700;':'background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(204,136,0,.3);'}" onclick="openNoteModal(${mi})">📋 특이사항${noteCount>0?`<span style="position:absolute;top:-7px;right:-7px;background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:9px;min-width:17px;height:17px;display:flex;align-items:center;justify-content:center;padding:0 4px;">${noteCount}</span>`:''}</button>
+          <button class="mc-action-btn" style="flex:1;position:relative;${noteCount>0?'background:rgba(255,140,0,.12);color:var(--orange);border:1px solid rgba(255,140,0,.5);font-weight:700;':'background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(204,136,0,.3);'}" onclick="openNoteModal(${mi})">📋 특이사항${noteCount>0?`<span style="position:absolute;top:-7px;right:-7px;background:var(--orange);color:#fff;font-size:11px;font-weight:700;border-radius:9px;min-width:17px;height:17px;display:flex;align-items:center;justify-content:center;padding:0 4px;">${noteCount}</span>`:''}</button>
         </div>
         <div style="display:flex;gap:6px;">
           <button class="mc-action-btn mc-btn-del" onclick="deleteModel(${mi})" style="flex:1;">🗑 삭제</button>
@@ -2484,9 +2491,6 @@ function renderCkdTable() {
     modelTd.innerHTML = `
       <div class="model-name" style="max-width:100%;white-space:normal;word-break:break-word;">${m.model}${m.fullName ? `<span style="font-size:12px;font-weight:400;color:var(--text-dim);"> (${escapeHtml(m.fullName)})</span>` : ''}</div>
       <div class="model-plan">계획 <span>${m.plan}</span> Site</div>
-      <div style="display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap;">
-        ${statusTag(mxPct, mxHasActivity)}
-      </div>
       <div style="font-family:var(--font-mono);font-size:14px;margin-top:4px;">
         📦 <strong style="color:${ddayColor}">${ddayText}</strong>
         ${m.shipDate ? `<span style="color:var(--text-dim);font-size:15px;margin-left:3px;">${m.shipDate}</span>` : ''}
@@ -2710,9 +2714,6 @@ function renderTable() {
     modelTd.innerHTML = `
       <div class="model-name" style="max-width:100%;white-space:normal;word-break:break-word;">${m.model}${m.fullName ? `<span style="font-size:12px;font-weight:400;color:var(--text-dim);"> (${escapeHtml(m.fullName)})</span>` : ''}</div>
       <div class="model-plan">계획 <span>${m.plan}</span>대</div>
-      <div style="display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap;">
-        ${statusTag(planRate, hasActivity)}
-      </div>
       <div style="font-family:var(--font-mono);font-size:14px;margin-top:4px;">
         📦 <strong style="color:${ddayColor}">${ddayText}</strong>
         ${m.shipDate ? `<span style="color:var(--text-dim);font-size:15px;margin-left:3px;">${m.shipDate.split('T')[0].substring(0,10)}</span>` : ''}
@@ -2858,6 +2859,7 @@ async function openAddModal(defaultProcSet) {
   if (!(await requireSynced())) return;
   startModalEditLock();
   selectCardColor('default');
+  selectDdayColor('default');
   const mb = document.getElementById('modelSavedBadge');
   if (mb) { mb.style.opacity = '0'; mb.textContent = '✅ 저장 완료'; }
   setTimeout(() => {
@@ -2885,6 +2887,7 @@ async function openEditModal(idx) {
   if (!(await requireSynced())) return;
   startModalEditLock();
   selectCardColor(models[idx]?.cardColor || 'default');
+  selectDdayColor(models[idx]?.ddayColor || 'default');
   // 배지 초기화
   const mb = document.getElementById('modelSavedBadge');
   if (mb) { mb.style.opacity = '0'; mb.textContent = '✅ 저장 완료'; }
@@ -2950,6 +2953,8 @@ async function saveModel() {
   const existing = editingModelIdx >= 0 ? models[editingModelIdx] : {};
   const selectedColorDot = document.querySelector('#cardColorPicker .mc-color-dot.selected');
   const cardColor = selectedColorDot ? selectedColorDot.dataset.color : 'default';
+  const selectedDdayDot = document.querySelector('#ddayColorPicker .mc-color-dot.selected');
+  const ddayColor = selectedDdayDot ? selectedDdayDot.dataset.color : 'default';
   const entry = {
     model:    modelName,
     fullName: fullName,
@@ -2965,6 +2970,7 @@ async function saveModel() {
     excludedProcs: excludedProcs,
     procPlan:      procPlan,
     cardColor:     cardColor,
+    ddayColor:     ddayColor,
   };
   if (editingModelIdx >= 0) models[editingModelIdx] = entry;
   else models.push(entry);
@@ -4028,7 +4034,7 @@ function renderPerfMiniSummary(title, groups, gradId) {
       </div>
       <div style="background:#eaf3fb;border:2px solid var(--accent2);border-radius:5px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
         <div style="font-size:26px;color:var(--accent2);margin-bottom:6px;font-weight:800;">달성률</div>
-        <div style="font-family:var(--font-mono);font-size:60px;font-weight:800;color:${rateColor};line-height:1;">${totalRate}%</div>
+        <div style="font-family:var(--font-mono);font-size:60px;font-weight:800;color:var(--accent2);line-height:1;">${totalRate}%</div>
       </div>
     </div>
     <div style="flex:1;background:#fff;border:1px solid var(--border);border-radius:5px;padding:4px;overflow:hidden;min-width:0;">
@@ -5143,11 +5149,11 @@ function renderSharedImageButtons() {
   row.innerHTML = sharedImagesMeta.map(img => {
     const active = isScheduleActive(img);
     const style = active
-      ? 'background:var(--red-dim);color:var(--red);border:1px solid rgba(221,17,51,.4);font-size:14px;padding:7px 14px;font-weight:700;'
+      ? 'background:rgba(255,140,0,.13);color:var(--orange);border:1px solid rgba(255,140,0,.5);font-size:14px;padding:7px 14px;font-weight:700;'
       : 'background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(204,136,0,.3);font-size:14px;padding:7px 14px;';
     return `
     <button class="btn ${active?'img-btn-blink':''}" onclick="openSharedImageViewModal('${img.id}')" style="${style}">
-      ${active ? '🔴' : '🖼'} ${escapeHtml(img.title)}
+      ${active ? '🟠' : '🖼'} ${escapeHtml(img.title)}
     </button>
   `;
   }).join('');
@@ -5483,8 +5489,8 @@ async function openFloatingImagePopup(id, stackIndex) {
   wrap.id = 'floatPopup_' + id;
   wrap.style.cssText = `position:fixed; top:${50+offset}px; left:50%; transform:translateX(calc(-50% + ${offset}px)); z-index:${9500+stackIndex}; width:min(1400px,92vw); max-height:88vh; overflow:auto; background:#fff; border-radius:6px; border:1px solid var(--border-bright); box-shadow:0 12px 36px rgba(0,0,0,.4);`;
   wrap.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 20px;border-bottom:1px solid var(--border);background:var(--red-dim);border-radius:6px 6px 0 0;position:sticky;top:0;">
-      <div style="font-weight:700;color:var(--red);font-size:17px;">🔔 ${escapeHtml(meta.title)}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 20px;border-bottom:1px solid var(--border);background:rgba(255,140,0,.13);border-radius:6px 6px 0 0;position:sticky;top:0;">
+      <div style="font-weight:700;color:var(--orange);font-size:17px;">🔔 ${escapeHtml(meta.title)}</div>
       <button onclick="closeFloatingImagePopup('${id}')" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-dim);line-height:1;">✕</button>
     </div>
     <div style="padding:20px;">
@@ -5929,6 +5935,13 @@ let modalEditInterval = null;
 
 function selectCardColor(color) {
   document.querySelectorAll('#cardColorPicker .mc-color-dot').forEach(d => {
+    d.classList.toggle('selected', d.dataset.color === color);
+  });
+}
+
+const DDAY_COLOR_MAP = { default:'var(--text-primary)', pink:'#ff66aa', yellow:'var(--yellow)', green:'var(--green)', red:'var(--red)' };
+function selectDdayColor(color) {
+  document.querySelectorAll('#ddayColorPicker .mc-color-dot').forEach(d => {
     d.classList.toggle('selected', d.dataset.color === color);
   });
 }
