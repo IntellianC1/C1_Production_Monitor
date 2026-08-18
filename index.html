@@ -87,8 +87,7 @@
   .wp-summary-section { background:#eef3f8; border:1px solid #cfdce9; border-radius:4px; padding:16px; margin-bottom:24px; }
   .wp-summary-barchart-row { display:flex; gap:20px; margin-bottom:0; }
   .wp-barchart-grid { display:flex; flex-wrap:wrap; gap:20px; }
-  .wp-bar-card { position:relative; width:320px; background:var(--bg-card); border:1px dashed var(--border-bright); border-left:6px solid transparent; border-radius:4px; padding:22px 20px 16px; }
-  .wp-bar-card.wp-card-delayed { border-left-color:var(--text-primary); }
+  .wp-bar-card { position:relative; width:320px; background:var(--bg-card); border:1px dashed var(--border-bright); border-left:6px solid var(--text-primary); border-radius:4px; padding:22px 20px 16px; }
   .wp-bar-card.wp-card-done { border:2px solid var(--green); border-left:6px solid var(--green); }
   .wp-bar-chart { display:flex; align-items:flex-end; justify-content:space-around; height:260px; border-bottom:3px solid var(--text-secondary); }
   .wp-bar-col { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; width:23%; }
@@ -3733,7 +3732,7 @@ function buildBarChartCard(opts) {
     labels = `<div class="wp-bar-label">계획</div><div class="wp-bar-label">조립</div><div class="wp-bar-label">검사</div><div class="wp-bar-label">포장</div>`;
   }
   return `
-    <div class="wp-bar-card ${isDelayed?'wp-card-delayed':''} ${isDone?'wp-card-done':''}" ${cardKey ? `data-card-key="${cardKey.replace(/"/g,'&quot;')}"` : ''}>
+    <div class="wp-bar-card ${isDone?'wp-card-done':''}" ${cardKey ? `data-card-key="${cardKey.replace(/"/g,'&quot;')}"` : ''}>
       ${noteCount > 0 ? `<div class="wp-note-badge-inline">📋 ${noteCount}</div>` : ''}
       <div class="wp-bar-chart">${bars}</div>
       <div class="wp-bar-labels">${labels}</div>
@@ -4052,12 +4051,17 @@ function renderMonthPlanView() {
   const expectedRatio = monthExpectedRatio(year, month);
 
   // 포장기준일이 이 달인 모델만 (생산현황과 완전히 동일한 원본 데이터)
-  const monthModels = models.filter(m => {
+  // ※ 완료 처리되어 히스토리로 넘어간 모델도 그 달 실적에서 사라지면 안 되므로 함께 포함
+  const isThisMonth = (m) => {
     if (!m.shipDate) return false;
     const sd = parseLocalDate(m.shipDate);
     if (isNaN(sd)) return false;
     return sd.getFullYear() === year && sd.getMonth() + 1 === month;
-  });
+  };
+  const monthModels = [
+    ...models.filter(isThisMonth),
+    ...loadHistory().filter(isThisMonth),
+  ];
 
   // 세부모델명은 고려하지 않고 "모델명"만 기준으로 합산. CKD는 STD/ANTI 등 모델명 상관없이 전부 "CKD" 하나로 통합
   const groups = {};
