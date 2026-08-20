@@ -85,17 +85,19 @@
   .pn-chip { background:rgba(255,255,255,.2); border-radius:9px; padding:2px 8px; font-size:11px; cursor:grab; user-select:none; }
   .pn-chip:active { cursor:grabbing; }
   .pn-chip.dragging { opacity:.35; }
-  .pn-chip-sm { background:transparent; color:var(--text-primary); border:none; font-size:32px; font-weight:700; font-family:var(--font-mono); padding:0; white-space:nowrap; display:inline-flex; align-items:center; gap:4px; }
+  .pn-chip-sm { background:transparent; color:var(--text-primary); border:none; font-size:32px; font-weight:700; padding:0; white-space:nowrap; display:inline-flex; align-items:center; gap:4px; }
   .pn-chip-sm .pn-chip-sm-del { font-size:16px; color:#bbb; cursor:pointer; font-weight:400; }
   .pn-chip-sm .pn-chip-sm-del:hover { color:var(--red); }
   .pn-row-person-zone { min-height:40px; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:4px; border-radius:4px; }
   .pn-row-person-zone.pn-dropzone-over { outline:2px dashed var(--accent2); outline-offset:-2px; background:rgba(0,153,204,.06); }
+  .pn-color-swatch { width:34px; height:34px; border-radius:6px; cursor:pointer; border:3px solid transparent; }
+  .pn-color-swatch.selected { border-color:#333; transform:scale(1.08); }
   .pn-table { flex:1; border-collapse:collapse; font-size:12px; }
   .pn-table th { background:#eef1f4; color:#666; font-weight:700; padding:4px 8px; border-right:1px solid #e4e7ea; border-bottom:1px solid #e4e7ea; text-align:left; }
   .pn-table td { padding:10px 10px; border-right:1px solid #eee; border-top:1px solid #eee; vertical-align:middle; }
   .pn-table td:last-child, .pn-table th:last-child { border-right:none; }
   .pn-rownum { text-align:center; color:#999; width:28px; font-size:18px; }
-  .pn-cell-input { min-height:40px; outline:none; width:100%; font-size:32px; font-weight:700; background:transparent; font-family:var(--font-mono); line-height:1.25; }
+  .pn-cell-input { min-height:40px; outline:none; width:100%; font-size:32px; font-weight:700; background:transparent; line-height:1.25; }
   .pn-cell-input:focus { background:#fffbe8; }
   .pn-cell-input:empty:before { content:attr(data-placeholder); color:#bbb; }
   .pn-row-del-btn { color:#bbb; cursor:pointer; font-size:11px; padding:0 4px; }
@@ -1319,6 +1321,25 @@
 
 <!-- 주간계획: 모델 추가 모달 -->
 <!-- 인원 기본배치 설정 모달 -->
+<!-- 공정 추가 모달 -->
+<div class="save-name-overlay" id="addProcessOverlay">
+  <div class="save-name-modal" style="width:min(420px, 92vw);max-width:none;">
+    <div class="save-name-header">
+      <div class="save-name-title">➕ 공정 추가</div>
+    </div>
+    <div class="save-name-body">
+      <div class="save-name-label">공정명</div>
+      <input class="save-name-input" id="newProcessNameInput" placeholder="예) FAT 검사" style="margin-bottom:16px;">
+      <div class="save-name-label">카드 색상</div>
+      <div id="newProcessColorPicker" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"></div>
+    </div>
+    <div class="save-name-footer">
+      <button class="save-name-cancel" onclick="closeAddProcessModal()">취소</button>
+      <button class="save-name-confirm" onclick="submitAddProcess()">추가</button>
+    </div>
+  </div>
+</div>
+
 <div class="save-name-overlay" id="defaultPersonnelOverlay">
   <div class="save-name-modal" style="width:min(720px, 94vw);max-width:none;">
     <div class="save-name-header">
@@ -4274,7 +4295,7 @@ function checkPersonnelDateRollover() {
 }
 setInterval(checkPersonnelDateRollover, 60000); // 1분마다 체크
 let currentAssignment = null;
-const PN_PROCESSES = [
+let PN_PROCESSES = [ // 기본값. 서버에 저장된 공정 정의가 있으면 gsLoad에서 이걸로 교체됨
   { key:'sub',     label:'SUB 조립',  color:'#1f5f74' },
   { key:'main',    label:'MAIN 조립', color:'#e8792a' },
   { key:'inspect', label:'검사',      color:'#1a6b3a' },
@@ -4282,7 +4303,8 @@ const PN_PROCESSES = [
 ];
 
 function emptyAssignment() {
-  const a = { sub:{personIds:[],rows:[]}, main:{personIds:[],rows:[]}, inspect:{personIds:[],rows:[]}, pack:{personIds:[],rows:[]}, unassigned:[] };
+  const a = {};
+  PN_PROCESSES.forEach(p => { a[p.key] = { personIds:[], rows:[] }; });
   a.unassigned = personnelList.map(p => p.id);
   return a;
 }
@@ -4538,6 +4560,7 @@ async function renderPersonnelView() {
         <button class="btn" style="background:#8855dd;color:#fff;font-weight:700;" onclick="openDefaultPersonnelModal()">⚙ 인원 기본 설정</button>
         <button class="btn" style="background:#8855dd;color:#fff;font-weight:700;" onclick="applyDefaultPersonnel()">📋 기본값 적용</button>
         <button class="btn" style="background:var(--green);color:#fff;font-weight:700;" onclick="openAddPersonPrompt()">+ 인원 추가</button>
+        <button class="btn" style="background:#446688;color:#fff;font-weight:700;" onclick="openAddProcessModal()">+ 공정 추가</button>
       </div>
     </div>
   `;
@@ -4589,6 +4612,7 @@ async function renderPersonnelView() {
           <div class="pn-row-title">${proc.label}</div>
           <div class="pn-chip-zone personnel-dropzone" data-zone-key="${proc.key}">${chips}</div>
           <span onclick="carryOverProcessToTomorrow('${proc.key}')" title="이 공정 내용 전체를 내일로 복사" style="align-self:flex-start;font-size:10.5px;background:rgba(255,255,255,.18);border-radius:3px;padding:2px 6px;cursor:pointer;margin-top:2px;">➡ 내일로 복사</span>
+          <span onclick="deleteProcess('${proc.key}')" title="이 공정 삭제" style="align-self:flex-start;font-size:10.5px;background:rgba(255,255,255,.18);border-radius:3px;padding:2px 6px;cursor:pointer;margin-top:2px;">🗑 공정 삭제</span>
         </div>
         <table class="pn-table">
           <tr><th style="width:28px;">#</th><th style="width:170px;">모델</th><th style="width:110px;">수량</th><th style="width:220px;">작업 인원</th><th>내용</th><th style="width:44px;"></th></tr>
@@ -4739,6 +4763,63 @@ function removePersonFromRow(procKey, rowIdx, personId) {
   const row = currentAssignment[procKey].rows[rowIdx];
   if (!row || !row.personIds) return;
   row.personIds = row.personIds.filter(id => id !== personId);
+  markPersonnelDirty();
+  renderPersonnelView();
+}
+
+// ── 공정 추가 (새 공정 카드 - 기존 공정과 동일하게 인원배치/행/이월 기능 다 사용 가능)
+const PN_COLOR_PALETTE = ['#1f5f74','#e8792a','#1a6b3a','#29a8e0','#8855dd','#cc3377','#dd1133','#607080'];
+
+function savePersonnelProcessesToServer() {
+  gsPost('save_personnel_processes', PN_PROCESSES).catch(e => console.error('save_personnel_processes 실패:', e));
+}
+
+function openAddProcessModal() {
+  startModalEditLock();
+  document.getElementById('newProcessNameInput').value = '';
+  const picker = document.getElementById('newProcessColorPicker');
+  picker.innerHTML = PN_COLOR_PALETTE.map((c, i) =>
+    `<div class="pn-color-swatch ${i===0?'selected':''}" data-color="${c}" style="background:${c};" onclick="selectNewProcessColor('${c}')"></div>`
+  ).join('');
+  picker.dataset.selected = PN_COLOR_PALETTE[0];
+  document.getElementById('addProcessOverlay').classList.add('open');
+}
+
+function selectNewProcessColor(color) {
+  document.querySelectorAll('#newProcessColorPicker .pn-color-swatch').forEach(el => {
+    el.classList.toggle('selected', el.dataset.color === color);
+  });
+  document.getElementById('newProcessColorPicker').dataset.selected = color;
+}
+
+function closeAddProcessModal() {
+  document.getElementById('addProcessOverlay').classList.remove('open');
+  stopModalEditLock();
+}
+
+function submitAddProcess() {
+  const name = document.getElementById('newProcessNameInput').value.trim();
+  if (!name) { alert('공정명을 입력해주세요.'); return; }
+  const color = document.getElementById('newProcessColorPicker').dataset.selected;
+  const key = 'proc_' + Date.now() + '_' + Math.floor(Math.random()*10000);
+  PN_PROCESSES.push({ key, label: name, color });
+  if (currentAssignment && !currentAssignment[key]) currentAssignment[key] = { personIds:[], rows:[] };
+  savePersonnelProcessesToServer();
+  markPersonnelDirty();
+  closeAddProcessModal();
+  renderPersonnelView();
+}
+
+function deleteProcess(key) {
+  const proc = PN_PROCESSES.find(p => p.key === key);
+  if (!proc) return;
+  if (!confirm(`"${proc.label}" 공정을 삭제하시겠습니까?\n(이 공정에 배치된 인원은 미배치로 이동합니다. 오늘 이전 날짜의 기록은 남아있지만 화면엔 더 이상 안 보입니다)`)) return;
+  // 배치되어 있던 인원은 미배치로 되돌림
+  if (currentAssignment && currentAssignment[key]) {
+    currentAssignment.unassigned.push(...currentAssignment[key].personIds);
+  }
+  PN_PROCESSES = PN_PROCESSES.filter(p => p.key !== key);
+  savePersonnelProcessesToServer();
   markPersonnelDirty();
   renderPersonnelView();
 }
@@ -7833,6 +7914,7 @@ async function gsLoad() {
 
     // ── 일간계획(인원배치): 인원명단 + 오늘 날짜 배치데이터를 미리 받아둬서 탭 진입 시 즉시 뜨게 함
     if (Array.isArray(d.personnel)) personnelList = d.personnel;
+    if (Array.isArray(d.personnelProcesses) && d.personnelProcesses.length > 0) PN_PROCESSES = d.personnelProcesses;
     if (d.todayAssignment && d.todayAssignment.date) {
       preloadedTodayAssignment = d.todayAssignment;
       // 저장 안 한 수정중이 아닐 때만 최신값으로 갱신 (다른 PC가 저장한 오늘 배치도 자동 반영)
