@@ -85,7 +85,7 @@
   .pn-chip { background:rgba(255,255,255,.2); border-radius:9px; padding:2px 8px; font-size:11px; cursor:grab; user-select:none; }
   .pn-chip:active { cursor:grabbing; }
   .pn-chip.dragging { opacity:.35; }
-  .pn-chip-sm { background:transparent; color:var(--text-primary); border:none; font-size:32px; font-weight:700; padding:0; white-space:nowrap; display:inline-flex; align-items:center; gap:4px; }
+  .pn-chip-sm { background:transparent; color:var(--text-primary); border:none; font-size:22px; font-weight:700; padding:0; white-space:nowrap; display:inline-flex; align-items:center; gap:4px; }
   .pn-chip-sm .pn-chip-sm-del { font-size:16px; color:#bbb; cursor:pointer; font-weight:400; }
   .pn-chip-sm .pn-chip-sm-del:hover { color:var(--red); }
   .pn-row-person-zone { min-height:40px; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:4px; border-radius:4px; }
@@ -97,7 +97,7 @@
   .pn-table td { padding:10px 10px; border-right:1px solid #eee; border-top:1px solid #eee; vertical-align:middle; }
   .pn-table td:last-child, .pn-table th:last-child { border-right:none; }
   .pn-rownum { text-align:center; color:#999; width:28px; font-size:18px; }
-  .pn-cell-input { min-height:40px; outline:none; width:100%; font-size:32px; font-weight:700; background:transparent; line-height:1.25; }
+  .pn-cell-input { min-height:40px; outline:none; width:100%; font-size:32px; font-weight:700; background:transparent; font-family:var(--font-mono); line-height:1.25; }
   .pn-cell-input:focus { background:#fffbe8; }
   .pn-cell-input:empty:before { content:attr(data-placeholder); color:#bbb; }
   .pn-row-del-btn { color:#bbb; cursor:pointer; font-size:11px; padding:0 4px; }
@@ -3542,6 +3542,7 @@ function setPerfRemarkNeedsSave() {
 }
 
 async function saveAllPerfRemarks() {
+  if (!(await requireSynced())) return;
   const key = `${perfYear}-${String(perfMonth).padStart(2,'0')}`;
   const b = document.getElementById('perfRemarkBadge');
   if (b) { b.textContent = '⏳ 저장 중...'; b.style.color = 'var(--yellow)'; b.style.opacity = '1'; }
@@ -3959,7 +3960,8 @@ function renderWeekPlanView() {
   });
 }
 
-function openWeekPlanAddModal() {
+async function openWeekPlanAddModal() {
+  if (!(await requireSynced())) return;
   startModalEditLock();
   // 모델명 자동완성 목록: modelFullnames에 등록된 모델명 + 현재/과거 모델에 쓰인 이름 전부 취합
   const nameSet = new Set(Object.keys(modelFullnames || {}));
@@ -4020,14 +4022,16 @@ function submitWeekPlanAdd() {
   renderWeekPlanView();
 }
 
-function deleteWeekPlan(id) {
+async function deleteWeekPlan(id) {
+  if (!(await requireSynced())) return;
   if (!confirm('이 주간계획 항목을 삭제하시겠습니까?')) return;
   weeklyPlans = weeklyPlans.filter(e => e.id !== id);
   saveWeeklyPlansToServer();
   renderWeekPlanView();
 }
 
-function editWeekPlanQty(id) {
+async function editWeekPlanQty(id) {
+  if (!(await requireSynced())) return;
   const e = weeklyPlans.find(x => x.id === id);
   if (!e) return;
   const val = prompt('이번 주 목표 수량을 입력해주세요.', e.planQty);
@@ -4040,7 +4044,8 @@ function editWeekPlanQty(id) {
 }
 
 // 게이지 클릭 시 해당 공정의 완료수량을 직접 입력 (생산현황과 완전히 무관한 수동 카운트)
-function editWeekPlanProgress(id, procKey) {
+async function editWeekPlanProgress(id, procKey) {
+  if (!(await requireSynced())) return;
   const e = weeklyPlans.find(x => x.id === id);
   if (!e) return;
   if (!e.progress) e.progress = { main:0, final:0, pack:0 };
@@ -4056,7 +4061,8 @@ function editWeekPlanProgress(id, procKey) {
 }
 
 // 미달성분을 다음주로 이월 (목표수량 - 수동입력 완료수량 = 남은 수량, 단순 계산)
-function carryOverWeekPlan(id) {
+async function carryOverWeekPlan(id) {
+  if (!(await requireSynced())) return;
   const e = weeklyPlans.find(x => x.id === id);
   if (!e) return;
   const p = e.progress || {};
@@ -4357,6 +4363,7 @@ function emptyDefaults() {
 }
 
 async function openDefaultPersonnelModal() {
+  if (!(await requireSynced())) return;
   startModalEditLock();
   if (personnelList.length === 0) await loadPersonnelFromServer();
   const loaded = await loadPersonnelDefaultsFromServer();
@@ -4443,6 +4450,7 @@ async function saveDefaultPersonnel() {
 
 // "기본값 적용" - 오늘 화면의 인원배치를 기본배치값으로 한번에 덮어씀 (작업내용 행은 그대로 둠)
 async function applyDefaultPersonnel() {
+  if (!(await requireSynced())) return;
   const defaults = await loadPersonnelDefaultsFromServer();
   if (!defaults) { alert('저장된 기본배치가 없습니다. 먼저 "⚙ 인원 기본 설정"에서 설정해주세요.'); return; }
   if (!confirm('오늘 배치된 인원을 기본배치값으로 덮어쓰시겠습니까?\n(작업내용은 그대로 유지되고, 인원 배치만 바뀝니다)')) return;
@@ -4482,6 +4490,7 @@ function markPersonnelDirty() {
 }
 
 async function saveAllPersonnel() {
+  if (!(await requireSynced())) return;
   const b = document.getElementById('personnelSavedBadge');
   if (b) { b.textContent = '⏳ 저장 중...'; b.style.color = 'var(--yellow)'; b.style.opacity = '1'; }
   let saverName = localStorage.getItem('kaa_my_name') || '';
@@ -4645,7 +4654,8 @@ async function renderPersonnelView() {
   }
 }
 
-function openAddPersonPrompt() {
+async function openAddPersonPrompt() {
+  if (!(await requireSynced())) return;
   const name = prompt('추가할 인원의 이름을 입력하세요:');
   if (!name || !name.trim()) return;
   personnelList.push({ id: 'p_' + Date.now() + '_' + Math.floor(Math.random()*10000), name: name.trim() });
@@ -4655,7 +4665,8 @@ function openAddPersonPrompt() {
   renderPersonnelView();
 }
 
-function removePersonPrompt(id) {
+async function removePersonPrompt(id) {
+  if (!(await requireSynced())) return;
   const p = personnelList.find(x => x.id === id);
   if (!p) return;
   if (!confirm(`"${p.name}"님을 명단에서 삭제하시겠습니까?\n(모든 날짜의 배치 기록에서 제외됩니다)`)) return;
@@ -4676,7 +4687,8 @@ async function carryOverRowsToTomorrow(procKey, rowsToCopy) {
   alert(`내일(${tomorrow})로 ${rowsToCopy.length}건 이월 완료했습니다.`);
 }
 
-function carryOverProcessToTomorrow(procKey) {
+async function carryOverProcessToTomorrow(procKey) {
+  if (!(await requireSynced())) return;
   const rows = currentAssignment[procKey].rows;
   if (rows.length === 0) { alert('이월할 내용이 없습니다.'); return; }
   const label = PN_PROCESSES.find(p => p.key === procKey).label;
@@ -4684,19 +4696,22 @@ function carryOverProcessToTomorrow(procKey) {
   carryOverRowsToTomorrow(procKey, rows);
 }
 
-function carryOverRowToTomorrow(procKey, idx) {
+async function carryOverRowToTomorrow(procKey, idx) {
+  if (!(await requireSynced())) return;
   const row = currentAssignment[procKey].rows[idx];
   if (!row) return;
   carryOverRowsToTomorrow(procKey, [row]);
 }
 
-function addAssignmentRow(procKey) {
+async function addAssignmentRow(procKey) {
+  if (!(await requireSynced())) return;
   currentAssignment[procKey].rows.push({ model:'', qty:'', content:'', personIds:[] });
   markPersonnelDirty();
   renderPersonnelView();
 }
 
-function deleteAssignmentRow(procKey, idx) {
+async function deleteAssignmentRow(procKey, idx) {
+  if (!(await requireSynced())) return;
   currentAssignment[procKey].rows.splice(idx, 1);
   markPersonnelDirty();
   renderPersonnelView();
@@ -4774,7 +4789,8 @@ function savePersonnelProcessesToServer() {
   gsPost('save_personnel_processes', PN_PROCESSES).catch(e => console.error('save_personnel_processes 실패:', e));
 }
 
-function openAddProcessModal() {
+async function openAddProcessModal() {
+  if (!(await requireSynced())) return;
   startModalEditLock();
   document.getElementById('newProcessNameInput').value = '';
   const picker = document.getElementById('newProcessColorPicker');
@@ -4810,7 +4826,8 @@ function submitAddProcess() {
   renderPersonnelView();
 }
 
-function deleteProcess(key) {
+async function deleteProcess(key) {
+  if (!(await requireSynced())) return;
   const proc = PN_PROCESSES.find(p => p.key === key);
   if (!proc) return;
   if (!confirm(`"${proc.label}" 공정을 삭제하시겠습니까?\n(이 공정에 배치된 인원은 미배치로 이동합니다. 오늘 이전 날짜의 기록은 남아있지만 화면엔 더 이상 안 보입니다)`)) return;
@@ -5804,7 +5821,8 @@ function renderSharedImageButtons() {
   checkAndShowScheduledImages();
 }
 
-function openSharedImageAddModal() {
+async function openSharedImageAddModal() {
+  if (!(await requireSynced())) return;
   startModalEditLock(); // 팝업 열려있는 동안 자동갱신 차단
   sharedImgEditingId = null;
   document.getElementById('sharedImageAddTitle').textContent = '🖼 이미지 등록';
@@ -5830,7 +5848,8 @@ function openSharedImageAddModal() {
 }
 
 // 보기 팝업에서 "🔄 이미지 변경" 눌렀을 때 - 같은 팝업을 편집모드로 채워서 염
-function openSharedImageEditModal() {
+async function openSharedImageEditModal() {
+  if (!(await requireSynced())) return;
   const meta = sharedImagesMeta.find(m => m.id === sharedImageViewingId);
   if (!meta) return;
   startModalEditLock();
@@ -5868,6 +5887,7 @@ function closeSharedImageAddModal() {
 }
 
 async function submitSharedImage() {
+  if (!(await requireSynced())) return;
   const title = document.getElementById('sharedImgTitleInput').value.trim();
   const desc  = document.getElementById('sharedImgDescInput').value.trim();
   const startDate = document.getElementById('sharedImgStartInput').value || '';
@@ -6098,6 +6118,7 @@ function closeSharedImageViewModal() {
 }
 
 async function deleteSharedImageConfirm() {
+  if (!(await requireSynced())) return;
   if (!sharedImageViewingId) return;
   if (!confirm('이 이미지를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
   try {
