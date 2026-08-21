@@ -237,6 +237,26 @@
   .hist-card .hc-full { font-size:11px; color:var(--text-dim); margin-top:2px; }
   .hist-card .hc-nums { font-size:11.5px; color:var(--text-secondary); margin-top:5px; }
   .hist-card .hc-carried { display:inline-block; margin-top:5px; font-size:10.5px; font-weight:700; color:var(--orange); border:1px solid var(--orange); border-radius:12px; padding:2px 9px; }
+  .stat-box .stat-pct { font-family:var(--font-mono); font-size:10.5px; font-weight:800; color:var(--text-dim); margin-top:2px; }
+  .mobile-note-overlay { display:none; position:fixed; inset:0; z-index:650; background:rgba(0,0,0,.62); align-items:flex-end; justify-content:center; }
+  .mobile-note-overlay.open { display:flex; }
+  .mobile-note-modal { width:100%; max-width:560px; max-height:82vh; background:var(--bg-panel); border-radius:18px 18px 0 0; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 -10px 30px rgba(0,0,0,.25); }
+  .mobile-note-head { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:var(--navy); color:#fff; }
+  .mobile-note-title { font-size:15px; font-weight:800; }
+  .mobile-note-close { width:30px; height:30px; border-radius:15px; border:none; background:rgba(255,255,255,.14); color:#fff; font-size:15px; }
+  .mobile-note-model { padding:10px 16px; background:#fff; border-bottom:1px solid var(--border); }
+  .mobile-note-model-name { font-family:var(--font-mono); font-weight:800; color:var(--orange); font-size:15px; }
+  .mobile-note-model-full { font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .mobile-note-body { flex:1; overflow-y:auto; padding:12px 14px calc(14px + env(safe-area-inset-bottom)); }
+  .mobile-note-item { background:#fff; border:1px solid var(--border); border-radius:10px; padding:11px 12px; margin-bottom:8px; }
+  .mobile-note-item:last-child { margin-bottom:0; }
+  .mobile-note-item-top { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
+  .mobile-note-status { font-size:10.5px; font-weight:800; padding:3px 8px; border-radius:10px; background:var(--bg-card2); }
+  .mobile-note-defect { font-family:var(--font-mono); font-size:11px; font-weight:800; color:var(--red); }
+  .mobile-note-issue { font-size:13px; line-height:1.55; color:var(--text-primary); white-space:pre-wrap; word-break:break-word; }
+  .mobile-note-remarks { font-size:11.5px; line-height:1.5; color:var(--text-dim); white-space:pre-wrap; word-break:break-word; margin-top:6px; padding-top:6px; border-top:1px dashed var(--border); }
+  .mobile-note-updated { font-size:10px; color:#999; margin-top:6px; }
+  .hist-note-btn { display:block; width:100%; margin-top:8px; padding:7px 8px; border-radius:8px; border:1px solid rgba(221,17,51,.28); background:rgba(221,17,51,.07); color:var(--red); font-size:11.5px; font-weight:800; }
 </style>
 </head>
 <body>
@@ -339,6 +359,21 @@
     <span class="ph-icon spin">⏳</span>
     <div class="ph-title">데이터 불러오는 중...</div>
     잠시만 기다려주세요
+  </div>
+</div>
+
+<!-- 모델별 특이사항 팝업 -->
+<div id="mobileNoteOverlay" class="mobile-note-overlay" onclick="closeMobileNotePopup(event)">
+  <div class="mobile-note-modal" onclick="event.stopPropagation()">
+    <div class="mobile-note-head">
+      <div class="mobile-note-title">⚠️ 모델 특이사항</div>
+      <button class="mobile-note-close" onclick="closeMobileNotePopup()">✕</button>
+    </div>
+    <div class="mobile-note-model">
+      <div class="mobile-note-model-name" id="mobileNoteModelName"></div>
+      <div class="mobile-note-model-full" id="mobileNoteModelFull"></div>
+    </div>
+    <div class="mobile-note-body" id="mobileNoteBody"></div>
   </div>
 </div>
 
@@ -951,7 +986,48 @@ function stripHtml(html) {
   return div.textContent || '';
 }
 
+let mobileNoteRegistry = [];
+function registerMobileNoteItem(m) {
+  mobileNoteRegistry.push(m);
+  return mobileNoteRegistry.length - 1;
+}
+function openMobileNotePopup(idx) {
+  const m = mobileNoteRegistry[idx];
+  if (!m) return;
+  const rows = Array.isArray(m.noteData) ? m.noteData : [];
+  document.getElementById('mobileNoteModelName').textContent = m.model || '(모델명 없음)';
+  const fullEl = document.getElementById('mobileNoteModelFull');
+  fullEl.textContent = m.fullName || '';
+  fullEl.style.display = m.fullName ? 'block' : 'none';
+
+  const statusColor = { 'In Progress':'var(--yellow)', 'On Hold':'var(--text-dim)', 'Completed':'var(--green)', 'Urgent':'var(--red)' };
+  const body = document.getElementById('mobileNoteBody');
+  if (rows.length === 0) {
+    body.innerHTML = '<div class="empty-note">등록된 특이사항이 없습니다</div>';
+  } else {
+    body.innerHTML = rows.map(r => `
+      <div class="mobile-note-item">
+        <div class="mobile-note-item-top">
+          <span class="mobile-note-status" style="color:${statusColor[r.status]||'var(--text-secondary)'};">${escapeHtml(r.status||'-')}</span>
+          ${r.defectQty ? `<span class="mobile-note-defect">문제수량 ${escapeHtml(String(r.defectQty))}</span>` : ''}
+        </div>
+        <div class="mobile-note-issue">${escapeHtml(r.issue||'내용 없음')}</div>
+        ${r.remarks ? `<div class="mobile-note-remarks">${escapeHtml(r.remarks)}</div>` : ''}
+        ${r.lastUpdated ? `<div class="mobile-note-updated">최종 업데이트 · ${escapeHtml(r.lastUpdated)}</div>` : ''}
+      </div>
+    `).join('');
+  }
+  document.getElementById('mobileNoteOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileNotePopup(e) {
+  if (e && e.target !== document.getElementById('mobileNoteOverlay')) return;
+  document.getElementById('mobileNoteOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
 function renderProdTab() {
+  mobileNoteRegistry = [];
   const container = document.getElementById('view-prod');
   const models = mobileData.models || [];
   const notice = mobileData.notice || {};
@@ -992,8 +1068,13 @@ function renderProdTab() {
   const antModels = models.filter(m => !(m.procSet && m.procSet.indexOf('CKD') === 0));
   const ckdModels = models.filter(m => m.procSet && m.procSet.indexOf('CKD') === 0);
 
-  let antTotalPlan=0, antTotalMain=0, antTotalPack=0;
-  antModels.forEach(m => { antTotalPlan += m.plan||0; antTotalMain += (m.procs&&m.procs.main)||0; antTotalPack += (m.procs&&m.procs.pack)||0; });
+  let antTotalPlan=0, antTotalMain=0, antTotalFinal=0, antTotalPack=0;
+  antModels.forEach(m => {
+    antTotalPlan += m.plan||0;
+    antTotalMain += (m.procs&&m.procs.main)||0;
+    antTotalFinal += (m.procs&&m.procs.final)||0;
+    antTotalPack += (m.procs&&m.procs.pack)||0;
+  });
   // 이번 달에 완료 처리된 모델도 총계에서 빠지면 안 되므로 합산 (PC와 동일 로직)
   history.forEach(h => {
     if (h.procSet && h.procSet.indexOf('CKD') === 0) return;
@@ -1001,15 +1082,20 @@ function renderProdTab() {
     if (ym.year !== curYear || ym.month !== curMonth) return;
     antTotalPlan += h.plan || 0;
     antTotalMain += (h.procs && h.procs.main) || 0;
+    antTotalFinal += (h.procs && h.procs.final) || 0;
     antTotalPack += (h.procs && h.procs.pack) || 0;
   });
 
+  const antMainPct  = antTotalPlan > 0 ? Math.round(antTotalMain  / antTotalPlan * 100) : 0;
+  const antFinalPct = antTotalPlan > 0 ? Math.round(antTotalFinal / antTotalPlan * 100) : 0;
+  const antPackPct  = antTotalPlan > 0 ? Math.round(antTotalPack  / antTotalPlan * 100) : 0;
   html += `<div class="section-title">📡 ANT (안테나)</div>`;
   html += `
     <div class="stat-strip">
-      <div class="stat-box"><div class="stat-label">총 계획</div><div class="stat-value">${antTotalPlan}<span style="font-size:10px;">대</span></div></div>
-      <div class="stat-box"><div class="stat-label">조립 완료</div><div class="stat-value">${antTotalMain}<span style="font-size:10px;">대</span></div></div>
-      <div class="stat-box"><div class="stat-label">포장 완료</div><div class="stat-value accent">${antTotalPack}<span style="font-size:10px;">대</span></div></div>
+      <div class="stat-box"><div class="stat-label">총 계획</div><div class="stat-value">${antTotalPlan}<span style="font-size:10px;">대</span></div><div class="stat-pct">기준 100%</div></div>
+      <div class="stat-box"><div class="stat-label">조립 완료</div><div class="stat-value">${antTotalMain}<span style="font-size:10px;">대</span></div><div class="stat-pct">${antMainPct}%</div></div>
+      <div class="stat-box"><div class="stat-label">검사 완료</div><div class="stat-value">${antTotalFinal}<span style="font-size:10px;">대</span></div><div class="stat-pct">${antFinalPct}%</div></div>
+      <div class="stat-box"><div class="stat-label">포장 완료</div><div class="stat-value accent">${antTotalPack}<span style="font-size:10px;">대</span></div><div class="stat-pct">${antPackPct}%</div></div>
     </div>
   `;
 
@@ -1020,21 +1106,29 @@ function renderProdTab() {
   }
 
   // ── CKD 모델
-  let ckdTotalPlan=0, ckdTotalDone=0;
-  ckdModels.forEach(m => { ckdTotalPlan += m.plan||0; ckdTotalDone += calcCkdCompletedSites(m); });
+  let ckdTotalPlan=0, ckdTotalInspect=0, ckdTotalDone=0;
+  ckdModels.forEach(m => {
+    ckdTotalPlan += m.plan||0;
+    ckdTotalInspect += calcCkdInspectSites(m);
+    ckdTotalDone += calcCkdCompletedSites(m);
+  });
   history.forEach(h => {
     if (!(h.procSet && h.procSet.indexOf('CKD') === 0)) return;
     const ym = getHistYearMonth(h);
     if (ym.year !== curYear || ym.month !== curMonth) return;
     ckdTotalPlan += h.plan || 0;
+    ckdTotalInspect += calcCkdInspectSites(h);
     ckdTotalDone += calcCkdCompletedSites(h);
   });
 
+  const ckdInspectPct = ckdTotalPlan > 0 ? Math.round(ckdTotalInspect / ckdTotalPlan * 100) : 0;
+  const ckdDonePct    = ckdTotalPlan > 0 ? Math.round(ckdTotalDone    / ckdTotalPlan * 100) : 0;
   html += `<div class="section-title">📦 CKD (미국공장 포장출하)</div>`;
   html += `
     <div class="stat-strip">
-      <div class="stat-box"><div class="stat-label">총 계획</div><div class="stat-value">${ckdTotalPlan}<span style="font-size:10px;">Site</span></div></div>
-      <div class="stat-box"><div class="stat-label">포장 완료</div><div class="stat-value accent">${ckdTotalDone}<span style="font-size:10px;">Site</span></div></div>
+      <div class="stat-box"><div class="stat-label">총 계획</div><div class="stat-value">${ckdTotalPlan}<span style="font-size:10px;">Site</span></div><div class="stat-pct">기준 100%</div></div>
+      <div class="stat-box"><div class="stat-label">수검 완료</div><div class="stat-value">${ckdTotalInspect}<span style="font-size:10px;">Site</span></div><div class="stat-pct">${ckdInspectPct}%</div></div>
+      <div class="stat-box"><div class="stat-label">포장 완료</div><div class="stat-value accent">${ckdTotalDone}<span style="font-size:10px;">Site</span></div><div class="stat-pct">${ckdDonePct}%</div></div>
     </div>
   `;
 
@@ -1087,6 +1181,8 @@ function buildHistorySectionHtml() {
   filtered.forEach(h => {
     const { qty, unit } = calcActualQty(h);
     const rate = h.plan > 0 ? Math.round(qty/h.plan*100) : 0;
+    const histNoteCount = Array.isArray(h.noteData) ? h.noteData.length : 0;
+    const histNoteIdx = histNoteCount > 0 ? registerMobileNoteItem(h) : -1;
     html += `
       <div class="hist-card">
         <div class="hc-top">
@@ -1096,6 +1192,7 @@ function buildHistorySectionHtml() {
         ${h.fullName?`<div class="hc-full">${escapeHtml(h.fullName)}</div>`:''}
         <div class="hc-nums">계획 ${h.plan}${unit} · 실적 ${qty}${unit} (${rate}%) · 완료일 ${escapeHtml(h.completedDate||'-')}</div>
         ${h.carriedOver?`<span class="hc-carried">📦 이월</span>`:''}
+        ${histNoteCount > 0 ? `<button class="hist-note-btn" onclick="openMobileNotePopup(${histNoteIdx})">⚠️ 특이사항 ${histNoteCount}건 보기</button>` : ''}
       </div>
     `;
   });
@@ -1114,7 +1211,8 @@ function buildModelCard(m, kind, key) {
   const sd = m.shipDate ? parseLocalDate(m.shipDate) : null;
   const dateStr = (sd && !isNaN(sd)) ? `${sd.getFullYear()}.${String(sd.getMonth()+1).padStart(2,'0')}.${String(sd.getDate()).padStart(2,'0')}` : '-';
 
-  const noteCount = (m.noteData || []).filter(r => r.status !== 'Completed').length;
+  const noteCount = Array.isArray(m.noteData) ? m.noteData.length : 0;
+  const noteIdx = noteCount > 0 ? registerMobileNoteItem(m) : -1;
   const isExpanded = expandedCardKeys.has(key);
 
   let progressHtml = '';
@@ -1122,21 +1220,28 @@ function buildModelCard(m, kind, key) {
 
   if (kind === 'ant') {
     const mainDone = (m.procs && m.procs.main) || 0;
+    const finalDone = (m.procs && m.procs.final) || 0;
     const packDone = (m.procs && m.procs.pack) || 0;
     const plan = m.plan || 1;
     const mainPct = Math.min(100, Math.round(mainDone/plan*100));
+    const finalPct = Math.min(100, Math.round(finalDone/plan*100));
     const packPct = Math.min(100, Math.round(packDone/plan*100));
     qtyBadge = `${m.plan}대`;
     progressHtml = `
       <div class="model-card-progress">
         <div class="progress-mini">
           <div class="pm-label">조립 완료</div>
-          <div class="pm-value">${mainDone} / ${m.plan}</div>
+          <div class="pm-value">${mainDone} / ${m.plan} · ${mainPct}%</div>
           <div class="pm-bar-bg"><div class="pm-bar-fill" style="width:${mainPct}%;"></div></div>
         </div>
         <div class="progress-mini">
+          <div class="pm-label">검사 완료</div>
+          <div class="pm-value">${finalDone} / ${m.plan} · ${finalPct}%</div>
+          <div class="pm-bar-bg"><div class="pm-bar-fill" style="width:${finalPct}%;background:var(--green);"></div></div>
+        </div>
+        <div class="progress-mini">
           <div class="pm-label">포장 완료</div>
-          <div class="pm-value">${packDone} / ${m.plan}</div>
+          <div class="pm-value">${packDone} / ${m.plan} · ${packPct}%</div>
           <div class="pm-bar-bg"><div class="pm-bar-fill" style="width:${packPct}%;background:var(--accent2);"></div></div>
         </div>
       </div>
@@ -1189,7 +1294,7 @@ function buildModelCard(m, kind, key) {
         <span class="model-card-dday" style="color:${ddayColor};">${ddayText}</span>
       </div>
       ${progressHtml}
-      ${noteCount > 0 ? `<div class="model-card-note-btn" style="background:rgba(221,17,51,.08);color:var(--red);border:1px solid rgba(221,17,51,.3);">⚠️ 특이사항 ${noteCount}건</div>` : ''}
+      ${noteCount > 0 ? `<button class="model-card-note-btn" onclick="openMobileNotePopup(${noteIdx})" style="display:block;width:calc(100% - 28px);background:rgba(221,17,51,.08);color:var(--red);border:1px solid rgba(221,17,51,.3);">⚠️ 특이사항 ${noteCount}건 보기</button>` : ''}
       <button class="model-card-expand-btn" onclick="toggleCardDetail('${key}')">${isExpanded ? '공정별 상세 접기 ▴' : '공정별 상세 보기 ▾'}</button>
       <div class="model-card-detail ${isExpanded?'open':''}">${detailRows}</div>
     </div>
