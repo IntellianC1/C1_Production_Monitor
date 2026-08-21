@@ -1248,14 +1248,21 @@ function buildModelCard(m, kind, key) {
     `;
   } else {
     const doneSites = calcCkdCompletedSites(m);
+    const inspectSites = calcCkdInspectSites(m);
     const plan = m.plan || 1;
     const pct = Math.min(100, Math.round(doneSites/plan*100));
+    const inspectPct = Math.min(100, Math.round(inspectSites/plan*100));
     qtyBadge = `${m.plan} Site`;
     progressHtml = `
       <div class="model-card-progress">
         <div class="progress-mini">
+          <div class="pm-label">수입검사</div>
+          <div class="pm-value">${inspectSites} / ${m.plan} Site · ${inspectPct}%</div>
+          <div class="pm-bar-bg"><div class="pm-bar-fill" style="width:${inspectPct}%;background:var(--green);"></div></div>
+        </div>
+        <div class="progress-mini">
           <div class="pm-label">포장 완료</div>
-          <div class="pm-value">${doneSites} / ${m.plan} Site</div>
+          <div class="pm-value">${doneSites} / ${m.plan} Site · ${pct}%</div>
           <div class="pm-bar-bg"><div class="pm-bar-fill" style="width:${pct}%;background:var(--accent2);"></div></div>
         </div>
       </div>
