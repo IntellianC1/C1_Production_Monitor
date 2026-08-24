@@ -279,7 +279,7 @@
   <div class="topbar-left">
     <div class="live-dot"></div>
     <div>
-      <div class="topbar-title">C1 생산 현황<span class="ver">Rev25</span></div>
+      <div class="topbar-title">C1 생산 현황<span class="ver">Rev26</span></div>
       <div class="topbar-sub" id="topbarSub">불러오는 중...</div>
     </div>
   </div>
@@ -670,10 +670,6 @@ async function renderPersonnelTab() {
   let html = '';
   mobilePnProcesses.forEach(proc => {
     const data = assignment[proc.key] || { personIds:[], rows:[] };
-    const chips = (data.personIds||[]).map(id => {
-      const p = mobilePersonnelList.find(x=>x.id===id);
-      return p ? `<span class="pb-chip">${escapeHtml(p.name)}</span>` : '';
-    }).join('');
     const rows = (data.rows||[]).map(r => {
       const personNames = (r.personIds||[]).map(id => { const p=mobilePersonnelList.find(x=>x.id===id); return p?p.name:''; }).filter(Boolean).join(', ');
       return `
@@ -692,7 +688,6 @@ async function renderPersonnelTab() {
         <div class="proc-block-head" style="background:${proc.color};">
           <span>${proc.label}</span>
         </div>
-        ${chips?`<div style="padding:8px 14px 0;"><div class="pb-chips">${chips}</div></div>`:''}
         ${rows || '<div class="proc-empty">등록된 내용이 없습니다</div>'}
       </div>
     `;
