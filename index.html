@@ -121,9 +121,10 @@
   .wp-bar-card { position:relative; width:320px; background:var(--bg-card); border:1px dashed var(--border-bright); border-left:6px solid var(--text-primary); border-radius:4px; padding:22px 20px 16px; }
   .wp-bar-card.wp-card-done { border:2px solid var(--green); border-left:6px solid var(--green); }
   .wp-bar-chart { display:flex; align-items:flex-end; justify-content:space-around; height:260px; border-bottom:3px solid var(--text-secondary); }
-  .wp-bar-col { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; width:23%; }
+  .wp-bar-col { display:flex; flex-direction:column; align-items:center; height:100%; width:23%; min-height:0; }
   .wp-bar-value { font-family:var(--font-mono); font-size:24px; font-weight:800; margin-bottom:6px; color:var(--text-primary); }
-  .wp-bar { width:70%; border-radius:3px 3px 0 0; transition:height .3s; min-height:2px; }
+  .wp-bar-track { flex:1; min-height:0; width:100%; display:flex; align-items:flex-end; justify-content:center; }
+  .wp-bar { width:70%; flex-shrink:0; border-radius:3px 3px 0 0; transition:height .3s; min-height:2px; }
   .wp-bar-col[onclick] { cursor:pointer; }
   .wp-bar-labels { display:flex; justify-content:space-around; margin-top:10px; }
   .wp-bar-label { width:23%; text-align:center; font-size:18px; font-weight:800; color:var(--text-secondary); }
@@ -3809,8 +3810,8 @@ function buildBar(label, value, color, maxVal, onClick) {
   const cursorStyle = onClick ? 'cursor:pointer;' : '';
   return `
     <div class="wp-bar-col" ${clickPart} style="${cursorStyle}">
-      <div class="wp-bar-value">${value}</div>
-      <div class="wp-bar" style="height:${pct}%;background:${color};"></div>
+      <div class="wp-bar-value" style="color:${color};">${value}</div>
+      <div class="wp-bar-track"><div class="wp-bar" style="height:${pct}%;background:${color};"></div></div>
     </div>
   `;
 }
@@ -3827,17 +3828,17 @@ function buildBarChartCard(opts) {
       bars = buildBar('계획', planQty, WP_COLOR_PLAN, maxVal)
            + buildBar('수검', inspect||0, WP_COLOR_FINAL, maxVal, actions.inspectClick)
            + buildBar('완료', pack, WP_COLOR_PACK, maxVal, actions.packClick);
-      labels = `<div class="wp-bar-label">계획</div><div class="wp-bar-label">수검</div><div class="wp-bar-label">완료</div>`;
+      labels = `<div class="wp-bar-label" style="color:${WP_COLOR_PLAN};">계획</div><div class="wp-bar-label" style="color:${WP_COLOR_FINAL};">수검</div><div class="wp-bar-label" style="color:${WP_COLOR_PACK};">완료</div>`;
     } else {
       bars = buildBar('계획', planQty, WP_COLOR_PLAN, maxVal) + buildBar('완료', pack, WP_COLOR_PACK, maxVal, actions.packClick);
-      labels = `<div class="wp-bar-label">계획</div><div class="wp-bar-label">완료</div>`;
+      labels = `<div class="wp-bar-label" style="color:${WP_COLOR_PLAN};">계획</div><div class="wp-bar-label" style="color:${WP_COLOR_PACK};">완료</div>`;
     }
   } else {
     bars = buildBar('계획', planQty, WP_COLOR_PLAN, maxVal)
          + buildBar('조립', main, WP_COLOR_MAIN, maxVal, actions.mainClick)
          + buildBar('검사', final, WP_COLOR_FINAL, maxVal, actions.finalClick)
          + buildBar('포장', pack, WP_COLOR_PACK, maxVal, actions.packClick);
-    labels = `<div class="wp-bar-label">계획</div><div class="wp-bar-label">조립</div><div class="wp-bar-label">검사</div><div class="wp-bar-label">포장</div>`;
+    labels = `<div class="wp-bar-label" style="color:${WP_COLOR_PLAN};">계획</div><div class="wp-bar-label" style="color:${WP_COLOR_MAIN};">조립</div><div class="wp-bar-label" style="color:${WP_COLOR_FINAL};">검사</div><div class="wp-bar-label" style="color:${WP_COLOR_PACK};">포장</div>`;
   }
   return `
     <div class="wp-bar-card ${isDone?'wp-card-done':''}" ${cardKey ? `data-card-key="${cardKey.replace(/"/g,'&quot;')}"` : ''}>
