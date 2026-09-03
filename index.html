@@ -263,14 +263,15 @@
 
   /* 월간계획: 박스 크기/여백/배치는 그대로 두고 텍스트만 크게 표시 */
   #monthPlanContent .wp-section-title { font-size:27px; }
-  #monthPlanContent .wp-bar-value { font-size:34px; line-height:1; }
-  #monthPlanContent .wp-bar-label { font-size:26px; line-height:1; }
-  #monthPlanContent .wp-card-model { font-size:36px !important; line-height:1; }
+  #monthPlanContent .wp-bar-value { font-size:38px; line-height:1; }
+  #monthPlanContent .wp-bar-label { font-size:28px; line-height:1; }
+  #monthPlanContent .wp-bar { width:82%; }
+  #monthPlanContent .wp-card-model { font-size:40px !important; line-height:1; }
   #monthPlanContent .wp-card-fullname { font-size:18px; line-height:1.05; }
   #monthPlanContent .wp-card-qty {
     font-size:26px !important;
     line-height:1;
-    transform:scale(1.25);
+    transform:scale(1.35);
     transform-origin:center;
   }
   .not-started { color:var(--text-dim); font-family:var(--font-mono); font-size:23px; }
@@ -4167,25 +4168,22 @@ function renderPerfMiniSummary(title, groups, gradId) {
   const unitLabel = modelKeys.length > 0 ? groups[modelKeys[0]].unit : (title.indexOf('CKD') >= 0 ? 'Site' : '대');
   const rateColor = totalRate>=100?'var(--green)':totalRate>=70?'var(--yellow)':'var(--red)';
 
-  let html = `<div style="font-size:20px;font-weight:800;color:var(--text-primary);margin-bottom:6px;">${title}</div>`;
-  html += `<div style="display:flex;gap:10px;align-items:stretch;height:calc(100% - 26px);">`;
+  let html = `<div style="font-size:24px;font-weight:800;color:var(--text-primary);margin-bottom:6px;">${title}</div>`;
+  html += `<div style="display:flex;align-items:stretch;height:calc(100% - 30px);">`;
   html += `
-    <div style="flex:0 0 62%;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+    <div style="flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;min-width:0;">
       <div style="background:#fff;border:1px solid var(--border);border-radius:5px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
-        <div style="font-size:30px;color:var(--text-dim);margin-bottom:6px;font-weight:800;">총 계획</div>
-        <div style="font-family:var(--font-mono);font-size:64px;font-weight:800;color:var(--text-primary);line-height:1;">${totalPlan}<span style="font-size:24px;color:var(--text-dim);margin-left:4px;">${unitLabel}</span></div>
+        <div style="font-size:36px;color:var(--text-dim);margin-bottom:6px;font-weight:800;">총 계획</div>
+        <div style="font-family:var(--font-mono);font-size:78px;font-weight:800;color:var(--text-primary);line-height:1;">${totalPlan}<span style="font-size:30px;color:var(--text-dim);margin-left:5px;">${unitLabel}</span></div>
       </div>
       <div style="background:#fff;border:1px solid var(--border);border-radius:5px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
-        <div style="font-size:30px;color:var(--text-dim);margin-bottom:6px;font-weight:800;">총 실적</div>
-        <div style="font-family:var(--font-mono);font-size:64px;font-weight:800;color:var(--accent2);line-height:1;">${totalActual}<span style="font-size:24px;color:var(--text-dim);margin-left:4px;">${unitLabel}</span></div>
+        <div style="font-size:36px;color:var(--text-dim);margin-bottom:6px;font-weight:800;">총 실적</div>
+        <div style="font-family:var(--font-mono);font-size:78px;font-weight:800;color:var(--accent2);line-height:1;">${totalActual}<span style="font-size:30px;color:var(--text-dim);margin-left:5px;">${unitLabel}</span></div>
       </div>
       <div style="background:#eaf3fb;border:2px solid var(--accent2);border-radius:5px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
-        <div style="font-size:30px;color:var(--accent2);margin-bottom:6px;font-weight:800;">달성률</div>
-        <div style="font-family:var(--font-mono);font-size:64px;font-weight:800;color:var(--accent2);line-height:1;">${totalRate}%</div>
+        <div style="font-size:36px;color:var(--accent2);margin-bottom:6px;font-weight:800;">달성률</div>
+        <div style="font-family:var(--font-mono);font-size:78px;font-weight:800;color:var(--accent2);line-height:1;">${totalRate}%</div>
       </div>
-    </div>
-    <div style="flex:1;background:#fff;border:1px solid var(--border);border-radius:5px;padding:4px;overflow:hidden;min-width:0;">
-      ${modelKeys.length > 0 ? renderModelBarSvg(modelKeys, groups, gradId, { H:130, padT:16, padB:40, wrapPad:2, wrapMB:0, legendFS:13, legendMT:2, groupW:100, barW:22 }) : '<div style="text-align:center;color:var(--text-dim);padding:20px 0;font-size:15px;">해당 월 데이터가 없습니다</div>'}
     </div>
   `;
   html += `</div>`;
