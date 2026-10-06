@@ -4259,6 +4259,7 @@ function renderPerfMiniSummary(title, groups, gradId) {
   let totalPlan = 0, totalActual = 0;
   modelKeys.forEach(k => { totalPlan += groups[k].plan; totalActual += groups[k].actual; });
   const totalRate = totalPlan > 0 ? Math.round((totalActual / totalPlan) * 100) : 0;
+  const totalRateDisplay = totalPlan > 0 ? `${totalRate}%` : '-';
   const unitLabel = modelKeys.length > 0 ? groups[modelKeys[0]].unit : (title.indexOf('CKD') >= 0 ? 'Site' : '대');
   const rateColor = totalRate>=100?'var(--green)':totalRate>=70?'var(--yellow)':'var(--red)';
   const rateFillPct = Math.max(0, Math.min(totalRate, 100));
@@ -4282,7 +4283,7 @@ function renderPerfMiniSummary(title, groups, gradId) {
       </div>
       <div style="background:${rateBoxBackground};border:2px solid ${rateBoxBorder};border-radius:5px;padding:6px 10px;text-align:center;display:flex;align-items:center;justify-content:center;gap:52px;white-space:nowrap;overflow:hidden;">
         <div style="font-size:90px;line-height:.9;color:${rateTextColor};font-weight:800;letter-spacing:-2px;">달성률</div>
-        <div style="font-family:var(--font-mono);font-size:90px;font-weight:800;color:${rateTextColor};line-height:.88;">${totalRate}%</div>
+        <div style="font-family:var(--font-mono);font-size:90px;font-weight:800;color:${rateTextColor};line-height:.88;">${totalRateDisplay}</div>
       </div>
     </div>
   `;
